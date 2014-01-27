@@ -42,7 +42,18 @@ var _H = {};        // For internal usage
 
 var storage = {
   /**
+   * 沙盒运行状态
+   *
+   * @property  sandboxStarted
+   * @type      {Boolean}
+   */
+  sandboxStarted: false,
+
+  /**
    * 配置
+   *
+   * @property  config
+   * @type      {Object}
    */
   config: {
     debug: true,
@@ -163,11 +174,43 @@ $.extend( _H, {
   },
 
   /**
+   * 沙盒
+   *
+   * 封闭运行环境的开关，每个页面只能运行一次
+   * 
+   * @method  sandbox
+   * @param   setting {Object}      系统环境配置
+   * @return  {Object/Boolean}      （修改后的）系统环境配置
+   */
+  sandbox: function( setting ) {
+    var result;
+    
+    if ( storage.sandboxStarted !== true ) {
+      // 返回值为修改后的系统环境配置
+      result = resetConfig(setting);
+
+      // 全局配置
+      setup();
+      // DOM tree 构建前的函数队列
+      runHandler(storage.fn.prepare);
+      
+      // DOM tree 构建后的函数队列
+      $(document).ready(function() {
+        runHandler(storage.fn.ready);
+      });
+      
+      storage.sandboxStarted = true;
+    }
+    
+    return result || false;
+  },
+
+  /**
    * DOM 未加载完时调用的处理函数
    * 主要进行事件委派等与 DOM 加载进程无关的操作
    *
    * @method  prepare
-   * @param   {Function} handler
+   * @param   handler {Function}
    * @return
    */
   prepare: function( handler ) {
@@ -178,7 +221,7 @@ $.extend( _H, {
    * DOM 加载完成时调用的处理函数
    *
    * @method  ready
-   * @param   {Function} handler
+   * @param   handler {Function}
    * @return
    */
   ready: function( handler ) {
@@ -205,17 +248,6 @@ $.extend( _H, {
   config: function( key ) {
     return $.type(key) === "string" ? storage.config[key] : $.extend(true, {}, storage.config);
   },
-
-  /**
-   * 沙箱
-   * 
-   * @method  sandbox
-   * @param {Object} setting  系统环境配置
-   * @return  {Object}      （修改后的）系统环境配置
-   */
-  // sandbox: function( setting ) {
-  //   return _H.sandbox( setting );
-  // },
   
   /**
    * 获取指定的内部数据载体
@@ -269,13 +301,13 @@ $.extend( _H, {
    * 执行指定函数
    * 
    * @method  run
-   * @param {String} funcName 函数名
-   * @param {List}        函数的参数
-   * @return  {Variant}     函数执行的返回值
+   * @param   funcName {String}         函数名
+   * @param   [args, ...] {List}        函数的参数
+   * @return  {Variant}
    */
-  // run: function( funcName ) {
-  //   return _H.runHandler( funcName, [].slice.call(arguments, 1) );
-  // },
+  run: function( funcName ) {
+    return runHandler(funcName, [].slice.call(arguments, 1));
+  },
 
   /**
    * 获取 DOM 的「data-*」属性集
@@ -491,6 +523,147 @@ $.extend( _H, {
     }
   }*/
 });
+
+/**
+ * 全局配置
+ * 
+ * @private
+ * @method    setup
+ */
+function setup() {
+  var that = this,
+    config = that.storage.configuration,
+    i18n = that.storage.i18n,
+    lang = config.lang,
+    
+    // 对话框提示内容、类型及回调函数
+    systemAlert = i18n.alert.system,
+    type = "alert",
+    handler = function() { location.reload(); };
+  
+  // Ajax 全局配置
+  $.ajaxSetup({ type: "post", dataType: "json" });
+  
+  // Ajax 出错
+  $( document ).ajaxError(function( event, jqXHR, ajaxSettings, thrownError ) {
+    var response = jqXHR.responseText;
+    
+    if ( response !== undefined ) {
+      // Session 超时
+      if ( response.indexOf("pageFunc968535468893538dasdaweqwertion") !== -1 ) {
+        systemAlert = systemAlert.offline[ lang ];
+        handler = function() { location.href = config.path.root + "login"; };
+      }
+      // 客户端发起注入等恶意攻击
+      else if ( response.indexOf("deny_dasp.jpg") !== -1 ) {
+        systemAlert = systemAlert.deny[ lang ];
+      }
+      // 没有权限访问
+      else if ( /<title>\s*你没有权限访问此页面\s*<\/title>/i.test(response) ) {
+        systemAlert = systemAlert.permission[ lang ];
+      }
+      // 开发模式
+      else if ( config.mode === "%%debug%%" ) {
+        type = "confirm";
+        systemAlert = "Ajax 发生错误 - " + jqXHR.status + " " + thrownError +
+          "<br /><br />地址: " + ajaxSettings.url +
+          "<br />方式: " + ajaxSettings.type +
+          "<br />参数: " + ajaxSettings.data +
+          "<br /><br /><br />是否要刷新页面？";
+      }
+      
+      if ( typeof systemAlert === "string" ) {
+        that.systemDialog( type, systemAlert, handler );
+      }
+    }
+    
+    return false;
+  });
+  
+  // jQuery UI dialog 的附加处理
+  // 对 dialog 绑定事件
+  $( "[data-role='dialog']" ).live({
+    // 打开对话框事件
+    "dialogopen": function() {
+      var dialog = $(this),
+        dialogs = that.storage.pool.dialogOpened,
+        buttons = $(".ui-dialog-buttonset .ui-button", dialog.closest(".ui-dialog")),
+        btnLabel = i18n.dialog.button;
+      
+      // 为按钮添加标识，以便于可以随时调用
+      buttons.each(function() {
+        var btn = $(this),
+          text = $(this).text(),
+          flag = "data-button-flag",
+          nonstandard = 0,
+          type;
+        
+        if ( btn.attr( flag ) === undefined ) {
+          $.each( btnLabel, function( btnType, btnText ) {
+            if ( (new RegExp(("^" + btnText[ lang ] + "$"), "i")).test( text ) === true ) {
+              type = btnType;
+              return false;
+            }
+          });
+          
+          if ( type === undefined ) {
+            type = "button-" + (++nonstandard);
+          }
+          
+          btn.attr( flag, type );
+        }
+      });
+      
+      // 将带按钮的对话框存储起来
+      if ( buttons.size() ) {
+        if ( dialogs === undefined ) {
+          that.storage.pool.dialogOpened = [];
+          dialogs = that.storage.pool.dialogOpened;
+        }
+        
+        dialogs.push( dialog[0] );
+      }
+    },
+    // 关闭对话框事件
+    "dialogclose": function() {
+      var dialogs = that.storage.pool.dialogOpened || [],
+        dlgIdx = $.inArray( this, dialogs );
+      
+      // 将对话框 DOM 从存储池中删除
+      if ( dlgIdx > -1 ) {
+        dialogs.splice( dlgIdx, 1 );
+      }
+    }
+  });
+  
+  $( document ).bind({
+    "keypress": function( e ) {
+      var pointer = this,
+        dialogs, CB_Enter;
+      
+      // 敲击回车键
+      if ( e.keyCode == 13 ) {
+        CB_Enter = that.bindHandler( "CB_Enter" );
+        
+        // 有被打开的对话框
+        if ( (dialogs = $(":ui-dialog:visible")).size() ) {
+          // 按 z-index 值从大到小排列对话框数组
+          [].sort.call( dialogs, function( a, b ) {
+            return $(b).closest(".ui-dialog").css("z-index") * 1 - $(a).closest(".ui-dialog").css("z-index") * 1;
+          });
+          // 触发对话框的确定/是按钮点击事件
+          $("[data-button-flag='ok'], [data-button-flag='yes']", $( [].shift.call( dialogs ) ).closest( ".ui-dialog" )).each(function() {
+            $(this).trigger( "click" );
+            return false;
+          });
+        }
+        else if ( $.isFunction( CB_Enter ) ) {
+          CB_Enter.call( pointer );
+        }
+      }
+    }
+  });
+}
 
 /**
  * 获取当前脚本所在目录路径
@@ -712,6 +885,69 @@ function pushHandler( handler, queue ) {
   if ( $.isFunction(handler) ) {
     storage.fn[queue].push(handler);
   }
+}
+
+/**
+ * 执行指定函数
+ * 
+ * @private
+ * @method  runHandler
+ * @param   name {String}         函数名
+ * @param   [args, ...] {List}    函数的参数
+ * @return  {Variant}
+ */
+function runHandler( name ) {
+  var args = [].slice.call(arguments, 1);
+  var func = storage.fn.handler[name];
+  var result;
+  
+  // 指定函数名时，从函数池里提取对应函数
+  if ( typeof(name) === "string" && $.isFunction(func) ) {
+    result = func.apply(window, args);
+  }
+  // 指定函数列表（数组）时
+  else if ( $.isArray(name) ) {
+    $.each(name, function( idx, func ) {
+      if ( $.isFunction(func) ) {
+        func.call(window);
+      }
+    });
+  }
+  
+  return result;
+}
+
+/**
+ * 重新配置系统参数
+ * 
+ * @private
+ * @method  resetConfig
+ * @param   setting {Object}      配置参数
+ * @return  {Object}              （修改后的）系统配置信息
+ */
+function resetConfig( setting ) {
+  return clone($.isPlainObject(setting) ? $.extend(storage.config, setting) : storage.config);
+}
+
+/**
+ * 克隆对象并返回副本
+ * 
+ * @private
+ * @method  clone
+ * @param   source {Object}       源对象，只能为数组或者纯对象
+ * @return  {Object}
+ */
+function clone( source ) {
+  var result = null;
+  
+  if ( $.isArray(source) || source.length !== undefined ) {
+    result = [].concat([], [].slice.call(source, 0));
+  }
+  else if ( $.isPlainObject(source) ) {
+    result = $.extend(true, {}, source)
+  }
+  
+  return result;
 }
 
 /**
