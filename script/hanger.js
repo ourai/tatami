@@ -61,13 +61,15 @@ var storage = {
    * @type      {Object}
    */
   fn: {
+    // DOM tree 构建未完成（sandbox 启动）时调用的处理函数
+    prepare: [],
+    // DOM tree 构建已完成时调用的处理函数
+    ready: [],
     // 初始化函数
     init: {
       systemDialog: function() {}
     },
-    handler: {},
-    prepare: [],
-    ready: []
+    handler: {}
   },
 
   /**
@@ -158,6 +160,29 @@ $.extend( _H, {
    */
   confirmEX: function( message, ok, cancel ) {
     return systemDialog("confirmEX", message, ok, cancel);
+  },
+
+  /**
+   * DOM 未加载完时调用的处理函数
+   * 主要进行事件委派等与 DOM 加载进程无关的操作
+   *
+   * @method  prepare
+   * @param   {Function} handler
+   * @return
+   */
+  prepare: function( handler ) {
+    return pushHandler(handler, "prepare");
+  },
+
+  /**
+   * DOM 加载完成时调用的处理函数
+   *
+   * @method  ready
+   * @param   {Function} handler
+   * @return
+   */
+  ready: function( handler ) {
+    return pushHandler(handler, "ready");
   },
 
   /**
@@ -673,6 +698,20 @@ function systemDialogHandler( type, message, okHandler, cancelHandler ) {
   dlg
     .dialog("option", "buttons", btns)
     .dialog("open");
+}
+
+/**
+ * 将函数加到指定队列中
+ * 
+ * @private
+ * @method  pushHandler
+ * @param   handler {Function}    函数
+ * @param   queue {String}        队列名
+ */
+function pushHandler( handler, queue ) {
+  if ( $.isFunction(handler) ) {
+    storage.fn[queue].push(handler);
+  }
 }
 
 /**
