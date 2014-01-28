@@ -2,7 +2,7 @@
  * Hanger - Scaffolding of a project
  * by Ourai Lin, ourairyu@hotmail.coms
  *
- * Full source at https://github.com/ourai/Hanger
+ * Full source at https://github.com/ourai/hanger
  * Copyright (c) 2013 Ourairyu http://ourai.ws/
  */
 ;(function( window, $, undefined ) {
