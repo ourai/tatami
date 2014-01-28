@@ -235,7 +235,7 @@ $.extend( _H, {
    * @return
    */
   init: function() {
-    return initialize.apply(window, [].slice.call(arguments, 0));
+    return initialize.apply(window, slicer(arguments));
   },
 
   /**
@@ -293,9 +293,9 @@ $.extend( _H, {
    * @method  queue
    * @return
    */
-  // queue: function() {
-  //   return _H.bindHandler.apply( _H, [].slice.call(arguments, 0) );
-  // },
+  queue: function() {
+    return bindHandler.apply(window, slicer(arguments));
+  },
   
   /**
    * 执行指定函数
@@ -306,7 +306,7 @@ $.extend( _H, {
    * @return  {Variant}
    */
   run: function( funcName ) {
-    return runHandler(funcName, [].slice.call(arguments, 1));
+    return runHandler(funcName, slicer(arguments, 1));
   },
 
   /**
@@ -525,147 +525,6 @@ $.extend( _H, {
 });
 
 /**
- * 全局配置
- * 
- * @private
- * @method    setup
- */
-function setup() {
-  var that = this,
-    config = that.storage.configuration,
-    i18n = that.storage.i18n,
-    lang = config.lang,
-    
-    // 对话框提示内容、类型及回调函数
-    systemAlert = i18n.alert.system,
-    type = "alert",
-    handler = function() { location.reload(); };
-  
-  // Ajax 全局配置
-  $.ajaxSetup({ type: "post", dataType: "json" });
-  
-  // Ajax 出错
-  $( document ).ajaxError(function( event, jqXHR, ajaxSettings, thrownError ) {
-    var response = jqXHR.responseText;
-    
-    if ( response !== undefined ) {
-      // Session 超时
-      if ( response.indexOf("pageFunc968535468893538dasdaweqwertion") !== -1 ) {
-        systemAlert = systemAlert.offline[ lang ];
-        handler = function() { location.href = config.path.root + "login"; };
-      }
-      // 客户端发起注入等恶意攻击
-      else if ( response.indexOf("deny_dasp.jpg") !== -1 ) {
-        systemAlert = systemAlert.deny[ lang ];
-      }
-      // 没有权限访问
-      else if ( /<title>\s*你没有权限访问此页面\s*<\/title>/i.test(response) ) {
-        systemAlert = systemAlert.permission[ lang ];
-      }
-      // 开发模式
-      else if ( config.mode === "%%debug%%" ) {
-        type = "confirm";
-        systemAlert = "Ajax 发生错误 - " + jqXHR.status + " " + thrownError +
-          "<br /><br />地址: " + ajaxSettings.url +
-          "<br />方式: " + ajaxSettings.type +
-          "<br />参数: " + ajaxSettings.data +
-          "<br /><br /><br />是否要刷新页面？";
-      }
-      
-      if ( typeof systemAlert === "string" ) {
-        that.systemDialog( type, systemAlert, handler );
-      }
-    }
-    
-    return false;
-  });
-  
-  // jQuery UI dialog 的附加处理
-  // 对 dialog 绑定事件
-  $( "[data-role='dialog']" ).live({
-    // 打开对话框事件
-    "dialogopen": function() {
-      var dialog = $(this),
-        dialogs = that.storage.pool.dialogOpened,
-        buttons = $(".ui-dialog-buttonset .ui-button", dialog.closest(".ui-dialog")),
-        btnLabel = i18n.dialog.button;
-      
-      // 为按钮添加标识，以便于可以随时调用
-      buttons.each(function() {
-        var btn = $(this),
-          text = $(this).text(),
-          flag = "data-button-flag",
-          nonstandard = 0,
-          type;
-        
-        if ( btn.attr( flag ) === undefined ) {
-          $.each( btnLabel, function( btnType, btnText ) {
-            if ( (new RegExp(("^" + btnText[ lang ] + "$"), "i")).test( text ) === true ) {
-              type = btnType;
-              return false;
-            }
-          });
-          
-          if ( type === undefined ) {
-            type = "button-" + (++nonstandard);
-          }
-          
-          btn.attr( flag, type );
-        }
-      });
-      
-      // 将带按钮的对话框存储起来
-      if ( buttons.size() ) {
-        if ( dialogs === undefined ) {
-          that.storage.pool.dialogOpened = [];
-          dialogs = that.storage.pool.dialogOpened;
-        }
-        
-        dialogs.push( dialog[0] );
-      }
-    },
-    // 关闭对话框事件
-    "dialogclose": function() {
-      var dialogs = that.storage.pool.dialogOpened || [],
-        dlgIdx = $.inArray( this, dialogs );
-      
-      // 将对话框 DOM 从存储池中删除
-      if ( dlgIdx > -1 ) {
-        dialogs.splice( dlgIdx, 1 );
-      }
-    }
-  });
-  
-  $( document ).bind({
-    "keypress": function( e ) {
-      var pointer = this,
-        dialogs, CB_Enter;
-      
-      // 敲击回车键
-      if ( e.keyCode == 13 ) {
-        CB_Enter = that.bindHandler( "CB_Enter" );
-        
-        // 有被打开的对话框
-        if ( (dialogs = $(":ui-dialog:visible")).size() ) {
-          // 按 z-index 值从大到小排列对话框数组
-          [].sort.call( dialogs, function( a, b ) {
-            return $(b).closest(".ui-dialog").css("z-index") * 1 - $(a).closest(".ui-dialog").css("z-index") * 1;
-          });
-          // 触发对话框的确定/是按钮点击事件
-          $("[data-button-flag='ok'], [data-button-flag='yes']", $( [].shift.call( dialogs ) ).closest( ".ui-dialog" )).each(function() {
-            $(this).trigger( "click" );
-            return false;
-          });
-        }
-        else if ( $.isFunction( CB_Enter ) ) {
-          CB_Enter.call( pointer );
-        }
-      }
-    }
-  });
-}
-
-/**
  * 获取当前脚本所在目录路径
  * 
  * @private
@@ -680,6 +539,67 @@ function currentPath() {
   link.href = script.hasAttribute ? script.src : script.getAttribute("src", 4);
 
   return link.pathname.replace(/[^\/]+\.js$/i, "");
+}
+
+/**
+ * 切割 Array Like 片段
+ *
+ * @private
+ * @method  slicer
+ * @return
+ */
+function slicer( args, index ) {
+  return [].slice.call(args, (Number(index) || 0));
+}
+
+/**
+ * 全局配置
+ * 
+ * @private
+ * @method    setup
+ */
+function setup() {
+  // Ajax 全局配置
+  $.ajaxSetup({type: "post", dataType: "json"});
+  
+  // Ajax 出错
+  $(document).ajaxError(function( event, jqXHR, ajaxSettings, thrownError ) {
+    var response = jqXHR.responseText;
+    
+    if ( response !== undefined ) {
+      // To do sth.
+    }
+    
+    return false;
+  });  
+  
+  // $( document ).bind({
+  //   "keypress": function( e ) {
+  //     var pointer = this;
+      
+  //     // 敲击回车键
+  //     if ( e.keyCode == 13 ) {
+  //       var CB_Enter = bindHandler( "CB_Enter" );
+  //       var dialogs = $(":ui-dialog:visible");
+        
+  //       // 有被打开的对话框
+  //       if ( dialogs.size() ) {
+  //         // 按 z-index 值从大到小排列对话框数组
+  //         [].sort.call(dialogs, function( a, b ) {
+  //           return $(b).closest(".ui-dialog").css("z-index") * 1 - $(a).closest(".ui-dialog").css("z-index") * 1;
+  //         });
+  //         // 触发对话框的确定/是按钮点击事件
+  //         $("[data-button-flag='ok'], [data-button-flag='yes']", $([].shift.call(dialogs)).closest(".ui-dialog")).each(function() {
+  //           $(this).trigger("click");
+  //           return false;
+  //         });
+  //       }
+  //       else if ( $.isFunction(CB_Enter) ) {
+  //         CB_Enter.call(pointer);
+  //       }
+  //     }
+  //   }
+  // });
 }
 
 /**
@@ -874,17 +794,43 @@ function systemDialogHandler( type, message, okHandler, cancelHandler ) {
 }
 
 /**
- * 将函数加到指定队列中
+ * 将处理函数绑定到内部命名空间
  * 
  * @private
- * @method  pushHandler
- * @param   handler {Function}    函数
- * @param   queue {String}        队列名
+ * @method  bindHandler
+ * @return
  */
-function pushHandler( handler, queue ) {
-  if ( $.isFunction(handler) ) {
-    storage.fn[queue].push(handler);
+function bindHandler() {
+  var args = arguments;
+  var name = args[0];
+  var handler = args[1];
+  var fnList = storage.fn.handler;
+  
+  // 无参数时返回函数列表
+  if ( args.length === 0 ) {
+    handler = clone(fnList);
   }
+  // 传入函数名
+  else if ( typeof name === "string" ) {
+    // 保存
+    if ( $.isFunction(handler) ) {
+      fnList[name] = handler;
+    }
+    // 获取
+    else {
+      handler = fnList[name];
+    }
+  }
+  // 传入函数列表
+  else if ( $.isPlainObject(name) ) {
+    $.each(name, function( funcName, func ) {
+      if ( $.isFunction(func) ) {
+        fnList[funcName] = func;
+      }
+    });
+  }
+  
+  return handler;
 }
 
 /**
@@ -897,7 +843,7 @@ function pushHandler( handler, queue ) {
  * @return  {Variant}
  */
 function runHandler( name ) {
-  var args = [].slice.call(arguments, 1);
+  var args = slicer(args, 1);
   var func = storage.fn.handler[name];
   var result;
   
@@ -915,6 +861,20 @@ function runHandler( name ) {
   }
   
   return result;
+}
+
+/**
+ * 将函数加到指定队列中
+ * 
+ * @private
+ * @method  pushHandler
+ * @param   handler {Function}    函数
+ * @param   queue {String}        队列名
+ */
+function pushHandler( handler, queue ) {
+  if ( $.isFunction(handler) ) {
+    storage.fn[queue].push(handler);
+  }
 }
 
 /**
@@ -941,7 +901,7 @@ function clone( source ) {
   var result = null;
   
   if ( $.isArray(source) || source.length !== undefined ) {
-    result = [].concat([], [].slice.call(source, 0));
+    result = [].concat([], slicer(source));
   }
   else if ( $.isPlainObject(source) ) {
     result = $.extend(true, {}, source)
@@ -1021,7 +981,7 @@ function request( options, succeed, fail, synch ) {
   // synch 为 true 时是同步请求，其他情况则为异步请求
   options.async = synch === true ? false : true;
   
-  return $.ajax( options );
+  return $.ajax(options);
 }
 
 /**
