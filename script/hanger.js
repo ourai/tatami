@@ -29,14 +29,6 @@ var ls = window.localStorage;
 // Regular expressions
 var REG_NAMESPACE = /^[0-9A-Z_.]+[^_.]?$/i;
 
-// Normal variables
-// var queue = {
-//     events: {
-//       globalMouseMove: []
-//     },
-//     callbacks: []
-//   };
-
 // Main objects
 var _H = {};        // For internal usage
 
@@ -248,18 +240,6 @@ $.extend( _H, {
   config: function( key ) {
     return $.type(key) === "string" ? storage.config[key] : $.extend(true, {}, storage.config);
   },
-  
-  /**
-   * 获取指定的内部数据载体
-   * 
-   * @method  storage
-   * @param {String} name   载体名称
-   * @param {Boolean} isCopy  是否返回副本
-   * @return  {Object}
-   */
-  // storage: function( name, isCopy ) {
-  //   return _H.getDataset( name, isCopy );
-  // },
 
   /**
    * Asynchronous JavaScript and XML
@@ -310,7 +290,7 @@ $.extend( _H, {
   },
 
   /**
-   * 获取 DOM 的「data-*」属性集
+   * 获取 DOM 的「data-*」属性集或存储数据到内部/从内部获取数据
    * 
    * @method  data
    * @return  {Object}
@@ -489,8 +469,13 @@ $.extend( _H, {
 
   /**
    * Save web resource to local disk
+   *
+   * @method  download
+   * @param   fileURL {String}
+   * @param   fileName {String}
+   * @return
    */
-  download: function() {
+  download: function( fileURL, fileName ) {
     // for non-IE
     if (!window.ActiveXObject) {
       var save = document.createElement('a');
@@ -512,16 +497,7 @@ $.extend( _H, {
       _window.document.execCommand('SaveAs', true, fileName || fileURL)
       _window.close();
     }
-  }/*,
-
-  // 把全局事件添加到队列中
-  addGlobalEvent: function( event_name, handler ) {
-    if ( typeof event_name === "string" && $.isFunction(handler) ) {
-      if ( event_name === "mousemove" ) {
-        queue.events.globalMouseMove.push( handler );
-      }
-    }
-  }*/
+  }
 });
 
 /**
@@ -1050,16 +1026,6 @@ function getStorageData( ns_str ) {
 
   return result;
 }
-
-// if ( queue.events.globalMouseMove.length ) {
-//   $(document).bind({
-//     "mousemove": function( e ) {
-//       $.each( queue.events.globalMouseMove, function( idx, func ) {
-//         func.call(null, e);
-//       });
-//     }
-//   })
-// }
 
 window.Hanger = _H;
 
