@@ -182,7 +182,7 @@ $.extend( _H, {
       result = resetConfig(setting);
 
       // 全局配置
-      setup();
+      // setup();
       // DOM tree 构建前的函数队列
       runHandler(storage.fn.prepare);
       
@@ -302,7 +302,16 @@ $.extend( _H, {
 
     if ( length > 0 ) {
       var target = args[0];
-      var node = $(target).get(0);
+      var node;
+
+      try {
+        // 当 target 是包含有 "@" 的字符串时会抛出异常。
+        // Error: Syntax error, unrecognized expression: @
+        node = $(target).get(0);
+      }
+      catch (e) {
+        node = target;
+      }
 
       // 获取 DOM 的「data-*」属性集
       if ( node && node.nodeType === ELEMENT_NODE ) {
@@ -536,7 +545,7 @@ function slicer( args, index ) {
  */
 function setup() {
   // Ajax 全局配置
-  $.ajaxSetup({type: "post", dataType: "json"});
+  $.ajaxSetup({ type: "post", dataType: "json" });
   
   // Ajax 出错
   $(document).ajaxError(function( event, jqXHR, ajaxSettings, thrownError ) {
@@ -819,7 +828,7 @@ function bindHandler() {
  * @return  {Variant}
  */
 function runHandler( name ) {
-  var args = slicer(args, 1);
+  var args = slicer(arguments, 1);
   var func = storage.fn.handler[name];
   var result;
   
