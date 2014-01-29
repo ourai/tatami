@@ -2,7 +2,7 @@
  * Hanger - Scaffolding of a project
  * by Ourai Lin, ourairyu@hotmail.coms
  *
- * Full source at https://github.com/ourai/Hanger
+ * Full source at https://github.com/ourai/hanger
  * Copyright (c) 2013 Ourairyu http://ourai.ws/
  */
 ;(function( window, $, undefined ) {
@@ -29,20 +29,23 @@ var ls = window.localStorage;
 // Regular expressions
 var REG_NAMESPACE = /^[0-9A-Z_.]+[^_.]?$/i;
 
-// Normal variables
-// var queue = {
-//     events: {
-//       globalMouseMove: []
-//     },
-//     callbacks: []
-//   };
-
 // Main objects
 var _H = {};        // For internal usage
 
 var storage = {
   /**
+   * 沙盒运行状态
+   *
+   * @property  sandboxStarted
+   * @type      {Boolean}
+   */
+  sandboxStarted: false,
+
+  /**
    * 配置
+   *
+   * @property  config
+   * @type      {Object}
    */
   config: {
     debug: true,
@@ -61,13 +64,15 @@ var storage = {
    * @type      {Object}
    */
   fn: {
+    // DOM tree 构建未完成（sandbox 启动）时调用的处理函数
+    prepare: [],
+    // DOM tree 构建已完成时调用的处理函数
+    ready: [],
     // 初始化函数
     init: {
       systemDialog: function() {}
     },
-    handler: {},
-    prepare: [],
-    ready: []
+    handler: {}
   },
 
   /**
@@ -161,13 +166,68 @@ $.extend( _H, {
   },
 
   /**
+   * 沙盒
+   *
+   * 封闭运行环境的开关，每个页面只能运行一次
+   * 
+   * @method  sandbox
+   * @param   setting {Object}      系统环境配置
+   * @return  {Object/Boolean}      （修改后的）系统环境配置
+   */
+  sandbox: function( setting ) {
+    var result;
+    
+    if ( storage.sandboxStarted !== true ) {
+      // 返回值为修改后的系统环境配置
+      result = resetConfig(setting);
+
+      // 全局配置
+      // setup();
+      // DOM tree 构建前的函数队列
+      runHandler(storage.fn.prepare);
+      
+      // DOM tree 构建后的函数队列
+      $(document).ready(function() {
+        runHandler(storage.fn.ready);
+      });
+      
+      storage.sandboxStarted = true;
+    }
+    
+    return result || false;
+  },
+
+  /**
+   * DOM 未加载完时调用的处理函数
+   * 主要进行事件委派等与 DOM 加载进程无关的操作
+   *
+   * @method  prepare
+   * @param   handler {Function}
+   * @return
+   */
+  prepare: function( handler ) {
+    return pushHandler(handler, "prepare");
+  },
+
+  /**
+   * DOM 加载完成时调用的处理函数
+   *
+   * @method  ready
+   * @param   handler {Function}
+   * @return
+   */
+  ready: function( handler ) {
+    return pushHandler(handler, "ready");
+  },
+
+  /**
    * 设置初始化信息
    * 
    * @method  init
    * @return
    */
   init: function() {
-    return initialize.apply(window, [].slice.call(arguments, 0));
+    return initialize.apply(window, slicer(arguments));
   },
 
   /**
@@ -180,29 +240,6 @@ $.extend( _H, {
   config: function( key ) {
     return $.type(key) === "string" ? storage.config[key] : $.extend(true, {}, storage.config);
   },
-
-  /**
-   * 沙箱
-   * 
-   * @method  sandbox
-   * @param {Object} setting  系统环境配置
-   * @return  {Object}      （修改后的）系统环境配置
-   */
-  // sandbox: function( setting ) {
-  //   return _H.sandbox( setting );
-  // },
-  
-  /**
-   * 获取指定的内部数据载体
-   * 
-   * @method  storage
-   * @param {String} name   载体名称
-   * @param {Boolean} isCopy  是否返回副本
-   * @return  {Object}
-   */
-  // storage: function( name, isCopy ) {
-  //   return _H.getDataset( name, isCopy );
-  // },
 
   /**
    * Asynchronous JavaScript and XML
@@ -236,24 +273,24 @@ $.extend( _H, {
    * @method  queue
    * @return
    */
-  // queue: function() {
-  //   return _H.bindHandler.apply( _H, [].slice.call(arguments, 0) );
-  // },
+  queue: function() {
+    return bindHandler.apply(window, slicer(arguments));
+  },
   
   /**
    * 执行指定函数
    * 
    * @method  run
-   * @param {String} funcName 函数名
-   * @param {List}        函数的参数
-   * @return  {Variant}     函数执行的返回值
+   * @param   funcName {String}         函数名
+   * @param   [args, ...] {List}        函数的参数
+   * @return  {Variant}
    */
-  // run: function( funcName ) {
-  //   return _H.runHandler( funcName, [].slice.call(arguments, 1) );
-  // },
+  run: function( funcName ) {
+    return runHandler(funcName, slicer(arguments, 1));
+  },
 
   /**
-   * 获取 DOM 的「data-*」属性集
+   * 获取 DOM 的「data-*」属性集或存储数据到内部/从内部获取数据
    * 
    * @method  data
    * @return  {Object}
@@ -265,7 +302,16 @@ $.extend( _H, {
 
     if ( length > 0 ) {
       var target = args[0];
-      var node = $(target).get(0);
+      var node;
+
+      try {
+        // 当 target 是包含有 "@" 的字符串时会抛出异常。
+        // Error: Syntax error, unrecognized expression: @
+        node = $(target).get(0);
+      }
+      catch (e) {
+        node = target;
+      }
 
       // 获取 DOM 的「data-*」属性集
       if ( node && node.nodeType === ELEMENT_NODE ) {
@@ -428,16 +474,39 @@ $.extend( _H, {
     });
 
     return url;
-  }/*,
+  },
 
-  // 把全局事件添加到队列中
-  addGlobalEvent: function( event_name, handler ) {
-    if ( typeof event_name === "string" && $.isFunction(handler) ) {
-      if ( event_name === "mousemove" ) {
-        queue.events.globalMouseMove.push( handler );
-      }
+  /**
+   * Save web resource to local disk
+   *
+   * @method  download
+   * @param   fileURL {String}
+   * @param   fileName {String}
+   * @return
+   */
+  download: function( fileURL, fileName ) {
+    // for non-IE
+    if (!window.ActiveXObject) {
+      var save = document.createElement('a');
+
+      save.href = fileURL;
+      save.target = '_blank';
+      save.download = fileName || 'unknown';
+
+      var event = document.createEvent('Event');
+      event.initEvent('click', true, true);
+      save.dispatchEvent(event);
+      (window.URL || window.webkitURL).revokeObjectURL(save.href);
     }
-  }*/
+    // for IE
+    else if ( !! window.ActiveXObject && document.execCommand)     {
+      var _window = window.open(fileURL, '_blank');
+      
+      _window.document.close();
+      _window.document.execCommand('SaveAs', true, fileName || fileURL)
+      _window.close();
+    }
+  }
 });
 
 /**
@@ -455,6 +524,67 @@ function currentPath() {
   link.href = script.hasAttribute ? script.src : script.getAttribute("src", 4);
 
   return link.pathname.replace(/[^\/]+\.js$/i, "");
+}
+
+/**
+ * 切割 Array Like 片段
+ *
+ * @private
+ * @method  slicer
+ * @return
+ */
+function slicer( args, index ) {
+  return [].slice.call(args, (Number(index) || 0));
+}
+
+/**
+ * 全局配置
+ * 
+ * @private
+ * @method    setup
+ */
+function setup() {
+  // Ajax 全局配置
+  $.ajaxSetup({ type: "post", dataType: "json" });
+  
+  // Ajax 出错
+  $(document).ajaxError(function( event, jqXHR, ajaxSettings, thrownError ) {
+    var response = jqXHR.responseText;
+    
+    if ( response !== undefined ) {
+      // To do sth.
+    }
+    
+    return false;
+  });  
+  
+  // $( document ).bind({
+  //   "keypress": function( e ) {
+  //     var pointer = this;
+      
+  //     // 敲击回车键
+  //     if ( e.keyCode == 13 ) {
+  //       var CB_Enter = bindHandler( "CB_Enter" );
+  //       var dialogs = $(":ui-dialog:visible");
+        
+  //       // 有被打开的对话框
+  //       if ( dialogs.size() ) {
+  //         // 按 z-index 值从大到小排列对话框数组
+  //         [].sort.call(dialogs, function( a, b ) {
+  //           return $(b).closest(".ui-dialog").css("z-index") * 1 - $(a).closest(".ui-dialog").css("z-index") * 1;
+  //         });
+  //         // 触发对话框的确定/是按钮点击事件
+  //         $("[data-button-flag='ok'], [data-button-flag='yes']", $([].shift.call(dialogs)).closest(".ui-dialog")).each(function() {
+  //           $(this).trigger("click");
+  //           return false;
+  //         });
+  //       }
+  //       else if ( $.isFunction(CB_Enter) ) {
+  //         CB_Enter.call(pointer);
+  //       }
+  //     }
+  //   }
+  // });
 }
 
 /**
@@ -649,6 +779,123 @@ function systemDialogHandler( type, message, okHandler, cancelHandler ) {
 }
 
 /**
+ * 将处理函数绑定到内部命名空间
+ * 
+ * @private
+ * @method  bindHandler
+ * @return
+ */
+function bindHandler() {
+  var args = arguments;
+  var name = args[0];
+  var handler = args[1];
+  var fnList = storage.fn.handler;
+  
+  // 无参数时返回函数列表
+  if ( args.length === 0 ) {
+    handler = clone(fnList);
+  }
+  // 传入函数名
+  else if ( typeof name === "string" ) {
+    // 保存
+    if ( $.isFunction(handler) ) {
+      fnList[name] = handler;
+    }
+    // 获取
+    else {
+      handler = fnList[name];
+    }
+  }
+  // 传入函数列表
+  else if ( $.isPlainObject(name) ) {
+    $.each(name, function( funcName, func ) {
+      if ( $.isFunction(func) ) {
+        fnList[funcName] = func;
+      }
+    });
+  }
+  
+  return handler;
+}
+
+/**
+ * 执行指定函数
+ * 
+ * @private
+ * @method  runHandler
+ * @param   name {String}         函数名
+ * @param   [args, ...] {List}    函数的参数
+ * @return  {Variant}
+ */
+function runHandler( name ) {
+  var args = slicer(arguments, 1);
+  var func = storage.fn.handler[name];
+  var result;
+  
+  // 指定函数名时，从函数池里提取对应函数
+  if ( typeof(name) === "string" && $.isFunction(func) ) {
+    result = func.apply(window, args);
+  }
+  // 指定函数列表（数组）时
+  else if ( $.isArray(name) ) {
+    $.each(name, function( idx, func ) {
+      if ( $.isFunction(func) ) {
+        func.call(window);
+      }
+    });
+  }
+  
+  return result;
+}
+
+/**
+ * 将函数加到指定队列中
+ * 
+ * @private
+ * @method  pushHandler
+ * @param   handler {Function}    函数
+ * @param   queue {String}        队列名
+ */
+function pushHandler( handler, queue ) {
+  if ( $.isFunction(handler) ) {
+    storage.fn[queue].push(handler);
+  }
+}
+
+/**
+ * 重新配置系统参数
+ * 
+ * @private
+ * @method  resetConfig
+ * @param   setting {Object}      配置参数
+ * @return  {Object}              （修改后的）系统配置信息
+ */
+function resetConfig( setting ) {
+  return clone($.isPlainObject(setting) ? $.extend(storage.config, setting) : storage.config);
+}
+
+/**
+ * 克隆对象并返回副本
+ * 
+ * @private
+ * @method  clone
+ * @param   source {Object}       源对象，只能为数组或者纯对象
+ * @return  {Object}
+ */
+function clone( source ) {
+  var result = null;
+  
+  if ( $.isArray(source) || source.length !== undefined ) {
+    result = [].concat([], slicer(source));
+  }
+  else if ( $.isPlainObject(source) ) {
+    result = $.extend(true, {}, source)
+  }
+  
+  return result;
+}
+
+/**
  * 设置初始化函数
  * 
  * @private
@@ -719,7 +966,7 @@ function request( options, succeed, fail, synch ) {
   // synch 为 true 时是同步请求，其他情况则为异步请求
   options.async = synch === true ? false : true;
   
-  return $.ajax( options );
+  return $.ajax(options);
 }
 
 /**
@@ -788,16 +1035,6 @@ function getStorageData( ns_str ) {
 
   return result;
 }
-
-// if ( queue.events.globalMouseMove.length ) {
-//   $(document).bind({
-//     "mousemove": function( e ) {
-//       $.each( queue.events.globalMouseMove, function( idx, func ) {
-//         func.call(null, e);
-//       });
-//     }
-//   })
-// }
 
 window.Hanger = _H;
 
