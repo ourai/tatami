@@ -457,6 +457,8 @@ $.extend( _H, {
     return result || null;
   },
 
+  clear: function() {},
+
   url: function() {
     var loc = window.location;
     var url = {
