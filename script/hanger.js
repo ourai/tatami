@@ -832,7 +832,7 @@ function bindHandler() {
 function runHandler( name ) {
   var args = slicer(arguments, 1);
   var func = storage.fn.handler[name];
-  var result;
+  var result = null;
   
   // 指定函数名时，从函数池里提取对应函数
   if ( typeof(name) === "string" && $.isFunction(func) ) {
