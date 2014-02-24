@@ -517,7 +517,7 @@ $.extend( _H, {
    * @return  {Boolean}
    */
   functionExists: function( funcName, isWindow ) {
-    return isExisted((isWindow === true ? window : storage.fn.handler), funcName);
+    return isExisted((isWindow === true ? window : storage.fn.handler), funcName, "function");
   }
 });
 
@@ -1055,10 +1055,11 @@ function getStorageData( ns_str ) {
  * @method  isExisted
  * @param   host {Object}   A collection of properties
  * @param   prop {String}   The property to be determined
+ * @param   type {String}   
  * @return  {Boolean}
  */
-function isExisted( host, prop ) {
-  return $.type(host) === "object" && $.type(prop) === "string" && host.hasOwnProperty(prop);
+function isExisted( host, prop, type ) {
+  return $.type(host) === "object" && $.type(prop) === "string" && host.hasOwnProperty(prop) && $.type(host[prop]) === type;
 }
 
 window.Hanger = _H;
