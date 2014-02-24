@@ -281,12 +281,10 @@ $.extend( _H, {
    * 执行指定函数
    * 
    * @method  run
-   * @param   funcName {String}         函数名
-   * @param   [args, ...] {List}        函数的参数
    * @return  {Variant}
    */
-  run: function( funcName ) {
-    return runHandler(funcName, slicer(arguments, 1));
+  run: function() {
+    return runHandler.apply(window, slicer(arguments));
   },
 
   /**
