@@ -1055,7 +1055,7 @@ function getStorageData( ns_str ) {
  * @method  isExisted
  * @param   host {Object}   A collection of properties
  * @param   prop {String}   The property to be determined
- * @param   type {String}   
+ * @param   type {String}   Limits property's variable type
  * @return  {Boolean}
  */
 function isExisted( host, prop, type ) {
