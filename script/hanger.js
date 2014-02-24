@@ -506,6 +506,18 @@ $.extend( _H, {
       _window.document.execCommand('SaveAs', true, fileName || fileURL)
       _window.close();
     }
+  },
+
+  /**
+   * Determines whether a function has been defined
+   *
+   * @method  functionExists
+   * @param   funcName {String}
+   * @param   isWindow {Boolean}
+   * @return  {Boolean}
+   */
+  functionExists: function( funcName, isWindow ) {
+    return isExisted((isWindow === true ? window : storage.fn.handler), funcName);
   }
 });
 
@@ -1034,6 +1046,19 @@ function getStorageData( ns_str ) {
   });
 
   return result;
+}
+
+/**
+ * Determines whether a propery belongs an object
+ *
+ * @private
+ * @method  isExisted
+ * @param   host {Object}   A collection of properties
+ * @param   prop {String}   The property to be determined
+ * @return  {Boolean}
+ */
+function isExisted( host, prop ) {
+  return $.type(host) === "object" && $.type(prop) === "string" && host.hasOwnProperty(prop);
 }
 
 window.Hanger = _H;
