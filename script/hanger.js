@@ -32,6 +32,7 @@ var REG_NAMESPACE = /^[0-9A-Z_.]+[^_.]?$/i;
 // Main objects
 var _H = {};        // For internal usage
 
+// 内部数据载体
 var storage = {
   /**
    * 沙盒运行状态
@@ -118,6 +119,20 @@ var storage = {
         }
       }
     }
+  }
+};
+
+// 限制器
+var limiter = {
+  /**
+   * 键
+   *
+   * @property  key
+   * @type      {Object}
+   */
+  key: {
+    // 限制访问的 storage key 列表
+    storage: ["sandboxStarted", "config", "fn", "buffer", "pool", "i18n"]
   }
 };
 
@@ -378,7 +393,7 @@ $.extend( _H, {
       }
       // 取出并进行格式替换
       else if ( $.isPlainObject(data) ) {
-        result = getStorageData("i18n." + key);
+        result = getStorageData(("i18n." + key), true);
         result = (typeof result === "string" ? result : "").replace( /\{%\s*([A-Z0-9_]+)\s*%\}/ig, function( txt, k ) {
           return data[k];
         });
@@ -389,7 +404,7 @@ $.extend( _H, {
 
         $.each(args, function(i, txt) {
           if ( typeof txt === "string" && REG_NAMESPACE.test(txt) ) {
-            var r = getStorageData("i18n." + txt);
+            var r = getStorageData(("i18n." + txt), true);
 
             result += (typeof r === "string" ? r : "");
           }
@@ -1032,18 +1047,24 @@ function constructDatasetByAttributes( attributes ) {
  * @private
  * @method  getStorageData
  * @param   ns_str {String}   Namespace string
+ * @param   ignore {Boolean}  忽略对 storage key 的限制
  * @return  {String}
  */
-function getStorageData( ns_str ) {
-  var result = storage;
+function getStorageData( ns_str, ignore ) {
+  var result = null;
+  var parts = ns_str.split(".");
 
-  $.each(ns_str.split("."), function( idx, part ) {
-    var rv = result.hasOwnProperty(part);
+  if ( ignore || $.inArray(parts[0], limiter.key.storage) === -1 ) {
+    result = storage;
 
-    result = result[part];
+    $.each(parts, function( idx, part ) {
+      var rv = result.hasOwnProperty(part);
 
-    return rv;
-  });
+      result = result[part];
+
+      return rv;
+    });
+  }
 
   return result;
 }
