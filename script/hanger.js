@@ -1054,7 +1054,7 @@ function getStorageData( ns_str, ignore ) {
   var result = null;
   var parts = ns_str.split(".");
 
-  if ( ignore || $.inArray(parts[0], limiter.key.storage) === -1 ) {
+  if ( ignore || !isLimited(parts[0], limiter.key.storage) ) {
     result = storage;
 
     $.each(parts, function( idx, part ) {
@@ -1081,6 +1081,19 @@ function getStorageData( ns_str, ignore ) {
  */
 function isExisted( host, prop, type ) {
   return $.type(host) === "object" && $.type(prop) === "string" && host.hasOwnProperty(prop) && $.type(host[prop]) === type;
+}
+
+/**
+ * Determines whether a key in a limited key list
+ *
+ * @private
+ * @method  isLimited
+ * @param   key {String}   Key to be determined
+ * @param   list {Array}   Limited key list
+ * @return  {Boolean}
+ */
+function isLimited( key, list ) {
+  return $.inArray(key, list) > -1;
 }
 
 window.Hanger = _H;
