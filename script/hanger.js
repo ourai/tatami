@@ -1,5 +1,6 @@
 /*!
  * Hanger - Scaffolding of a project
+ *
  * by Ourai Lin, ourairyu@hotmail.coms
  *
  * Full source at https://github.com/ourai/hanger
@@ -136,7 +137,7 @@ var limiter = {
   }
 };
 
-$.extend( _H, {
+$.extend(_H, {
 /*
  * ======================================
  *  核心方法
@@ -1098,4 +1099,4 @@ function isLimited( key, list ) {
 
 window.Hanger = _H;
 
-})( window, window.jQuery );
+})( window, jQuery );
