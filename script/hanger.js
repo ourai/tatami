@@ -1059,7 +1059,7 @@ function getStorageData( ns_str, ignore ) {
 }
 
 /**
- * Set data from internal storage
+ * Set data into internal storage
  *
  * @private
  * @method  setStorageData
