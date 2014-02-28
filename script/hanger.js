@@ -522,6 +522,90 @@ $.extend(_H, {
    */
   functionExists: function( funcName, isWindow ) {
     return isExisted((isWindow === true ? window : storage.fn.handler), funcName, "function");
+  },
+
+  /**
+   * 用指定占位符填补字符串
+   * 
+   * @method  pad
+   * @param   string {String}         源字符串
+   * @param   length {Integer}        生成字符串的长度，正数为在后面补充，负数则在前面补充
+   * @param   placeholder {String}    占位符
+   * @return  {String}
+   */
+  pad: function( string, length, placeholder ) {
+    if ( $.type(string) in { "string": true, "number": true } ) {
+      // 占位符只能指定为一个字符
+      // 占位符默认为空格
+      if ( $.type(placeholder) !== "string" || placeholder.length !== 1 ) {
+        placeholder = "\x20";
+      }
+
+      // Set length to 0 if it isn't an integer.
+      if ( !($.isNumeric(length) && /^-?[1-9]\d*$/.test(length)) ) {
+        length = 0;
+      }
+
+      string = String(string);
+
+      var index = 1;
+      var unit = String(placeholder);
+      var len = Math.abs( length ) - string.length;
+
+      if ( len > 0 ) {
+        // 补全占位符
+        for ( ; index < len; index++ ) {
+          placeholder += unit
+        }
+
+        string = length > 0 ? string + placeholder : placeholder + string;
+      }
+    }
+
+    return string;
+  },
+
+  /**
+   * 补零（前导零）
+   * 
+   * @method  zerofill
+   * @param   number {Number}   源数字
+   * @param   digit {Integer}   数字位数，正数为在后面补充，负数则在前面补充
+   * @return  {String}
+   */
+  zerofill: function( number, digit ) {
+    var result = "";
+
+    if ( $.isNumeric(number) && $.isNumeric(digit) && /^-?[1-9]\d*$/.test(digit) ) {
+      var rfloat = /^([-+]?\d+)\.(\d+)$/;
+      var isFloat = rfloat.test(number);
+      var prefix = "";
+
+      digit = parseInt(digit);
+
+      // 浮点型数字时 digit 则为小数点后的位数
+      if ( digit > 0 && isFloat ) {
+        number = (number + "").match(rfloat);
+        prefix = number[1] * 1 + ".";
+        number = number[2];
+      }
+      // Negative number
+      else if ( number * 1 < 0 ) {
+        prefix = "-";
+        number = (number + "").substring(1);
+      }
+
+      result = this.pad(number, digit, "0");
+
+      if ( digit < 0 && isFloat ) {
+        result = "";
+      }
+      else {
+        result = prefix + result;
+      }
+    }
+
+    return result;
   }
 });
 
