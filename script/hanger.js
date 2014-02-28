@@ -344,22 +344,10 @@ $.extend(_H, {
       // 存储数据到内部/从内部获取数据
       else {
         if ( typeof target === "string" && REG_NAMESPACE.test(target) ) {
-          if ( length === 1 ) {
-            result = getStorageData(target);
-          }
-          else if ( $.isPlainObject(args[1]) ) {
-            if ( !storage.hasOwnProperty(target) ) {
-              storage[target] = args[1];
-            }
-            else {
-              $.extend(storage[target], args[1]);
-            }
-
-            result = args[1];
-          }
+          result = length === 1 ? getStorageData(target) : setStorageData(target, args[1]);
         }
         else {
-          $.each(args, function(i, n) {
+          $.each(args, function( i, n ) {
             $.extend(storage, n);
           });
         }
@@ -1043,7 +1031,7 @@ function constructDatasetByAttributes( attributes ) {
 }
 
 /**
- * Get data from internal storage.
+ * Get data from internal storage
  *
  * @private
  * @method  getStorageData
@@ -1052,8 +1040,8 @@ function constructDatasetByAttributes( attributes ) {
  * @return  {String}
  */
 function getStorageData( ns_str, ignore ) {
-  var result = null;
   var parts = ns_str.split(".");
+  var result = null;
 
   if ( ignore || !isLimited(parts[0], limiter.key.storage) ) {
     result = storage;
@@ -1068,6 +1056,57 @@ function getStorageData( ns_str, ignore ) {
   }
 
   return result;
+}
+
+/**
+ * Set data from internal storage
+ *
+ * @private
+ * @method  setStorageData
+ * @param   ns_str {String}   Namespace string
+ * @param   data {Variant}    
+ * @return  {Variant}
+ */
+function setStorageData( ns_str, data ) {
+  var parts = ns_str.split(".");
+  var length = parts.length;
+  var isObj = $.isPlainObject(data);
+  var result;
+
+  if ( length === 1 ) {
+    var key = parts[0];
+
+    result = setData(storage, key, data, storage.hasOwnProperty(key));
+  }
+  else {
+    result = storage;
+
+    $.each(parts, function( i, n ) {
+      if ( i < length - 1 ) {
+        if ( !result.hasOwnProperty(n) ) {
+          result[n] = {};
+        }
+      }
+      else {
+        result[n] = setData(result, n, data, $.isPlainObject(result[n]));
+      }
+
+      result = result[n];
+    });
+  }
+
+  return result;
+}
+
+function setData( target, key, data, condition ) {
+  if ( condition && $.isPlainObject(data) ) {
+    $.extend(true, target[key], data);
+  }
+  else {
+    target[key] = data;
+  }
+
+  return target[key];
 }
 
 /**
