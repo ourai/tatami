@@ -1,0 +1,19 @@
+{
+  "name": "hanger",
+  "version": "0.1.1-alpha",
+  "description": "JavaScript library for project",
+  "homepage": "http://ourai.github.io/hanger/",
+  "keywords": ["javascript", "library", "project", "jQuery", "jquery"],
+  "author": "Ourai Lin <ourairyu@hotmail.com> (http://ourai.ws/)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ourai/hanger.git"
+  },
+  "bugs": "https://github.com/ourai/hanger/issues",
+  "engines": "node >= 0.8.0",
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-coffee": "~0.10.1",
+    "grunt-contrib-uglify": "~0.4.0"
+  }
+}
