@@ -355,8 +355,8 @@ $.extend(_H, {
           result = length === 1 ? getStorageData(target) : setStorageData(target, args[1]);
 
           // 将访问的 key 锁住，在第一次设置之后无法再读写到内部
-          if ( length > 1 && args[length-1] === true ) {
-            limiter.key.storage.push(target.split(".")[0]);
+          if ( length > 1 && last(args) === true ) {
+            limit(target.split(".")[0]);
           }
         }
         // 有可能覆盖被禁止存取的内部 key，暂时不允许批量添加
@@ -677,8 +677,7 @@ $.extend(_H, {
  * @return  {String}
  */
 function currentPath() {
-  var scripts = document.scripts;
-  var script = scripts[scripts.length - 1];
+  var script = last(document.scripts);
   var link = document.createElement("a");
 
   link.href = script.hasAttribute ? script.src : script.getAttribute("src", 4);
@@ -695,6 +694,17 @@ function currentPath() {
  */
 function slicer( args, index ) {
   return [].slice.call(args, (Number(index) || 0));
+}
+
+/**
+ * 取得数组或类数组对象中最后一个元素
+ *
+ * @private
+ * @method  last
+ * @return
+ */
+function last( array ) {
+  return slicer(array, -1)[0];
 }
 
 /**
@@ -1278,6 +1288,18 @@ function isExisted( host, prop, type ) {
  */
 function isLimited( key, list ) {
   return $.inArray(key, list) > -1;
+}
+
+/**
+ * 添加到内部存储对象的访问 key 限制列表中
+ *
+ * @private
+ * @method  limit
+ * @param   key {String}  Key to be limited
+ * @return
+ */
+function limit( key ) {
+  limiter.key.storage.push(key);
 }
 
 window.Hanger = _H;
