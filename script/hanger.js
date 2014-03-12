@@ -120,7 +120,15 @@ var storage = {
         }
       }
     }
-  }
+  },
+
+  /**
+   * Web API
+   *
+   * @property  api
+   * @type      {Object}
+   */
+  web_api: {}
 };
 
 // 限制器
@@ -133,7 +141,7 @@ var limiter = {
    */
   key: {
     // 限制访问的 storage key 列表
-    storage: ["sandboxStarted", "config", "fn", "buffer", "pool", "i18n"]
+    storage: ["sandboxStarted", "config", "fn", "buffer", "pool", "i18n", "web_api"]
   }
 };
 
@@ -345,12 +353,18 @@ $.extend(_H, {
       else {
         if ( typeof target === "string" && REG_NAMESPACE.test(target) ) {
           result = length === 1 ? getStorageData(target) : setStorageData(target, args[1]);
+
+          // 将访问的 key 锁住，在第一次设置之后无法再读写到内部
+          if ( length > 1 && args[length-1] === true ) {
+            limiter.key.storage.push(target.split(".")[0]);
+          }
         }
-        else {
-          $.each(args, function( i, n ) {
-            $.extend(storage, n);
-          });
-        }
+        // 有可能覆盖被禁止存取的内部 key，暂时不允许批量添加
+        // else {
+        //   $.each(args, function( i, n ) {
+        //     $.extend(storage, n);
+        //   });
+        // }
       }
     }
 
@@ -397,6 +411,52 @@ $.extend(_H, {
 
             result += (typeof r === "string" ? r : "");
           }
+        });
+      }
+    }
+
+    return result;
+  },
+
+  /**
+   * 设置及获取 Web API
+   * 
+   * @method  api
+   * @return  {String}
+   */
+  api: function() {
+    var args = arguments;
+    var key = args[0];
+    var result = null;
+
+    if ( $.isPlainObject(key) ) {
+      $.extend(storage.web_api, key);
+    }
+    else if ( $.type(key) === "string" ) {
+      var regexp = /^([a-z]+)_/;
+      var match = (key.match(regexp) || [])[1];
+      var data = args[1];
+      var type;
+
+      $.each(["front", "admin"], function( i, n ) {
+        if ( match === n ) {
+          type = n;
+          return false;
+        }
+      })
+
+      if ( type ) {
+        key = key.replace(regexp, "");
+      }
+      else {
+        type = "common";
+      }
+
+      result = getStorageData(("web_api." + type + "." + key), true);
+
+      if ( $.isPlainObject(data) ) {
+        result = result.replace(/\:([a-z_]+)/g, function( m, k ) {
+          return data[k];
         });
       }
     }
