@@ -1,5 +1,5 @@
 /*!
- * Hanger - Scaffolding of a project
+ * Hanger
  *
  * by Ourai Lin, ourairyu@hotmail.com
  *
