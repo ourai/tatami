@@ -9,7 +9,7 @@ module.exports = function( grunt ) {
         expand: true,
         cwd: "src/",
         src: ["**/*.coffee"],
-        dest: "build/",
+        dest: "dest/",
         ext: ".js"
       }
     },
@@ -18,11 +18,8 @@ module.exports = function( grunt ) {
         banner: "/*! <%= pkg.name %> <%= grunt.template.today('yyyy-mm-dd') %> */\n"
       },
       build: {
-        expand: true,
-        cwd: "build/",
-        src: ["**/*.js", "!**/*.min.js"],
-        dest: "build/",
-        ext: ".min.js"
+        src: "dest/<%= pkg.name %>.js",
+        dest: "dest/<%= pkg.name %>.min.js"
       }
     }
   });
