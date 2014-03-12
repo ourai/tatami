@@ -52,6 +52,7 @@ var storage = {
   config: {
     debug: true,
     platform: "",
+    api: "",  // Web API 版本
     lang: (document.documentElement.lang ||
       document.documentElement.getAttribute("lang") ||
       navigator.language ||
@@ -72,7 +73,39 @@ var storage = {
     ready: [],
     // 初始化函数
     init: {
-      systemDialog: function() {}
+      // 系统对话框创建后
+      systemDialog: function() {},
+      // Ajax 请求
+      ajaxHandler: function( succeed, fail ) {
+        return {
+          // 状态码为 200
+          success: function( data, textStatus, jqXHR ) {
+            /**
+             * 服务端在返回请求结果时必须是个 JSON，如下：
+             *    {
+             *      "code": {Integer}       // 处理结果代码，code > 0 为成功，否则为失败
+             *      "message": {String}     // 请求失败时的提示信息
+             *    }
+             */
+            if ( data.code > 0 ) {
+              if ( $.isFunction(succeed) ) {
+                succeed.call($, data, textStatus, jqXHR);
+              }
+            }
+            else {
+              if ( $.isFunction(fail) ) {
+                fail.call($, data, textStatus, jqXHR);
+              }
+              // 默认弹出警告对话框
+              else {
+                systemDialog("alert", data.message);
+              }
+            }
+          },
+          // 状态码为非 200
+          error: $.noop
+        };
+      }
     },
     handler: {}
   },
@@ -452,7 +485,16 @@ $.extend(_H, {
         type = "common";
       }
 
-      result = getStorageData(("web_api." + type + "." + key), true);
+      var api_ver = this.config("api");
+
+      if ( $.type(api_ver) === "string" && $.trim(api_ver) !== "" ) {
+        api_ver = "/" + api_ver;
+      }
+      else {
+        api_ver = "";
+      }
+
+      result = api_ver + getStorageData(("web_api." + type + "." + key), true);
 
       if ( $.isPlainObject(data) ) {
         result = result.replace(/\:([a-z_]+)/g, function( m, k ) {
@@ -790,7 +832,7 @@ function systemDialog( type, message, okHandler, cancelHandler ) {
           .appendTo($("body"))
           .on({
               // 初始化后的额外处理
-              "dialogcreate": storage.fn.init.systemDialog,
+              "dialogcreate": initializer("systemDialog"),
               // 为按钮添加标记
               "dialogopen": function( e, ui ) {
                 $(".ui-dialog-buttonset .ui-button", $(this).closest(".ui-dialog")).each(function() {
@@ -1086,13 +1128,18 @@ function initialize() {
 }
 
 /**
+ * 获取初始化函数
+ * 
+ * @private
+ * @method  initializer
+ * @return  {Function}
+ */
+function initializer( key ) {
+  return storage.fn.init[key];
+}
+
+/**
  * AJAX & SJAX 请求处理
- *
- * 服务端在返回请求结果时必须是个 JSON，如下：
- *    {
- *      "code": {Integer}       // 处理结果代码，code > 0 为成功，否则为失败
- *      "message": {String}     // 请求失败时的提示信息
- *    }
  * 
  * @private
  * @method  request
@@ -1112,31 +1159,18 @@ function request( options, succeed, fail, synch ) {
   if ( $.isPlainObject( options ) === false ) {
     options = { url: options };
   }
-  
-  // 没指定 Ajax 成功回调函数时
-  if ( $.isFunction(options.success) === false ) {
-    options.success = function( data, textStatus, jqXHR ) {
-      if ( data.code > 0 ) {
-        if ( $.isFunction(succeed) ) {
-          succeed.call($, data, textStatus, jqXHR);
-        }
-      }
-      else {
-        if ( $.isFunction(fail) ) {
-          fail.call($, data, textStatus, jqXHR);
-        }
-        // 默认弹出警告对话框
-        else {
-          systemDialog("alert", data.message);
-        }
-      }
-    };
+
+  var handlers = initializer("ajaxHandler")(succeed, fail);
+
+  if ( !$.isFunction(options.success) ) {
+    options.success = handlers.success;
   }
-  
-  // synch 为 true 时是同步请求，其他情况则为异步请求
-  options.async = synch === true ? false : true;
-  
-  return $.ajax(options);
+
+  if ( !$.isFunction(options.error) ) {
+    options.error = handlers.error;
+  }
+
+  return $.ajax($.extend(options, { async: synch !== true }));
 }
 
 /**
