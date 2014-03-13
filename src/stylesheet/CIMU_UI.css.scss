@@ -1,9 +1,0 @@
-@charset "UTF-8";
-
-
-
-/* --- Drag and Drop --- */
-
-[data-draggable="true"] { position: relative; }
-.dragging { background-color: #F5F5F5; left: 0; right: 0; }
-.drag-placeholder { border-style: dashed !important; }
