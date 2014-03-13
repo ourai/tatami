@@ -2,6 +2,11 @@
   "use strict";
   var ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, LIB_CONFIG, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, TEXT_NODE, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, currentPath, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, request, resetConfig, runHandler, setData, setStorageData, setup, slicer, storage, support, systemDialog, systemDialogHandler, _H;
 
+  LIB_CONFIG = {
+    name: "Hanger",
+    version: "<%= pkg.version %>"
+  };
+
   ELEMENT_NODE = 1;
 
   ATTRIBUTE_NODE = 2;
@@ -28,15 +33,23 @@
 
   REG_NAMESPACE = /^[0-9A-Z_.]+[^_.]?$/i;
 
-  LIB_CONFIG = {
-    name: "Hanger",
-    version: "@VERSION"
-  };
-
   _H = {};
 
   support = {
     storage: !!window.localStorage
+  };
+
+  limiter = {
+
+    /*
+     * 键
+     *
+     * @property  key
+     * @type      {Object}
+     */
+    key: {
+      storage: ["sandboxStarted", "config", "fn", "buffer", "pool", "i18n", "web_api"]
+    }
   };
 
 
@@ -740,19 +753,6 @@
      * @type      {Object}
      */
     web_api: {}
-  };
-
-  limiter = {
-
-    /*
-     * 键
-     *
-     * @property  key
-     * @type      {Object}
-     */
-    key: {
-      storage: ["sandboxStarted", "config", "fn", "buffer", "pool", "i18n", "web_api"]
-    }
   };
 
   $.extend(_H, {
