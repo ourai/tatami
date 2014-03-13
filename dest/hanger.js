@@ -1,6 +1,6 @@
 (function() {
   "use strict";
-  var ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, TEXT_NODE, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, currentPath, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, ls, pushHandler, request, resetConfig, runHandle, setData, setStorageData, setup, slicer, storage, systemDialog, systemDialogHandler, _H;
+  var ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, LIB_CONFIG, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, TEXT_NODE, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, currentPath, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, request, resetConfig, runHandler, setData, setStorageData, setup, slicer, storage, support, systemDialog, systemDialogHandler, _H;
 
   ELEMENT_NODE = 1;
 
@@ -26,11 +26,600 @@
 
   NOTATION_NODE = 12;
 
-  ls = window.localStorage;
-
   REG_NAMESPACE = /^[0-9A-Z_.]+[^_.]?$/i;
 
+  LIB_CONFIG = {
+    name: "Hanger",
+    version: "@VERSION"
+  };
+
   _H = {};
+
+  support = {
+    storage: !!window.localStorage
+  };
+
+
+  /*
+   * 获取当前脚本所在目录路径
+   * 
+   * @private
+   * @method  currentPath
+   * @return  {String}
+   */
+
+  currentPath = function() {
+    var link, script;
+    script = last(document.scripts);
+    link = document.createElement("a");
+    link.href = script.hasAttribute ? script.src : script.getAttribute("src", 4);
+    return link.pathname.replace(/[^\/]+\.js$/i, "");
+  };
+
+
+  /*
+   * 切割 Array Like 片段
+   *
+   * @private
+   * @method  slicer
+   * @return
+   */
+
+  slicer = function(args, index) {
+    return [].slice.call(args, Number(index) || 0);
+  };
+
+
+  /*
+   * 取得数组或类数组对象中最后一个元素
+   *
+   * @private
+   * @method  last
+   * @return
+   */
+
+  last = function(array) {
+    return slicer(array, -1)[0];
+  };
+
+
+  /*
+   * 全局配置
+   * 
+   * @private
+   * @method    setup
+   */
+
+  setup = function() {
+    $.ajaxSetup({
+      type: "post",
+      dataType: "json"
+    });
+    return $(document).ajaxError(function(event, jqXHR, ajaxSettings, thrownError) {
+      var response;
+      response = jqXHR.responseText;
+      return false;
+    });
+  };
+
+
+  /*
+   * 生成自定义系统对话框
+   * 
+   * @private
+   * @method  systemDialog
+   * @param   type {String}
+   * @param   message {String}
+   * @param   okHandler {Function}
+   * @param   cancelHandler {Function}
+   * @return  {Boolean}
+   */
+
+  systemDialog = function(type, message, okHandler, cancelHandler) {
+    var dlg, i18nText, poolName, result;
+    result = false;
+    if ($.type(type) === "string") {
+      type = type.toLowerCase();
+      if ($.isFunction($.fn.dialog)) {
+        poolName = "systemDialog";
+        i18nText = storage.i18n._SYS.dialog[_H.config("lang")];
+        if (!storage.pool.hasOwnProperty(poolName)) {
+          storage.pool[poolName] = {};
+        }
+        dlg = storage.pool[poolName][type];
+        if (!dlg) {
+          dlg = $("<div data-role=\"dialog\" data-type=\"system\" />").appendTo($("body")).on({
+            dialogcreate: initializer("systemDialog"),
+            dialogopen: function(e, ui) {
+              return $(".ui-dialog-buttonset .ui-button", $(this).closest(".ui-dialog")).each(function() {
+                var btn;
+                btn = $(this);
+                switch ($.trim(btn.text())) {
+                  case i18nText.ok:
+                    type = "ok";
+                    break;
+                  case i18nText.cancel:
+                    type = "cancel";
+                    break;
+                  case i18nText.yes:
+                    type = "yes";
+                    break;
+                  case i18nText.no:
+                    type = "no";
+                }
+                return btn.addClass("ui-button-" + type);
+              });
+            }
+          }).dialog({
+            title: i18nText.title,
+            width: 400,
+            minHeight: 100,
+            closeText: i18nText.close,
+            modal: true,
+            autoOpen: false,
+            resizable: false,
+            closeOnEscape: false
+          });
+          storage.pool[poolName][type] = dlg;
+          dlg.closest(".ui-dialog").find(".ui-dialog-titlebar-close").remove();
+        }
+        result = systemDialogHandler(type, message, okHandler, cancelHandler);
+      } else {
+        result = true;
+        if (type === "alert") {
+          window.alert(message);
+        } else {
+          if (window.confirm(message)) {
+            if ($.isFunction(okHandler)) {
+              okHandler();
+            }
+          } else {
+            if ($.isFunction(cancelHandler)) {
+              cancelHandler();
+            }
+          }
+        }
+      }
+    }
+    return result;
+  };
+
+
+  /*
+   * 系统对话框的提示信息以及按钮处理
+   * 
+   * @private
+   * @method  systemDialogHandler
+   * @param   type {String}             对话框类型
+   * @param   message {String}          提示信息内容
+   * @param   okHandler {Function}      确定按钮
+   * @param   cancelHandler {Function}  取消按钮
+   * @return
+   */
+
+  systemDialogHandler = function(type, message, okHandler, cancelHandler) {
+    var btnText, btns, dlg, dlgContent, handler, i18nText;
+    i18nText = storage.i18n._SYS.dialog[_H.config("lang")];
+    handler = function(cb, rv) {
+      $(this).dialog("close");
+      if ($.isFunction(cb)) {
+        cb();
+      }
+      return rv;
+    };
+    btns = [];
+    btnText = {
+      ok: i18nText.ok,
+      cancel: i18nText.cancel,
+      yes: i18nText.yes,
+      no: i18nText.no
+    };
+    dlg = storage.pool.systemDialog[type];
+    dlgContent = $("[data-role='dialog-content']", dlg);
+    if (dlgContent.size() === 0) {
+      dlgContent = dlg;
+    }
+    if (type === "confirm") {
+      btns.push({
+        text: btnText.ok,
+        click: function() {
+          handler.apply(this, [okHandler, true]);
+          return true;
+        }
+      });
+      btns.push({
+        text: btnText.cancel,
+        click: function() {
+          handler.apply(this, [cancelHandler, false]);
+          return true;
+        }
+      });
+    } else if (type === "confirmex") {
+      btns.push({
+        text: btnText.yes,
+        click: function() {
+          handler.apply(this, [okHandler, true]);
+          return true;
+        }
+      });
+      btns.push({
+        text: btnText.no,
+        click: function() {
+          handler.apply(this, [cancelHandler, false]);
+          return true;
+        }
+      });
+      btns.push({
+        text: btnText.cancel,
+        click: function() {
+          handler.apply(this, [null, false]);
+          return true;
+        }
+      });
+    } else {
+      type = "alert";
+      if (okHandler !== null) {
+        btns.push({
+          text: btnText.ok,
+          click: function() {
+            handler.apply(this, [okHandler, true]);
+            return true;
+          }
+        });
+      } else {
+        btns = null;
+      }
+    }
+    dlgContent.html(message || "");
+    return dlg.dialog("option", "buttons", btns).dialog("open");
+  };
+
+
+  /*
+   * 将处理函数绑定到内部命名空间
+   * 
+   * @private
+   * @method  bindHandler
+   * @return
+   */
+
+  bindHandler = function() {
+    var args, fnList, func, funcName, handler, name;
+    args = arguments;
+    name = args[0];
+    handler = args[1];
+    fnList = storage.fn.handler;
+    if (args.length === 0) {
+      handler = clone(fnList);
+    } else if (typeof name === "string") {
+      if ($.isFunction(handler)) {
+        fnList[name] = handler;
+      } else {
+        handler = fnList[name];
+      }
+    } else if ($.isPlainObject(name)) {
+      for (funcName in name) {
+        func = name[funcName];
+        if ($.isFunction(func)) {
+          fnList[funcName] = func;
+        }
+      }
+    }
+    return handler;
+  };
+
+
+  /*
+   * 执行指定函数
+   * 
+   * @private
+   * @method  runHandler
+   * @param   name {String}         函数名
+   * @param   [args, ...] {List}    函数的参数
+   * @return  {Variant}
+   */
+
+  runHandler = function(name) {
+    var args, func, result, _i, _len;
+    args = slicer(arguments, 1);
+    func = storage.fn.handler[name];
+    result = null;
+    if (typeof name === "string" && $.isFunction(func)) {
+      result = func.apply(window, args);
+    } else if ($.isArray(name)) {
+      for (_i = 0, _len = name.length; _i < _len; _i++) {
+        func = name[_i];
+        if ($.isFunction(func)) {
+          func.call(window);
+        }
+      }
+    }
+    return result;
+  };
+
+
+  /*
+   * 将函数加到指定队列中
+   * 
+   * @private
+   * @method  pushHandler
+   * @param   handler {Function}    函数
+   * @param   queue {String}        队列名
+   */
+
+  pushHandler = function(handler, queue) {
+    if ($.isFunction(handler)) {
+      return storage.fn[queue].push(handler);
+    }
+  };
+
+
+  /*
+   * 重新配置系统参数
+   * 
+   * @private
+   * @method  resetConfig
+   * @param   setting {Object}      配置参数
+   * @return  {Object}              （修改后的）系统配置信息
+   */
+
+  resetConfig = function(setting) {
+    return clone($.isPlainObject(setting) ? $.extend(storage.config, setting) : storage.config);
+  };
+
+
+  /*
+   * 克隆对象并返回副本
+   * 
+   * @private
+   * @method  clone
+   * @param   source {Object}       源对象，只能为数组或者纯对象
+   * @return  {Object}
+   */
+
+  clone = function(source) {
+    var result;
+    result = null;
+    if ($.isArray(source) || source.length !== void 0) {
+      result = [].concat([], slicer(source));
+    } else if ($.isPlainObject(source)) {
+      result = $.extend(true, {}, source);
+    }
+    return result;
+  };
+
+
+  /*
+   * 设置初始化函数
+   * 
+   * @private
+   * @method  initialize
+   * @return
+   */
+
+  initialize = function() {
+    var args, func, key;
+    args = arguments;
+    key = args[0];
+    func = args[1];
+    if ($.isPlainObject(key)) {
+      return $.each(key, initialize);
+    } else if ($.type(key) === "string" && storage.fn.init.hasOwnProperty(key) && $.isFunction(func)) {
+      return storage.fn.init[key] = func;
+    }
+  };
+
+
+  /*
+   * 获取初始化函数
+   * 
+   * @private
+   * @method  initializer
+   * @return  {Function}
+   */
+
+  initializer = function(key) {
+    return storage.fn.init[key];
+  };
+
+
+  /*
+   * AJAX & SJAX 请求处理
+   * 
+   * @private
+   * @method  request
+   * @param   options {Object/String}   请求参数列表/请求地址
+   * @param   succeed {Function}        请求成功时的回调函数（）
+   * @param   fail {Function}           请求失败时的回调函数（code <= 0）
+   * @param   synch {Boolean}           是否为同步，默认为异步
+   * @return  {Object}
+   */
+
+  request = function(options, succeed, fail, synch) {
+    var handlers;
+    if (arguments.length === 0) {
+      return;
+    }
+    if ($.isPlainObject(options) === false) {
+      options = {
+        url: options
+      };
+    }
+    handlers = initializer("ajaxHandler")(succeed, fail);
+    if (!$.isFunction(options.success)) {
+      options.success = handlers.success;
+    }
+    if (!$.isFunction(options.error)) {
+      options.error = handlers.error;
+    }
+    return $.ajax($.extend(options, {
+      async: synch !== true
+    }));
+  };
+
+
+  /*
+   * 通过 HTML 构建 dataset
+   * 
+   * @private
+   * @method  constructDatasetByHTML
+   * @param   html {HTML}   Node's outer html string
+   * @return  {JSON}
+   */
+
+  constructDatasetByHTML = function(html) {
+    var dataset, fragment;
+    dataset = {};
+    fragment = html.match(/<[a-z]+[^>]*>/i);
+    if (fragment !== null) {
+      $.each(fragment[0].match(/(data(-[a-z]+)+=[^\s>]*)/ig) || [], function(idx, attr) {
+        attr = attr.match(/data-(.*)="([^\s"]*)"/i);
+        dataset[$.camelCase(attr[1])] = attr[2];
+        return true;
+      });
+    }
+    return dataset;
+  };
+
+
+  /*
+   * 通过属性列表构建 dataset
+   * 
+   * @private
+   * @method  constructDatasetByAttributes
+   * @param   attributes {NodeList}   Attribute node list
+   * @return  {JSON}
+   */
+
+  constructDatasetByAttributes = function(attributes) {
+    var dataset;
+    dataset = {};
+    $.each(attributes, function(idx, attr) {
+      var match;
+      if (attr.nodeType === ATTRIBUTE_NODE && (match = attr.nodeName.match(/^data-(.*)$/i))) {
+        dataset[$.camelCase(match(1))] = attr.nodeValue;
+      }
+      return true;
+    });
+    return dataset;
+  };
+
+
+  /*
+   * Get data from internal storage
+   *
+   * @private
+   * @method  getStorageData
+   * @param   ns_str {String}   Namespace string
+   * @param   ignore {Boolean}  忽略对 storage key 的限制
+   * @return  {String}
+   */
+
+  getStorageData = function(ns_str, ignore) {
+    var parts, result;
+    parts = ns_str.split(".");
+    result = null;
+    if (ignore || !isLimited(parts[0], limiter.key.storage)) {
+      result = storage;
+      $.each(parts, function(idx, part) {
+        var rv;
+        rv = result.hasOwnProperty(part);
+        result = result[part];
+        return rv;
+      });
+    }
+    return result;
+  };
+
+
+  /*
+   * Set data into internal storage
+   *
+   * @private
+   * @method  setStorageData
+   * @param   ns_str {String}   Namespace string
+   * @param   data {Variant}    
+   * @return  {Variant}
+   */
+
+  setStorageData = function(ns_str, data) {
+    var isObj, key, length, parts, result;
+    parts = ns_str.split(".");
+    length = parts.length;
+    isObj = $.isPlainObject(data);
+    if (length === 1) {
+      key = parts[0];
+      result = setData(storage, key, data, storage.hasOwnProperty(key));
+    } else {
+      result = storage;
+      $.each(parts, function(i, n) {
+        if (i < length - 1) {
+          if (!result.hasOwnProperty(n)) {
+            result[n] = {};
+          }
+        } else {
+          result[n] = setData(result, n, data, $.isPlainObject(result[n]));
+        }
+        result = result[n];
+        return true;
+      });
+    }
+    return result;
+  };
+
+  setData = function(target, key, data, condition) {
+    if (condition && $.isPlainObject(data)) {
+      $.extend(true, target[key], data);
+    } else {
+      target[key] = data;
+    }
+    return target[key];
+  };
+
+
+  /*
+   * Determines whether a propery belongs an object
+   *
+   * @private
+   * @method  isExisted
+   * @param   host {Object}   A collection of properties
+   * @param   prop {String}   The property to be determined
+   * @param   type {String}   Limits property's variable type
+   * @return  {Boolean}
+   */
+
+  isExisted = function(host, prop, type) {
+    return $.type(host) === "object" && $.type(prop) === "string" && host.hasOwnProperty(prop) && $.type(host[prop]) === type;
+  };
+
+
+  /*
+   * Determines whether a key in a limited key list
+   *
+   * @private
+   * @method  isLimited
+   * @param   key {String}   Key to be determined
+   * @param   list {Array}   Limited key list
+   * @return  {Boolean}
+   */
+
+  isLimited = function(key, list) {
+    return $.inArray(key, list) > -1;
+  };
+
+
+  /*
+   * 添加到内部存储对象的访问 key 限制列表中
+   *
+   * @private
+   * @method  limit
+   * @param   key {String}  Key to be limited
+   * @return
+   */
+
+  limit = function(key) {
+    return limiter.key.storage.push(key);
+  };
 
   storage = {
 
@@ -173,6 +762,24 @@
      *  核心方法
      * ======================================
      */
+
+    /*
+     * 更改 LIB_CONFIG.name 以适应项目「本土化」
+     * 
+     * @method   mask
+     * @param    guise {String}    New name for library
+     * @return   {Boolean}
+     */
+    mask: function(guise) {
+      var result;
+      result = false;
+      if ($.type(guise) === "string" && !window.hasOwnProperty(guise)) {
+        window[guise] = window[LIB_CONFIG.name];
+        result = delete window[LIB_CONFIG.name];
+        LIB_CONFIG.name = guise;
+      }
+      return result;
+    },
 
     /*
      * 自定义警告提示框
@@ -456,10 +1063,10 @@
       args = arguments;
       key = args[0];
       val = args[1];
-      if (ls) {
+      if (support.storage) {
         if (typeof key === "string") {
           oldVal = this.access(key);
-          return ls.setItem(key, escape($.isPlainObject(oldVal) ? JSON.stringify($.extend(oldVal, val)) : val));
+          return localStorage.setItem(key, escape($.isPlainObject(oldVal) ? JSON.stringify($.extend(oldVal, val)) : val));
         }
       }
     },
@@ -471,8 +1078,8 @@
       var error, key, result;
       key = arguments[0];
       if (typeof key === "string") {
-        if (ls) {
-          result = ls.getItem(key);
+        if (support.storage) {
+          result = localStorage.getItem(key);
           if (result !== null) {
             result = unescape(result);
             try {
@@ -613,586 +1220,6 @@
     }
   });
 
-
-  /*
-   * 获取当前脚本所在目录路径
-   * 
-   * @private
-   * @method  currentPath
-   * @return  {String}
-   */
-
-  currentPath = function() {
-    var link, script;
-    script = last(document.scripts);
-    link = document.createElement("a");
-    link.href = script.hasAttribute ? script.src : script.getAttribute("src", 4);
-    return link.pathname.replace(/[^\/]+\.js$/i, "");
-  };
-
-
-  /*
-   * 切割 Array Like 片段
-   *
-   * @private
-   * @method  slicer
-   * @return
-   */
-
-  slicer = function(args, index) {
-    return [].slice.call(args, Number(index) || 0);
-  };
-
-
-  /*
-   * 取得数组或类数组对象中最后一个元素
-   *
-   * @private
-   * @method  last
-   * @return
-   */
-
-  last = function(array) {
-    return slicer(array, -1)[0];
-  };
-
-
-  /*
-   * 全局配置
-   * 
-   * @private
-   * @method    setup
-   */
-
-  setup = function() {
-    $.ajaxSetup({
-      type: "post",
-      dataType: "json"
-    });
-    return $(document).ajaxError(function(event, jqXHR, ajaxSettings, thrownError) {
-      var response;
-      response = jqXHR.responseText;
-      return false;
-    });
-  };
-
-
-  /*
-   * 生成自定义系统对话框
-   * 
-   * @private
-   * @method  systemDialog
-   * @param   type {String}
-   * @param   message {String}
-   * @param   okHandler {Function}
-   * @param   cancelHandler {Function}
-   * @return  {Boolean}
-   */
-
-  systemDialog = function(type, message, okHandler, cancelHandler) {
-    var dlg, i18nText, poolName, result;
-    result = false;
-    if ($.type(type) === "string") {
-      type = type.toLowerCase();
-      if ($.isFunction($.fn.dialog)) {
-        poolName = "systemDialog";
-        i18nText = storage.i18n._SYS.dialog[_H.config("lang")];
-        if (!storage.pool.hasOwnProperty(poolName)) {
-          storage.pool[poolName] = {};
-        }
-        dlg = storage.pool[poolName][type];
-        if (!dlg) {
-          dlg = $("<div data-role=\"dialog\" data-type=\"system\" />").appendTo($("body")).on({
-            dialogcreate: initializer("systemDialog"),
-            dialogopen: function(e, ui) {
-              return $(".ui-dialog-buttonset .ui-button", $(this).closest(".ui-dialog")).each(function() {
-                var btn;
-                btn = $(this);
-                switch ($.trim(btn.text())) {
-                  case i18nText.ok:
-                    type = "ok";
-                    break;
-                  case i18nText.cancel:
-                    type = "cancel";
-                    break;
-                  case i18nText.yes:
-                    type = "yes";
-                    break;
-                  case i18nText.no:
-                    type = "no";
-                }
-                return btn.addClass("ui-button-" + type);
-              });
-            }
-          }).dialog({
-            title: i18nText.title,
-            width: 400,
-            minHeight: 100,
-            closeText: i18nText.close,
-            modal: true,
-            autoOpen: false,
-            resizable: false,
-            closeOnEscape: false
-          });
-          storage.pool[poolName][type] = dlg;
-          dlg.closest(".ui-dialog").find(".ui-dialog-titlebar-close").remove();
-        }
-        result = systemDialogHandler(type, message, okHandler, cancelHandler);
-      } else {
-        result = true;
-        if (type === "alert") {
-          window.alert(message);
-        } else {
-          if (window.confirm(message)) {
-            if ($.isFunction(okHandler)) {
-              okHandler();
-            }
-          } else {
-            if ($.isFunction(cancelHandler)) {
-              cancelHandler();
-            }
-          }
-        }
-      }
-    }
-    return result;
-  };
-
-
-  /*
-   * 系统对话框的提示信息以及按钮处理
-   * 
-   * @private
-   * @method  systemDialogHandler
-   * @param   type {String}             对话框类型
-   * @param   message {String}          提示信息内容
-   * @param   okHandler {Function}      确定按钮
-   * @param   cancelHandler {Function}  取消按钮
-   * @return
-   */
-
-  systemDialogHandler = function(type, message, okHandler, cancelHandler) {
-    var btnText, btns, dlg, dlgContent, handler, i18nText;
-    i18nText = storage.i18n._SYS.dialog[_H.config("lang")];
-    handler = function(cb, rv) {
-      $(this).dialog("close");
-      if ($.isFunction(cb)) {
-        cb();
-      }
-      return rv;
-    };
-    btns = [];
-    btnText = {
-      ok: i18nText.ok,
-      cancel: i18nText.cancel,
-      yes: i18nText.yes,
-      no: i18nText.no
-    };
-    dlg = storage.pool.systemDialog[type];
-    dlgContent = $("[data-role='dialog-content']", dlg);
-    if (dlgContent.size() === 0) {
-      dlgContent = dlg;
-    }
-    if (type === "confirm") {
-      btns.push({
-        text: btnText.ok,
-        click: function() {
-          handler.apply(this, [okHandler, true]);
-          return true;
-        }
-      });
-      btns.push({
-        text: btnText.cancel,
-        click: function() {
-          handler.apply(this, [cancelHandler, false]);
-          return true;
-        }
-      });
-    } else if (type === "confirmex") {
-      btns.push({
-        text: btnText.yes,
-        click: function() {
-          handler.apply(this, [okHandler, true]);
-          return true;
-        }
-      });
-      btns.push({
-        text: btnText.no,
-        click: function() {
-          handler.apply(this, [cancelHandler, false]);
-          return true;
-        }
-      });
-      btns.push({
-        text: btnText.cancel,
-        click: function() {
-          handler.apply(this, [null, false]);
-          return true;
-        }
-      });
-    } else {
-      type = "alert";
-      if (okHandler !== null) {
-        btns.push({
-          text: btnText.ok,
-          click: function() {
-            handler.apply(this, [okHandler, true]);
-            return true;
-          }
-        });
-      } else {
-        btns = null;
-      }
-    }
-    dlgContent.html(message || "");
-    return dlg.dialog("option", "buttons", btns).dialog("open");
-  };
-
-
-  /*
-   * 将处理函数绑定到内部命名空间
-   * 
-   * @private
-   * @method  bindHandler
-   * @return
-   */
-
-  bindHandler = function() {
-    var args, fnList, func, funcName, handler, name;
-    args = arguments;
-    name = args[0];
-    handler = args[1];
-    fnList = storage.fn.handler;
-    if (args.length === 0) {
-      handler = clone(fnList);
-    } else if (typeof name === "string") {
-      if ($.isFunction(handler)) {
-        fnList[name] = handler;
-      } else {
-        handler = fnList[name];
-      }
-    } else if ($.isPlainObject(name)) {
-      for (funcName in name) {
-        func = name[funcName];
-        if ($.isFunction(func)) {
-          fnList[funcName] = func;
-        }
-      }
-    }
-    return handler;
-  };
-
-
-  /*
-   * 执行指定函数
-   * 
-   * @private
-   * @method  runHandler
-   * @param   name {String}         函数名
-   * @param   [args, ...] {List}    函数的参数
-   * @return  {Variant}
-   */
-
-  runHandle = function(name) {
-    var args, func, result, _i, _len;
-    args = slicer(arguments, 1);
-    func = storage.fn.handler[name];
-    result = null;
-    if (typeof name === "string" && $.isFunction(func)) {
-      result = func.apply(window, args);
-    } else if ($.isArray(name)) {
-      for (_i = 0, _len = name.length; _i < _len; _i++) {
-        func = name[_i];
-        if ($.isFunction(func)) {
-          func.call(window);
-        }
-      }
-    }
-    return result;
-  };
-
-
-  /*
-   * 将函数加到指定队列中
-   * 
-   * @private
-   * @method  pushHandler
-   * @param   handler {Function}    函数
-   * @param   queue {String}        队列名
-   */
-
-  pushHandler = function(handler, queue) {
-    if ($.isFunction(handler)) {
-      return storage.fn[queue].push(handler);
-    }
-  };
-
-
-  /*
-   * 重新配置系统参数
-   * 
-   * @private
-   * @method  resetConfig
-   * @param   setting {Object}      配置参数
-   * @return  {Object}              （修改后的）系统配置信息
-   */
-
-  resetConfig = function(setting) {
-    return clone($.isPlainObject(setting) ? $.extend(storage.config, setting) : storage.config);
-  };
-
-
-  /*
-   * 克隆对象并返回副本
-   * 
-   * @private
-   * @method  clone
-   * @param   source {Object}       源对象，只能为数组或者纯对象
-   * @return  {Object}
-   */
-
-  clone = function(source) {
-    var result;
-    result = null;
-    if ($.isArray(source) || source.length !== void 0) {
-      result = [].concat([], slicer(source));
-    } else if ($.isPlainObject(source)) {
-      result = $.extend(true, {}, source);
-    }
-    return result;
-  };
-
-
-  /*
-   * 设置初始化函数
-   * 
-   * @private
-   * @method  initialize
-   * @return
-   */
-
-  initialize = function() {
-    var args, func, key;
-    args = arguments;
-    key = args[0];
-    func = args[1];
-    if ($.isPlainObject(key)) {
-      return $.each(key, initialize);
-    } else if ($.type(key) === "string" && storage.fn.init.hasOwnProperty(key) && $.isFunction(func)) {
-      return storage.fn.init[key] = func;
-    }
-  };
-
-
-  /*
-   * 获取初始化函数
-   * 
-   * @private
-   * @method  initializer
-   * @return  {Function}
-   */
-
-  initializer = function(key) {
-    return storage.fn.init[key];
-  };
-
-
-  /*
-   * AJAX & SJAX 请求处理
-   * 
-   * @private
-   * @method  request
-   * @param   options {Object/String}   请求参数列表/请求地址
-   * @param   succeed {Function}        请求成功时的回调函数（）
-   * @param   fail {Function}           请求失败时的回调函数（code <= 0）
-   * @param   synch {Boolean}           是否为同步，默认为异步
-   * @return  {Object}
-   */
-
-  request = function(options, succeed, fail, synch) {
-    var handlers;
-    if (arguments.length === 0) {
-      return;
-    }
-    if ($.isPlainObject(options) === false) {
-      options = {
-        url: options
-      };
-    }
-    handlers = initializer("ajaxHandler")(succeed, fail);
-    if (!$.isFunction(options.success)) {
-      options.success = handlers.success;
-    }
-    if (!$.isFunction(options.error)) {
-      options.error = handlers.error;
-    }
-    return $.ajax($.extend(options, {
-      async: synch !== true
-    }));
-  };
-
-
-  /*
-   * 通过 HTML 构建 dataset
-   * 
-   * @private
-   * @method  constructDatasetByHTML
-   * @param   html {HTML}   Node's outer html string
-   * @return  {JSON}
-   */
-
-  constructDatasetByHTML = function(html) {
-    var dataset, fragment;
-    dataset = {};
-    fragment = html.match(/<[a-z]+[^>]*>/i);
-    if (fragment !== null) {
-      $.each(fragment[0].match(/(data(-[a-z]+)+=[^\s>]*)/ig) || [], function(idx, attr) {
-        attr = attr.match(/data-(.*)="([^\s"]*)"/i);
-        dataset[$.camelCase(attr[1])] = attr[2];
-        return true;
-      });
-    }
-    return dataset;
-  };
-
-
-  /*
-   * 通过属性列表构建 dataset
-   * 
-   * @private
-   * @method  constructDatasetByAttributes
-   * @param   attributes {NodeList}   Attribute node list
-   * @return  {JSON}
-   */
-
-  constructDatasetByAttributes = function(attributes) {
-    var dataset;
-    dataset = {};
-    $.each(attributes, function(idx, attr) {
-      var match;
-      if (attr.nodeType === ATTRIBUTE_NODE && (match = attr.nodeName.match(/^data-(.*)$/i))) {
-        dataset[$.camelCase(match(1))] = attr.nodeValue;
-      }
-      return true;
-    });
-    return dataset;
-  };
-
-
-  /*
-   * Get data from internal storage
-   *
-   * @private
-   * @method  getStorageData
-   * @param   ns_str {String}   Namespace string
-   * @param   ignore {Boolean}  忽略对 storage key 的限制
-   * @return  {String}
-   */
-
-  getStorageData = function(ns_str, ignore) {
-    var parts, result;
-    parts = ns_str.split(".");
-    result = null;
-    if (ignore || !isLimited(parts[0], limiter.key.storage)) {
-      result = storage;
-      $.each(parts, function(idx, part) {
-        result = result[part];
-        return result.hasOwnProperty(part);
-      });
-    }
-    return result;
-  };
-
-
-  /*
-   * Set data into internal storage
-   *
-   * @private
-   * @method  setStorageData
-   * @param   ns_str {String}   Namespace string
-   * @param   data {Variant}    
-   * @return  {Variant}
-   */
-
-  setStorageData = function(ns_str, data) {
-    var isObj, key, length, parts, result;
-    parts = ns_str.split(".");
-    length = parts.length;
-    isObj = $.isPlainObject(data);
-    if (length === 1) {
-      key = parts[0];
-      result = setData(storage, key, data, storage.hasOwnProperty(key));
-    } else {
-      result = storage;
-      $.each(parts, function(i, n) {
-        if (i < length - 1) {
-          if (!result.hasOwnProperty(n)) {
-            result[n] = {};
-          }
-        } else {
-          result[n] = setData(result, n, data, $.isPlainObject(result[n]));
-        }
-        result = result[n];
-        return true;
-      });
-    }
-    return result;
-  };
-
-  setData = function(target, key, data, condition) {
-    if (condition && $.isPlainObject(data)) {
-      $.extend(true, target[key], data);
-    } else {
-      target[key] = data;
-    }
-    return target[key];
-  };
-
-
-  /*
-   * Determines whether a propery belongs an object
-   *
-   * @private
-   * @method  isExisted
-   * @param   host {Object}   A collection of properties
-   * @param   prop {String}   The property to be determined
-   * @param   type {String}   Limits property's variable type
-   * @return  {Boolean}
-   */
-
-  isExisted = function(host, prop, type) {
-    return $.type(host) === "object" && $.type(prop) === "string" && host.hasOwnProperty(prop) && $.type(host[prop]) === type;
-  };
-
-
-  /*
-   * Determines whether a key in a limited key list
-   *
-   * @private
-   * @method  isLimited
-   * @param   key {String}   Key to be determined
-   * @param   list {Array}   Limited key list
-   * @return  {Boolean}
-   */
-
-  isLimited = function(key, list) {
-    return $.inArray(key, list) > -1;
-  };
-
-
-  /*
-   * 添加到内部存储对象的访问 key 限制列表中
-   *
-   * @private
-   * @method  limit
-   * @param   key {String}  Key to be limited
-   * @return
-   */
-
-  limit = function(key) {
-    return limiter.key.storage.push(key);
-  };
-
-  window.Hanger = _H;
+  window[LIB_CONFIG.name] = _H;
 
 }).call(this);
