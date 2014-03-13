@@ -70,6 +70,8 @@
         ajaxHandler: function(succeed, fail) {
           return {
             success: function(data, textStatus, jqXHR) {
+              var args;
+              args = slicer(arguments);
 
               /*
                * 服务端在返回请求结果时必须是个 JSON，如下：
@@ -80,11 +82,11 @@
                */
               if (data.code > 0) {
                 if ($.isFunction(succeed)) {
-                  return succeed.apply($, slicer(arguments));
+                  return succeed.apply($, args);
                 }
               } else {
                 if ($.isFunction(fail)) {
-                  return fail.appy($, slicer(arguments));
+                  return fail.apply($, args);
                 } else {
                   return systemDialog("alert", data.message);
                 }
@@ -276,7 +278,7 @@
       if ($.type(key) === "string") {
         return storage.config[key];
       } else {
-        return $.extend(true, {}, storage.config);
+        return clone(storage.config);
       }
     },
 
@@ -418,8 +420,8 @@
         regexp = /^([a-z]+)_/;
         match = ((_ref = key.match(regexp)) != null ? _ref : [])[1];
         data = args[1];
+        type = void 0;
         $.each(["front", "admin"], function(i, n) {
-          var type;
           if (match === n) {
             type = n;
             return false;
@@ -550,7 +552,7 @@
      * @return  {String}
      */
     pad: function(string, length, placeholder) {
-      var i, len, unit, _i;
+      var index, len, unit;
       if ($.type(string) in {
         string: true,
         number: true
@@ -562,11 +564,13 @@
           length = 0;
         }
         string = String(string);
+        index = 1;
         unit = String(placeholder);
         len = Math.abs(length) - string.length;
         if (len > 0) {
-          for (i = _i = 1; 1 <= len ? _i < len : _i > len; i = 1 <= len ? ++_i : --_i) {
+          while (index < len) {
             placeholder += unit;
+            index++;
           }
           string = length > 0 ? string + placeholder : placeholder + string;
         }
@@ -764,6 +768,7 @@
    * @param   message {String}          提示信息内容
    * @param   okHandler {Function}      确定按钮
    * @param   cancelHandler {Function}  取消按钮
+   * @return
    */
 
   systemDialogHandler = function(type, message, okHandler, cancelHandler) {
@@ -792,32 +797,37 @@
       btns.push({
         text: btnText.ok,
         click: function() {
-          return handler.apply(this, [okHandler, true]);
+          handler.apply(this, [okHandler, true]);
+          return true;
         }
       });
       btns.push({
         text: btnText.cancel,
         click: function() {
-          return handler.apply(this, [cancelHandler, false]);
+          handler.apply(this, [cancelHandler, false]);
+          return true;
         }
       });
     } else if (type === "confirmex") {
       btns.push({
         text: btnText.yes,
         click: function() {
-          return handler.apply(this, [okHandler, true]);
+          handler.apply(this, [okHandler, true]);
+          return true;
         }
       });
       btns.push({
         text: btnText.no,
         click: function() {
-          return handler.apply(this, [cancelHandler, false]);
+          handler.apply(this, [cancelHandler, false]);
+          return true;
         }
       });
       btns.push({
         text: btnText.cancel,
         click: function() {
-          return handler.apply(this, [null, false]);
+          handler.apply(this, [null, false]);
+          return true;
         }
       });
     } else {
@@ -826,7 +836,8 @@
         btns.push({
           text: btnText.ok,
           click: function() {
-            return handler.apply(this, [okHandler, true]);
+            handler.apply(this, [okHandler, true]);
+            return true;
           }
         });
       } else {
@@ -1037,7 +1048,8 @@
     if (fragment !== null) {
       $.each(fragment[0].match(/(data(-[a-z]+)+=[^\s>]*)/ig) || [], function(idx, attr) {
         attr = attr.match(/data-(.*)="([^\s"]*)"/i);
-        return dataset[$.camelCase(attr[1])] = attr[2];
+        dataset[$.camelCase(attr[1])] = attr[2];
+        return true;
       });
     }
     return dataset;
@@ -1059,8 +1071,9 @@
     $.each(attributes, function(idx, attr) {
       var match;
       if (attr.nodeType === ATTRIBUTE_NODE && (match = attr.nodeName.match(/^data-(.*)$/i))) {
-        return dataset[$.camelCase(match(1))] = attr.nodeValue;
+        dataset[$.camelCase(match(1))] = attr.nodeValue;
       }
+      return true;
     });
     return dataset;
   };
@@ -1119,7 +1132,8 @@
         } else {
           result[n] = setData(result, n, data, $.isPlainObject(result[n]));
         }
-        return result = result[n];
+        result = result[n];
+        return true;
       });
     }
     return result;

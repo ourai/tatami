@@ -70,6 +70,7 @@ storage =
         return {
           # 状态码为 200
           success: ( data, textStatus, jqXHR ) ->
+            args = slicer arguments
             ###
             # 服务端在返回请求结果时必须是个 JSON，如下：
             #    {
@@ -78,10 +79,10 @@ storage =
             #    }
             ###
             if data.code > 0
-              succeed.apply($, slicer arguments) if $.isFunction succeed
+              succeed.apply($, args) if $.isFunction succeed
             else
               if $.isFunction fail
-                fail.appy $, slicer arguments
+                fail.apply $, args
               # 默认弹出警告对话框
               else
                 systemDialog "alert", data.message
@@ -256,7 +257,7 @@ $.extend _H,
   # @return  {Object}
   ###
   config: ( key ) ->
-    return if $.type(key) is "string" then storage.config[key] else $.extend true, {}, storage.config
+    return if $.type(key) is "string" then storage.config[key] else clone storage.config
 
   ###
   # Asynchronous JavaScript and XML
@@ -400,6 +401,7 @@ $.extend _H,
       regexp = /^([a-z]+)_/
       match = (key.match(regexp) ? [])[1]
       data = args[1]
+      type = undefined
 
       $.each ["front", "admin"], ( i, n ) ->
         if match is n
@@ -538,12 +540,16 @@ $.extend _H,
       # Set length to 0 if it isn't an integer.
       length = 0 if not ($.isNumeric(length) and /^-?[1-9]\d*$/.test(length))
       string = String string
+      index = 1
       unit = String placeholder
       len = Math.abs(length) - string.length
 
       if len > 0
         # 补全占位符
-        placeholder += unit for i in [1...len]
+        while index < len
+          placeholder += unit
+          index++
+
         string = if length > 0 then string + placeholder else placeholder + string
 
     return string
@@ -751,6 +757,7 @@ systemDialog = ( type, message, okHandler, cancelHandler ) ->
 # @param   message {String}          提示信息内容
 # @param   okHandler {Function}      确定按钮
 # @param   cancelHandler {Function}  取消按钮
+# @return
 ###
 systemDialogHandler = ( type, message, okHandler, cancelHandler ) ->
   i18nText = storage.i18n._SYS.dialog[_H.config "lang"]
@@ -776,30 +783,39 @@ systemDialogHandler = ( type, message, okHandler, cancelHandler ) ->
   if type is "confirm"
     btns.push
       text: btnText.ok
-      click: -> handler.apply this, [okHandler, true]
-
+      click: -> 
+        handler.apply this, [okHandler, true]
+        return true
     btns.push
       text: btnText.cancel
-      click: -> handler.apply this, [cancelHandler, false]
+      click: ->
+        handler.apply this, [cancelHandler, false]
+        return true
   else if type is "confirmex"
     btns.push
       text: btnText.yes
-      click: -> handler.apply this, [okHandler, true]
-
+      click: ->
+        handler.apply this, [okHandler, true]
+        return true
     btns.push
       text: btnText.no
-      click: -> handler.apply this, [cancelHandler, false]
-
+      click: ->
+        handler.apply this, [cancelHandler, false]
+        return true
     btns.push
       text: btnText.cancel
-      click: -> handler.apply this, [null, false]
+      click: ->
+        handler.apply this, [null, false]
+        return true
   else
     type = "alert"
 
     if okHandler isnt null
       btns.push
         text: btnText.ok,
-        click: -> handler.apply this, [okHandler, true]
+        click: ->
+          handler.apply this, [okHandler, true]
+          return true
     else
       btns = null
 
@@ -971,6 +987,7 @@ constructDatasetByHTML = ( html ) ->
     $.each fragment[0].match(/(data(-[a-z]+)+=[^\s>]*)/ig) || [], ( idx, attr ) ->
       attr = attr.match /data-(.*)="([^\s"]*)"/i
       dataset[$.camelCase attr[1]] = attr[2]
+      return true
 
   return dataset
 
@@ -987,6 +1004,7 @@ constructDatasetByAttributes = ( attributes ) ->
 
   $.each attributes, ( idx, attr ) ->
     dataset[$.camelCase match(1)] = attr.nodeValue if attr.nodeType is ATTRIBUTE_NODE and (match = attr.nodeName.match /^data-(.*)$/i)
+    return true
 
   return dataset
 
@@ -1037,8 +1055,8 @@ setStorageData = ( ns_str, data ) ->
         result[n] = {} if not result.hasOwnProperty n
       else
         result[n] = setData result, n, data, $.isPlainObject result[n]
-
       result = result[n]
+      return true
 
   return result
 
