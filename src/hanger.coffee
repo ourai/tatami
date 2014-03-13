@@ -14,14 +14,20 @@ DOCUMENT_TYPE_NODE = 10
 DOCUMENT_FRAGMENT_NODE = 11
 NOTATION_NODE = 12
 
-# Save a reference to some core methods
-ls = window.localStorage
-
 # Regular expressions
 REG_NAMESPACE = /^[0-9A-Z_.]+[^_.]?$/i
 
+# Config of library
+LIB_CONFIG =
+  name: "Hanger"
+  version: "@VERSION"
+
 # Main objects for internal usage
 _H = {}
+
+# JavaScript API's support
+support =
+  storage: !!window.localStorage
 
 ###
 # 获取当前脚本所在目录路径
@@ -672,6 +678,23 @@ $.extend _H,
   # ======================================
   ###
   ###
+  # 更改 LIB_CONFIG.name 以适应项目「本土化」
+  # 
+  # @method   mask
+  # @param    guise {String}    New name for library
+  # @return   {Boolean}
+  ###
+  mask: ( guise ) ->
+    result = false
+
+    if $.type(guise) is "string" and not window.hasOwnProperty guise
+      window[guise] = window[LIB_CONFIG.name]
+      result = delete window[LIB_CONFIG.name]
+      LIB_CONFIG.name = guise
+
+    return result
+
+  ###
   # 自定义警告提示框
   #
   # @method  alert
@@ -951,11 +974,11 @@ $.extend _H,
     val = args[1]
 
     # Use localStorage
-    if ls
+    if support.storage
       if typeof key is "string"
         oldVal = this.access key
 
-        ls.setItem key, escape if $.isPlainObject(oldVal) then JSON.stringify($.extend oldVal, val) else val
+        localStorage.setItem key, escape if $.isPlainObject(oldVal) then JSON.stringify($.extend oldVal, val) else val
     # Use cookie
     # else
 
@@ -967,8 +990,8 @@ $.extend _H,
 
     if typeof key is "string"
       # localStorage
-      if ls
-        result = ls.getItem key
+      if support.storage
+        result = localStorage.getItem key
 
         if result isnt null
           result = unescape result
@@ -1105,4 +1128,4 @@ $.extend _H,
 
     return result
 
-window.Hanger = _H
+window[LIB_CONFIG.name] = _H
