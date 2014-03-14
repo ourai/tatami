@@ -130,10 +130,13 @@ $.extend _H,
   mask: ( guise ) ->
     result = false
 
-    if $.type(guise) is "string" and not window.hasOwnProperty guise
-      window[guise] = window[LIB_CONFIG.name]
-      result = delete window[LIB_CONFIG.name]
-      LIB_CONFIG.name = guise
+    if $.type(guise) is "string"
+      if window.hasOwnProperty guise
+        console.error "'#{guise}' has existed as a property of Window object." if window.console
+      else
+        window[guise] = window[LIB_CONFIG.name]
+        result = delete window[LIB_CONFIG.name]
+        LIB_CONFIG.name = guise
 
     return result
 

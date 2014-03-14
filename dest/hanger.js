@@ -773,10 +773,16 @@
     mask: function(guise) {
       var result;
       result = false;
-      if ($.type(guise) === "string" && !window.hasOwnProperty(guise)) {
-        window[guise] = window[LIB_CONFIG.name];
-        result = delete window[LIB_CONFIG.name];
-        LIB_CONFIG.name = guise;
+      if ($.type(guise) === "string") {
+        if (window.hasOwnProperty(guise)) {
+          if (window.console) {
+            console.error("'" + guise + "' has existed as a property of Window object.");
+          }
+        } else {
+          window[guise] = window[LIB_CONFIG.name];
+          result = delete window[LIB_CONFIG.name];
+          LIB_CONFIG.name = guise;
+        }
       }
       return result;
     },
