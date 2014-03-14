@@ -1,6 +1,6 @@
 (function() {
   "use strict";
-  var $, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, LIB_CONFIG, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, TEXT_NODE, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, request, resetConfig, runHandler, setData, setStorageData, setup, slicer, storage, support, systemDialog, systemDialogHandler, _H;
+  var $, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, LIB_CONFIG, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, TEXT_NODE, api_ver, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, request, resetConfig, runHandler, setData, setStorageData, setup, slicer, storage, support, systemDialog, systemDialogHandler, _H;
 
   LIB_CONFIG = {
     name: "Hanger",
@@ -875,7 +875,7 @@
    * 设置初始化函数
    * 
    * @private
-   * @method  initialize
+   * @method   initialize
    * @return
    */
 
@@ -889,6 +889,26 @@
     } else if ($.type(key) === "string" && storage.fn.init.hasOwnProperty(key) && $.isFunction(func)) {
       return storage.fn.init[key] = func;
     }
+  };
+
+
+  /*
+   * 获取 Web API 版本
+   * 
+   * @private
+   * @method   api_ver
+   * @return   {String}
+   */
+
+  api_ver = function() {
+    var ver;
+    ver = _H.config("api");
+    if ($.type(ver) === "string" && $.trim(ver) !== "") {
+      ver = "/" + ver;
+    } else {
+      ver = "";
+    }
+    return ver;
   };
 
   $.extend(_H, {
@@ -985,7 +1005,7 @@
      * @return  {String}
      */
     api: function() {
-      var api_ver, args, data, key, match, regexp, result, type, _ref;
+      var args, data, key, match, regexp, result, type, _ref;
       args = arguments;
       key = args[0];
       result = null;
@@ -1007,13 +1027,7 @@
         } else {
           type = "common";
         }
-        api_ver = this.config("api");
-        if ($.type(api_ver) === "string" && $.trim(api_ver) !== "") {
-          api_ver = "/" + api_ver;
-        } else {
-          api_ver = "";
-        }
-        result = api_ver + getStorageData("web_api." + type + "." + key, true);
+        result = api_ver() + getStorageData("web_api." + type + "." + key, true);
         if ($.isPlainObject(data)) {
           result = result.replace(/\:([a-z_]+)/g, function(m, k) {
             return data[k];
@@ -1159,8 +1173,8 @@
    * @private
    * @method  request
    * @param   options {Object/String}   请求参数列表/请求地址
-   * @param   succeed {Function}        请求成功时的回调函数（）
-   * @param   fail {Function}           请求失败时的回调函数（code <= 0）
+   * @param   succeed {Function}        请求成功时的回调函数
+   * @param   fail {Function}           请求失败时的回调函数
    * @param   synch {Boolean}           是否为同步，默认为异步
    * @return  {Object}
    */
@@ -1194,8 +1208,8 @@
      * 
      * @method  ajax
      * @param   options {Object/String}   请求参数列表/请求地址
-     * @param   succeed {Function}        请求成功时的回调函数（code > 0）
-     * @param   fail {Function}           请求失败时的回调函数（code <= 0）
+     * @param   succeed {Function}        请求成功时的回调函数
+     * @param   fail {Function}           请求失败时的回调函数
      * @return
      */
     ajax: function(options, succeed, fail) {
@@ -1207,8 +1221,8 @@
      * 
      * @method  sjax
      * @param   options {Object/String}   请求参数列表/请求地址
-     * @param   succeed {Function}        请求成功时的回调函数（code > 0）
-     * @param   fail {Function}           请求失败时的回调函数（code <= 0）
+     * @param   succeed {Function}        请求成功时的回调函数
+     * @param   fail {Function}           请求失败时的回调函数
      * @return
      */
     sjax: function(options, succeed, fail) {
