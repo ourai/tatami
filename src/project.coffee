@@ -2,7 +2,7 @@
 # 设置初始化函数
 # 
 # @private
-# @method  initialize
+# @method   initialize
 # @return
 ###
 initialize = ->
@@ -14,6 +14,23 @@ initialize = ->
     $.each key, initialize
   else if $.type(key) is "string" and storage.fn.init.hasOwnProperty(key) and $.isFunction func
     storage.fn.init[key] = func
+
+###
+# 获取 Web API 版本
+# 
+# @private
+# @method   api_ver
+# @return   {String}
+###
+api_ver = ->
+  ver = _H.config "api"
+
+  if $.type(ver) is "string" && $.trim(ver) isnt ""
+    ver = "/" + ver
+  else
+    ver = ""
+
+  return ver
 
 $.extend _H,
   ###
@@ -121,14 +138,7 @@ $.extend _H,
       else
         type = "common"
 
-      api_ver = this.config "api"
-
-      if $.type(api_ver) is "string" && $.trim(api_ver) isnt ""
-        api_ver = "/" + api_ver
-      else
-        api_ver = ""
-
-      result = api_ver + getStorageData "web_api.#{type}.#{key}", true
+      result = api_ver() + getStorageData "web_api.#{type}.#{key}", true
 
       if $.isPlainObject data
         result = result.replace /\:([a-z_]+)/g, ( m, k ) ->

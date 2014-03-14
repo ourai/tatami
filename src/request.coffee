@@ -4,8 +4,8 @@
 # @private
 # @method  request
 # @param   options {Object/String}   请求参数列表/请求地址
-# @param   succeed {Function}        请求成功时的回调函数（）
-# @param   fail {Function}           请求失败时的回调函数（code <= 0）
+# @param   succeed {Function}        请求成功时的回调函数
+# @param   fail {Function}           请求失败时的回调函数
 # @param   synch {Boolean}           是否为同步，默认为异步
 # @return  {Object}
 ###
@@ -28,8 +28,8 @@ $.extend _H,
   # 
   # @method  ajax
   # @param   options {Object/String}   请求参数列表/请求地址
-  # @param   succeed {Function}        请求成功时的回调函数（code > 0）
-  # @param   fail {Function}           请求失败时的回调函数（code <= 0）
+  # @param   succeed {Function}        请求成功时的回调函数
+  # @param   fail {Function}           请求失败时的回调函数
   # @return
   ###
   ajax: ( options, succeed, fail ) ->
@@ -40,8 +40,8 @@ $.extend _H,
   # 
   # @method  sjax
   # @param   options {Object/String}   请求参数列表/请求地址
-  # @param   succeed {Function}        请求成功时的回调函数（code > 0）
-  # @param   fail {Function}           请求失败时的回调函数（code <= 0）
+  # @param   succeed {Function}        请求成功时的回调函数
+  # @param   fail {Function}           请求失败时的回调函数
   # @return
   ###
   sjax: ( options, succeed, fail ) ->
