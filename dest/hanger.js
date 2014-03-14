@@ -904,11 +904,10 @@
     var ver;
     ver = _H.config("api");
     if ($.type(ver) === "string" && $.trim(ver) !== "") {
-      ver = "/" + ver;
+      return "/" + ver;
     } else {
-      ver = "";
+      return "";
     }
-    return ver;
   };
 
   $.extend(_H, {

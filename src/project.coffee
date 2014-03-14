@@ -25,12 +25,7 @@ initialize = ->
 api_ver = ->
   ver = _H.config "api"
 
-  if $.type(ver) is "string" && $.trim(ver) isnt ""
-    ver = "/" + ver
-  else
-    ver = ""
-
-  return ver
+  return if $.type(ver) is "string" && $.trim(ver) isnt "" then "/#{ver}" else ""
 
 $.extend _H,
   ###

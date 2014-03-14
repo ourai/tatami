@@ -1,6 +1,6 @@
 # Hanger: Make development EASY
-[![Stories in Ready](https://badge.waffle.io/ourai/hanger.png?label=ready)](https://waffle.io/ourai/hanger)
 [![Build Status](https://travis-ci.org/ourai/hanger.png?branch=master)](https://travis-ci.org/ourai/hanger)
+[![Stories in Ready](https://badge.waffle.io/ourai/hanger.png?label=ready)](https://waffle.io/ourai/hanger)
 [![Built with Grunt](https://cdn.gruntjs.com/builtwith.png)](http://gruntjs.com/)
 
 从项目开发中积累而来，并为新项目的产生而服务！
