@@ -1,6 +1,6 @@
-# Hanger: Make development EASY
-[![Build Status](https://travis-ci.org/ourai/hanger.png?branch=master)](https://travis-ci.org/ourai/hanger)
-[![Stories in Ready](https://badge.waffle.io/ourai/hanger.png?label=ready)](https://waffle.io/ourai/hanger)
+# Tatami: Make development EASY
+[![Build Status](https://travis-ci.org/ourai/tatami.png?branch=master)](https://travis-ci.org/ourai/tatami)
+[![Stories in Ready](https://badge.waffle.io/ourai/tatami.png?label=ready)](https://waffle.io/ourai/tatami)
 [![Built with Grunt](https://cdn.gruntjs.com/builtwith.png)](http://gruntjs.com/)
 
 从项目开发中积累而来，并为新项目的产生而服务！
@@ -35,17 +35,17 @@
   <body>
     <h1>What is this?</h1>
     <script>
-      Hanger.prepare(function() {
+      Tatami.prepare(function() {
         // To do sth. before DOM tree done.
         alert("1");
       });
       
-      Hanger.ready(function() {
+      Tatami.ready(function() {
         // To do sth. after DOM tree done.
         alert("3");   // Will run after 'alert("1")' and 'alert("2")'
       });
       
-      Hanger.prepare(function() {
+      Tatami.prepare(function() {
         // To do sth. before DOM tree done.
         alert("2");   // Will run after 'alert("1")';
       });
@@ -53,9 +53,9 @@
     <p>It is a demo.</p>
     <script>
       // Start the sandbox.
-      // Handlers added by 'Hanger.prepare()' and 'Hanger.ready()' will execute.
-      Hanger.sandbox({
-        platform: "Hanger Project",
+      // Handlers added by 'Tatami.prepare()' and 'Tatami.ready()' will execute.
+      Tatami.sandbox({
+        platform: "Tatami Project",
         version: "0.0.1"
       });
     </script>
