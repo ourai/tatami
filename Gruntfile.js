@@ -37,16 +37,21 @@ module.exports = function( grunt ) {
         src: "<%= dirs.dest %>/<%= pkg.name %>.js",
         dest: "<%= dirs.dest %>/<%= pkg.name %>.min.js"
       }
+    },
+    copy: {
+      build: {
+        cwd: "<%= dirs.dest %>",
+        src: ["**"],
+        dest: "dest",
+        expand: true
+      }
     }
   });
 
   grunt.loadNpmTasks("grunt-contrib-concat");
   grunt.loadNpmTasks("grunt-contrib-coffee");
   grunt.loadNpmTasks("grunt-contrib-uglify");
+  grunt.loadNpmTasks("grunt-contrib-copy");
 
-  grunt.registerTask("combine", "Concatenate CoffeeScript files.", ["concat"]);
-  grunt.registerTask("compile", "Compiles JavaScript files.", ["coffee"]);
-  grunt.registerTask("compress", "Uglify JavaScript files.", ["uglify"]);
-
-  grunt.registerTask("default", ["combine", "compile", "compress"]);
+  grunt.registerTask("default", ["concat", "coffee", "uglify", "copy"]);
 };
