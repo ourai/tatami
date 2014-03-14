@@ -2,7 +2,7 @@
 
 # Config of library
 LIB_CONFIG =
-  name: "Hanger"
+  name: "Tatami"
   version: "0.1.1-alpha"
 
 # Node-types
