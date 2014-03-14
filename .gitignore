@@ -1,6 +1,8 @@
 # Directories
 node_modules/
 lib/
+dest/
 
 # Files
 src/hanger.*
+!dest/hanger.*
