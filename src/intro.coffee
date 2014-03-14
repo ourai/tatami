@@ -2,5 +2,5 @@
 
 # Config of library
 LIB_CONFIG =
-  name: "Hanger"
+  name: "@NAME"
   version: "@VERSION"
