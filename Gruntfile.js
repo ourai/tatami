@@ -1,6 +1,20 @@
 module.exports = function( grunt ) {
+  var pkg = grunt.file.readJSON("package.json");
+  var info = {
+      name: pkg.name.charAt(0).toUpperCase() + pkg.name.substring(1),
+      version: pkg.version
+    };
+  var npmTasks = [
+      "grunt-contrib-concat",
+      "grunt-contrib-coffee",
+      "grunt-contrib-uglify",
+      "grunt-contrib-copy"
+    ];
+  var index = 0;
+  var length = npmTasks.length;
+
   grunt.initConfig({
-    pkg: grunt.file.readJSON("package.json"),
+    pkg: pkg,
     dirs: {
       src: "src",
       dest: "dest/<%= pkg.version %>"
@@ -8,7 +22,9 @@ module.exports = function( grunt ) {
     concat: {
       options: {
         process: function( src, filepath ) {
-          return src.replace(/@VERSION/g, "<%= pkg.version %>");
+          return src.replace(/@(NAME|VERSION)/g, function( text, key ) {
+            return info[key.toLowerCase()];
+          });
         }
       },
       build: {
@@ -48,10 +64,9 @@ module.exports = function( grunt ) {
     }
   });
 
-  grunt.loadNpmTasks("grunt-contrib-concat");
-  grunt.loadNpmTasks("grunt-contrib-coffee");
-  grunt.loadNpmTasks("grunt-contrib-uglify");
-  grunt.loadNpmTasks("grunt-contrib-copy");
+  for (; index < length; index++) {
+    grunt.loadNpmTasks(npmTasks[index]);
+  }
 
   grunt.registerTask("default", ["concat", "coffee", "uglify", "copy"]);
 };
