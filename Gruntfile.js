@@ -31,7 +31,12 @@ module.exports = function( grunt ) {
         src: ["<%= dirs.src %>/intro.coffee",
               "<%= dirs.src %>/variable.coffee",
               "<%= dirs.src %>/function.coffee",
-              "<%= dirs.src %>/core.coffee",
+              "<%= dirs.src %>/util.coffee",
+              "<%= dirs.src %>/flow.coffee",
+              "<%= dirs.src %>/project.coffee",
+              "<%= dirs.src %>/storage.coffee",
+              "<%= dirs.src %>/request.coffee",
+              "<%= dirs.src %>/html.coffee",
               "<%= dirs.src %>/outro.coffee"],
         dest: "<%= dirs.dest %>/<%= pkg.name %>.coffee"
       }

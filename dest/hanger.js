@@ -1,10 +1,10 @@
 (function() {
   "use strict";
-  var ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, LIB_CONFIG, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, TEXT_NODE, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, currentPath, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, request, resetConfig, runHandler, setData, setStorageData, setup, slicer, storage, support, systemDialog, systemDialogHandler, _H;
+  var $, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, LIB_CONFIG, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, TEXT_NODE, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, request, resetConfig, runHandler, setData, setStorageData, setup, slicer, storage, support, systemDialog, systemDialogHandler, _H;
 
   LIB_CONFIG = {
     name: "Hanger",
-    version: "<%= pkg.version %>"
+    version: "0.1.1-alpha"
   };
 
   ELEMENT_NODE = 1;
@@ -35,6 +35,8 @@
 
   _H = {};
 
+  $ = jQuery;
+
   support = {
     storage: !!window.localStorage
   };
@@ -52,21 +54,124 @@
     }
   };
 
+  storage = {
 
-  /*
-   * 获取当前脚本所在目录路径
-   * 
-   * @private
-   * @method  currentPath
-   * @return  {String}
-   */
+    /*
+     * 沙盒运行状态
+     *
+     * @property  sandboxStarted
+     * @type      {Boolean}
+     */
+    sandboxStarted: false,
 
-  currentPath = function() {
-    var link, script;
-    script = last(document.scripts);
-    link = document.createElement("a");
-    link.href = script.hasAttribute ? script.src : script.getAttribute("src", 4);
-    return link.pathname.replace(/[^\/]+\.js$/i, "");
+    /*
+     * 配置
+     *
+     * @property  config
+     * @type      {Object}
+     */
+    config: {
+      debug: true,
+      platform: "",
+      api: "",
+      lang: (document.documentElement.lang || document.documentElement.getAttribute("lang") || navigator.language || navigator.browserLanguage).split("-")[0]
+    },
+
+    /*
+     * 函数
+     *
+     * @property  fn
+     * @type      {Object}
+     */
+    fn: {
+      prepare: [],
+      ready: [],
+      init: {
+        systemDialog: $.noop,
+        ajaxHandler: function(succeed, fail) {
+          return {
+            success: function(data, textStatus, jqXHR) {
+              var args;
+              args = slicer(arguments);
+
+              /*
+               * 服务端在返回请求结果时必须是个 JSON，如下：
+               *    {
+               *      "code": {Integer}       # 处理结果代码，code > 0 为成功，否则为失败
+               *      "message": {String}     # 请求失败时的提示信息
+               *    }
+               */
+              if (data.code > 0) {
+                if ($.isFunction(succeed)) {
+                  return succeed.apply($, args);
+                }
+              } else {
+                if ($.isFunction(fail)) {
+                  return fail.apply($, args);
+                } else {
+                  return systemDialog("alert", data.message);
+                }
+              }
+            },
+            error: $.noop
+          };
+        }
+      },
+      handler: {}
+    },
+
+    /*
+     * 缓冲区，存储临时数据
+     *
+     * @property  buffer
+     * @type      {Object}
+     */
+    buffer: {},
+
+    /*
+     * 对象池
+     * 
+     * @property  pool
+     * @type      {Object}
+     */
+    pool: {},
+
+    /*
+     * 国际化
+     *
+     * @property  i18n
+     * @type      {Object}
+     */
+    i18n: {
+      _SYS: {
+        dialog: {
+          zh: {
+            title: "系统提示",
+            close: "关闭",
+            ok: "确定",
+            cancel: "取消",
+            yes: "是",
+            no: "否"
+          },
+          en: {
+            title: "System",
+            close: "Close",
+            ok: "Ok",
+            cancel: "Cancel",
+            yes: "Yes",
+            no: "No"
+          }
+        }
+      }
+    },
+
+    /*
+     * Web API
+     *
+     * @property  api
+     * @type      {Object}
+     */
+    web_api: {}
   };
 
 
@@ -368,20 +473,6 @@
 
 
   /*
-   * 重新配置系统参数
-   * 
-   * @private
-   * @method  resetConfig
-   * @param   setting {Object}      配置参数
-   * @return  {Object}              （修改后的）系统配置信息
-   */
-
-  resetConfig = function(setting) {
-    return clone($.isPlainObject(setting) ? $.extend(storage.config, setting) : storage.config);
-  };
-
-
-  /*
    * 克隆对象并返回副本
    * 
    * @private
@@ -403,27 +494,6 @@
 
 
   /*
-   * 设置初始化函数
-   * 
-   * @private
-   * @method  initialize
-   * @return
-   */
-
-  initialize = function() {
-    var args, func, key;
-    args = arguments;
-    key = args[0];
-    func = args[1];
-    if ($.isPlainObject(key)) {
-      return $.each(key, initialize);
-    } else if ($.type(key) === "string" && storage.fn.init.hasOwnProperty(key) && $.isFunction(func)) {
-      return storage.fn.init[key] = func;
-    }
-  };
-
-
-  /*
    * 获取初始化函数
    * 
    * @private
@@ -433,88 +503,6 @@
 
   initializer = function(key) {
     return storage.fn.init[key];
-  };
-
-
-  /*
-   * AJAX & SJAX 请求处理
-   * 
-   * @private
-   * @method  request
-   * @param   options {Object/String}   请求参数列表/请求地址
-   * @param   succeed {Function}        请求成功时的回调函数（）
-   * @param   fail {Function}           请求失败时的回调函数（code <= 0）
-   * @param   synch {Boolean}           是否为同步，默认为异步
-   * @return  {Object}
-   */
-
-  request = function(options, succeed, fail, synch) {
-    var handlers;
-    if (arguments.length === 0) {
-      return;
-    }
-    if ($.isPlainObject(options) === false) {
-      options = {
-        url: options
-      };
-    }
-    handlers = initializer("ajaxHandler")(succeed, fail);
-    if (!$.isFunction(options.success)) {
-      options.success = handlers.success;
-    }
-    if (!$.isFunction(options.error)) {
-      options.error = handlers.error;
-    }
-    return $.ajax($.extend(options, {
-      async: synch !== true
-    }));
-  };
-
-
-  /*
-   * 通过 HTML 构建 dataset
-   * 
-   * @private
-   * @method  constructDatasetByHTML
-   * @param   html {HTML}   Node's outer html string
-   * @return  {JSON}
-   */
-
-  constructDatasetByHTML = function(html) {
-    var dataset, fragment;
-    dataset = {};
-    fragment = html.match(/<[a-z]+[^>]*>/i);
-    if (fragment !== null) {
-      $.each(fragment[0].match(/(data(-[a-z]+)+=[^\s>]*)/ig) || [], function(idx, attr) {
-        attr = attr.match(/data-(.*)="([^\s"]*)"/i);
-        dataset[$.camelCase(attr[1])] = attr[2];
-        return true;
-      });
-    }
-    return dataset;
-  };
-
-
-  /*
-   * 通过属性列表构建 dataset
-   * 
-   * @private
-   * @method  constructDatasetByAttributes
-   * @param   attributes {NodeList}   Attribute node list
-   * @return  {JSON}
-   */
-
-  constructDatasetByAttributes = function(attributes) {
-    var dataset;
-    dataset = {};
-    $.each(attributes, function(idx, attr) {
-      var match;
-      if (attr.nodeType === ATTRIBUTE_NODE && (match = attr.nodeName.match(/^data-(.*)$/i))) {
-        dataset[$.camelCase(match(1))] = attr.nodeValue;
-      }
-      return true;
-    });
-    return dataset;
   };
 
 
@@ -634,158 +622,7 @@
     return limiter.key.storage.push(key);
   };
 
-  storage = {
-
-    /*
-     * 沙盒运行状态
-     *
-     * @property  sandboxStarted
-     * @type      {Boolean}
-     */
-    sandboxStarted: false,
-
-    /*
-     * 配置
-     *
-     * @property  config
-     * @type      {Object}
-     */
-    config: {
-      debug: true,
-      platform: "",
-      api: "",
-      lang: (document.documentElement.lang || document.documentElement.getAttribute("lang") || navigator.language || navigator.browserLanguage).split("-")[0],
-      path: currentPath()
-    },
-
-    /*
-     * 函数
-     *
-     * @property  fn
-     * @type      {Object}
-     */
-    fn: {
-      prepare: [],
-      ready: [],
-      init: {
-        systemDialog: $.noop,
-        ajaxHandler: function(succeed, fail) {
-          return {
-            success: function(data, textStatus, jqXHR) {
-              var args;
-              args = slicer(arguments);
-
-              /*
-               * 服务端在返回请求结果时必须是个 JSON，如下：
-               *    {
-               *      "code": {Integer}       # 处理结果代码，code > 0 为成功，否则为失败
-               *      "message": {String}     # 请求失败时的提示信息
-               *    }
-               */
-              if (data.code > 0) {
-                if ($.isFunction(succeed)) {
-                  return succeed.apply($, args);
-                }
-              } else {
-                if ($.isFunction(fail)) {
-                  return fail.apply($, args);
-                } else {
-                  return systemDialog("alert", data.message);
-                }
-              }
-            },
-            error: $.noop
-          };
-        }
-      },
-      handler: {}
-    },
-
-    /*
-     * 缓冲区，存储临时数据
-     *
-     * @property  buffer
-     * @type      {Object}
-     */
-    buffer: {},
-
-    /*
-     * 对象池
-     * 
-     * @property  pool
-     * @type      {Object}
-     */
-    pool: {},
-
-    /*
-     * 国际化
-     *
-     * @property  i18n
-     * @type      {Object}
-     */
-    i18n: {
-      _SYS: {
-        dialog: {
-          zh: {
-            title: "系统提示",
-            close: "关闭",
-            ok: "确定",
-            cancel: "取消",
-            yes: "是",
-            no: "否"
-          },
-          en: {
-            title: "System",
-            close: "Close",
-            ok: "Ok",
-            cancel: "Cancel",
-            yes: "Yes",
-            no: "No"
-          }
-        }
-      }
-    },
-
-    /*
-     * Web API
-     *
-     * @property  api
-     * @type      {Object}
-     */
-    web_api: {}
-  };
-
   $.extend(_H, {
-
-    /*
-     * ======================================
-     *  核心方法
-     * ======================================
-     */
-
-    /*
-     * 更改 LIB_CONFIG.name 以适应项目「本土化」
-     * 
-     * @method   mask
-     * @param    guise {String}    New name for library
-     * @return   {Boolean}
-     */
-    mask: function(guise) {
-      var result;
-      result = false;
-      if ($.type(guise) === "string") {
-        if (window.hasOwnProperty(guise)) {
-          if (window.console) {
-            console.error("'" + guise + "' has existed as a property of Window object.");
-          }
-        } else {
-          window[guise] = window[LIB_CONFIG.name];
-          result = delete window[LIB_CONFIG.name];
-          LIB_CONFIG.name = guise;
-        }
-      }
-      return result;
-    },
 
     /*
      * 自定义警告提示框
@@ -826,102 +663,6 @@
     },
 
     /*
-     * 沙盒
-     *
-     * 封闭运行环境的开关，每个页面只能运行一次
-     * 
-     * @method  sandbox
-     * @param   setting {Object}      系统环境配置
-     * @return  {Object/Boolean}      （修改后的）系统环境配置
-     */
-    sandbox: function(setting) {
-      var result;
-      if (storage.sandboxStarted !== true) {
-        result = resetConfig(setting);
-        runHandler(storage.fn.prepare);
-        $(document).ready(function() {
-          return runHandler(storage.fn.ready);
-        });
-        storage.sandboxStarted = true;
-      }
-      return result || false;
-    },
-
-    /*
-     * DOM 未加载完时调用的处理函数
-     * 主要进行事件委派等与 DOM 加载进程无关的操作
-     *
-     * @method  prepare
-     * @param   handler {Function}
-     * @return
-     */
-    prepare: function(handler) {
-      return pushHandler(handler, "prepare");
-    },
-
-    /*
-     * DOM 加载完成时调用的处理函数
-     *
-     * @method  ready
-     * @param   handler {Function}
-     * @return
-     */
-    ready: function(handler) {
-      return pushHandler(handler, "ready");
-    },
-
-    /*
-     * 设置初始化信息
-     * 
-     * @method  init
-     * @return
-     */
-    init: function() {
-      return initialize.apply(window, slicer(arguments));
-    },
-
-    /*
-     * 获取系统信息
-     * 
-     * @method  config
-     * @param   [key] {String}
-     * @return  {Object}
-     */
-    config: function(key) {
-      if ($.type(key) === "string") {
-        return storage.config[key];
-      } else {
-        return clone(storage.config);
-      }
-    },
-
-    /*
-     * Asynchronous JavaScript and XML
-     * 
-     * @method  ajax
-     * @param   options {Object/String}   请求参数列表/请求地址
-     * @param   succeed {Function}        请求成功时的回调函数（code > 0）
-     * @param   fail {Function}           请求失败时的回调函数（code <= 0）
-     * @return
-     */
-    ajax: function(options, succeed, fail) {
-      return request(options, succeed, fail);
-    },
-
-    /*
-     * Synchronous JavaScript and XML
-     * 
-     * @method  sjax
-     * @param   options {Object/String}   请求参数列表/请求地址
-     * @param   succeed {Function}        请求成功时的回调函数（code > 0）
-     * @param   fail {Function}           请求失败时的回调函数（code <= 0）
-     * @return
-     */
-    sjax: function(options, succeed, fail) {
-      return request(options, succeed, fail, true);
-    },
-
-    /*
      * 将外部处理函数引入到沙盒中
      * 
      * @method  queue
@@ -939,165 +680,6 @@
      */
     run: function() {
       return runHandler.apply(window, slicer(arguments));
-    },
-
-    /*
-     * 获取 DOM 的「data-*」属性集或存储数据到内部/从内部获取数据
-     * 
-     * @method  data
-     * @return  {Object}
-     */
-    data: function() {
-      var args, error, length, node, result, target;
-      args = arguments;
-      length = args.length;
-      if (length > 0) {
-        target = args[0];
-        try {
-          node = $(target).get(0);
-        } catch (_error) {
-          error = _error;
-          node = target;
-        }
-        if (node && node.nodeType === ELEMENT_NODE) {
-          result = {};
-          if (node.dataset) {
-            result = node.dataset;
-          } else if (node.outerHTML) {
-            result = constructDatasetByHTML(node.outerHTML);
-          } else if (node.attributes && $.isNumeric(node.attributes.length)) {
-            result = constructDatasetByAttributes(node.attributes);
-          }
-        } else {
-          if (typeof target === "string" && REG_NAMESPACE.test(target)) {
-            result = length === 1 ? getStorageData(target) : setStorageData(target, args[1]);
-            if (length > 1 && last(args) === true) {
-              limit(target.split(".")[0]);
-            }
-          }
-        }
-      }
-      return result || null;
-    },
-
-    /*
-     * 设置及获取国际化信息
-     * 
-     * @method  i18n
-     * @return  {String}
-     */
-    i18n: function() {
-      var args, data, key, result;
-      args = arguments;
-      key = args[0];
-      result = null;
-      if ($.isPlainObject(key)) {
-        $.extend(storage.i18n, key);
-      } else if (REG_NAMESPACE.test(key)) {
-        data = args[1];
-        if (args.length === 2 && typeof data === "string" && !REG_NAMESPACE.test(data)) {
-
-        } else if ($.isPlainObject(data)) {
-          result = getStorageData("i18n." + key, true);
-          result = (typeof result === "string" ? result : "").replace(/\{%\s*([A-Z0-9_]+)\s*%\}/ig, function(txt, k) {
-            return data[k];
-          });
-        } else {
-          result = "";
-          $.each(args, function(i, txt) {
-            var r;
-            if (typeof txt === "string" && REG_NAMESPACE.test(txt)) {
-              r = getStorageData("i18n." + txt, true);
-              return result += (typeof r === "string" ? r : "");
-            }
-          });
-        }
-      }
-      return result;
-    },
-
-    /*
-     * 设置及获取 Web API
-     * 
-     * @method  api
-     * @return  {String}
-     */
-    api: function() {
-      var api_ver, args, data, key, match, regexp, result, type, _ref;
-      args = arguments;
-      key = args[0];
-      result = null;
-      if ($.isPlainObject(key)) {
-        $.extend(storage.web_api, key);
-      } else if ($.type(key) === "string") {
-        regexp = /^([a-z]+)_/;
-        match = ((_ref = key.match(regexp)) != null ? _ref : [])[1];
-        data = args[1];
-        type = void 0;
-        $.each(["front", "admin"], function(i, n) {
-          if (match === n) {
-            type = n;
-            return false;
-          }
-        });
-        if (type) {
-          key = key.replace(regexp, "");
-        } else {
-          type = "common";
-        }
-        api_ver = this.config("api");
-        if ($.type(api_ver) === "string" && $.trim(api_ver) !== "") {
-          api_ver = "/" + api_ver;
-        } else {
-          api_ver = "";
-        }
-        result = api_ver + getStorageData("web_api." + type + "." + key, true);
-        if ($.isPlainObject(data)) {
-          result = result.replace(/\:([a-z_]+)/g, function(m, k) {
-            return data[k];
-          });
-        }
-      }
-      return result;
-    },
-
-    /*
-     * Save data
-     */
-    save: function() {
-      var args, key, oldVal, val;
-      args = arguments;
-      key = args[0];
-      val = args[1];
-      if (support.storage) {
-        if (typeof key === "string") {
-          oldVal = this.access(key);
-          return localStorage.setItem(key, escape($.isPlainObject(oldVal) ? JSON.stringify($.extend(oldVal, val)) : val));
-        }
-      }
-    },
-
-    /*
-     * Access data
-     */
-    access: function() {
-      var error, key, result;
-      key = arguments[0];
-      if (typeof key === "string") {
-        if (support.storage) {
-          result = localStorage.getItem(key);
-          if (result !== null) {
-            result = unescape(result);
-            try {
-              result = JSON.parse(result);
-            } catch (_error) {
-              error = _error;
-              result = result;
-            }
-          }
-        }
-      }
-      return result || null;
     },
     url: function() {
       var loc, url;
@@ -1224,6 +806,444 @@
       }
       return result;
     }
+  });
+
+
+  /*
+   * 重新配置系统参数
+   * 
+   * @private
+   * @method  resetConfig
+   * @param   setting {Object}      配置参数
+   * @return  {Object}              （修改后的）系统配置信息
+   */
+
+  resetConfig = function(setting) {
+    return clone($.isPlainObject(setting) ? $.extend(storage.config, setting) : storage.config);
+  };
+
+  $.extend(_H, {
+
+    /*
+     * 沙盒
+     *
+     * 封闭运行环境的开关，每个页面只能运行一次
+     * 
+     * @method  sandbox
+     * @param   setting {Object}      系统环境配置
+     * @return  {Object/Boolean}      （修改后的）系统环境配置
+     */
+    sandbox: function(setting) {
+      var result;
+      if (storage.sandboxStarted !== true) {
+        result = resetConfig(setting);
+        runHandler(storage.fn.prepare);
+        $(document).ready(function() {
+          return runHandler(storage.fn.ready);
+        });
+        storage.sandboxStarted = true;
+      }
+      return result || false;
+    },
+
+    /*
+     * DOM 未加载完时调用的处理函数
+     * 主要进行事件委派等与 DOM 加载进程无关的操作
+     *
+     * @method  prepare
+     * @param   handler {Function}
+     * @return
+     */
+    prepare: function(handler) {
+      return pushHandler(handler, "prepare");
+    },
+
+    /*
+     * DOM 加载完成时调用的处理函数
+     *
+     * @method  ready
+     * @param   handler {Function}
+     * @return
+     */
+    ready: function(handler) {
+      return pushHandler(handler, "ready");
+    }
+  });
+
+
+  /*
+   * 设置初始化函数
+   * 
+   * @private
+   * @method  initialize
+   * @return
+   */
+
+  initialize = function() {
+    var args, func, key;
+    args = arguments;
+    key = args[0];
+    func = args[1];
+    if ($.isPlainObject(key)) {
+      return $.each(key, initialize);
+    } else if ($.type(key) === "string" && storage.fn.init.hasOwnProperty(key) && $.isFunction(func)) {
+      return storage.fn.init[key] = func;
+    }
+  };
+
+  $.extend(_H, {
+
+    /*
+     * 更改 LIB_CONFIG.name 以适应项目「本土化」
+     * 
+     * @method   mask
+     * @param    guise {String}    New name for library
+     * @return   {Boolean}
+     */
+    mask: function(guise) {
+      var result;
+      result = false;
+      if ($.type(guise) === "string") {
+        if (window.hasOwnProperty(guise)) {
+          if (window.console) {
+            console.error("'" + guise + "' has existed as a property of Window object.");
+          }
+        } else {
+          window[guise] = window[LIB_CONFIG.name];
+          result = delete window[LIB_CONFIG.name];
+          LIB_CONFIG.name = guise;
+        }
+      }
+      return result;
+    },
+
+    /*
+     * 获取系统信息
+     * 
+     * @method  config
+     * @param   [key] {String}
+     * @return  {Object}
+     */
+    config: function(key) {
+      if ($.type(key) === "string") {
+        return storage.config[key];
+      } else {
+        return clone(storage.config);
+      }
+    },
+
+    /*
+     * 设置初始化信息
+     * 
+     * @method  init
+     * @return
+     */
+    init: function() {
+      return initialize.apply(window, slicer(arguments));
+    },
+
+    /*
+     * 设置及获取国际化信息
+     * 
+     * @method  i18n
+     * @return  {String}
+     */
+    i18n: function() {
+      var args, data, key, result;
+      args = arguments;
+      key = args[0];
+      result = null;
+      if ($.isPlainObject(key)) {
+        $.extend(storage.i18n, key);
+      } else if (REG_NAMESPACE.test(key)) {
+        data = args[1];
+        if (args.length === 2 && typeof data === "string" && !REG_NAMESPACE.test(data)) {
+
+        } else if ($.isPlainObject(data)) {
+          result = getStorageData("i18n." + key, true);
+          result = (typeof result === "string" ? result : "").replace(/\{%\s*([A-Z0-9_]+)\s*%\}/ig, function(txt, k) {
+            return data[k];
+          });
+        } else {
+          result = "";
+          $.each(args, function(i, txt) {
+            var r;
+            if (typeof txt === "string" && REG_NAMESPACE.test(txt)) {
+              r = getStorageData("i18n." + txt, true);
+              return result += (typeof r === "string" ? r : "");
+            }
+          });
+        }
+      }
+      return result;
+    },
+
+    /*
+     * 设置及获取 Web API
+     * 
+     * @method  api
+     * @return  {String}
+     */
+    api: function() {
+      var api_ver, args, data, key, match, regexp, result, type, _ref;
+      args = arguments;
+      key = args[0];
+      result = null;
+      if ($.isPlainObject(key)) {
+        $.extend(storage.web_api, key);
+      } else if ($.type(key) === "string") {
+        regexp = /^([a-z]+)_/;
+        match = ((_ref = key.match(regexp)) != null ? _ref : [])[1];
+        data = args[1];
+        type = void 0;
+        $.each(["front", "admin"], function(i, n) {
+          if (match === n) {
+            type = n;
+            return false;
+          }
+        });
+        if (type) {
+          key = key.replace(regexp, "");
+        } else {
+          type = "common";
+        }
+        api_ver = this.config("api");
+        if ($.type(api_ver) === "string" && $.trim(api_ver) !== "") {
+          api_ver = "/" + api_ver;
+        } else {
+          api_ver = "";
+        }
+        result = api_ver + getStorageData("web_api." + type + "." + key, true);
+        if ($.isPlainObject(data)) {
+          result = result.replace(/\:([a-z_]+)/g, function(m, k) {
+            return data[k];
+          });
+        }
+      }
+      return result;
+    }
+  });
+
+
+  /*
+   * 通过 HTML 构建 dataset
+   * 
+   * @private
+   * @method  constructDatasetByHTML
+   * @param   html {HTML}   Node's outer html string
+   * @return  {JSON}
+   */
+
+  constructDatasetByHTML = function(html) {
+    var dataset, fragment;
+    dataset = {};
+    fragment = html.match(/<[a-z]+[^>]*>/i);
+    if (fragment !== null) {
+      $.each(fragment[0].match(/(data(-[a-z]+)+=[^\s>]*)/ig) || [], function(idx, attr) {
+        attr = attr.match(/data-(.*)="([^\s"]*)"/i);
+        dataset[$.camelCase(attr[1])] = attr[2];
+        return true;
+      });
+    }
+    return dataset;
+  };
+
+
+  /*
+   * 通过属性列表构建 dataset
+   * 
+   * @private
+   * @method  constructDatasetByAttributes
+   * @param   attributes {NodeList}   Attribute node list
+   * @return  {JSON}
+   */
+
+  constructDatasetByAttributes = function(attributes) {
+    var dataset;
+    dataset = {};
+    $.each(attributes, function(idx, attr) {
+      var match;
+      if (attr.nodeType === ATTRIBUTE_NODE && (match = attr.nodeName.match(/^data-(.*)$/i))) {
+        dataset[$.camelCase(match(1))] = attr.nodeValue;
+      }
+      return true;
+    });
+    return dataset;
+  };
+
+  $.extend(_H, {
+
+    /*
+     * 获取 DOM 的「data-*」属性集或存储数据到内部/从内部获取数据
+     * 
+     * @method  data
+     * @return  {Object}
+     */
+    data: function() {
+      var args, error, length, node, result, target;
+      args = arguments;
+      length = args.length;
+      if (length > 0) {
+        target = args[0];
+        try {
+          node = $(target).get(0);
+        } catch (_error) {
+          error = _error;
+          node = target;
+        }
+        if (node && node.nodeType === ELEMENT_NODE) {
+          result = {};
+          if (node.dataset) {
+            result = node.dataset;
+          } else if (node.outerHTML) {
+            result = constructDatasetByHTML(node.outerHTML);
+          } else if (node.attributes && $.isNumeric(node.attributes.length)) {
+            result = constructDatasetByAttributes(node.attributes);
+          }
+        } else {
+          if (typeof target === "string" && REG_NAMESPACE.test(target)) {
+            result = length === 1 ? getStorageData(target) : setStorageData(target, args[1]);
+            if (length > 1 && last(args) === true) {
+              limit(target.split(".")[0]);
+            }
+          }
+        }
+      }
+      return result || null;
+    },
+
+    /*
+     * Save data
+     */
+    save: function() {
+      var args, key, oldVal, val;
+      args = arguments;
+      key = args[0];
+      val = args[1];
+      if (support.storage) {
+        if (typeof key === "string") {
+          oldVal = this.access(key);
+          return localStorage.setItem(key, escape($.isPlainObject(oldVal) ? JSON.stringify($.extend(oldVal, val)) : val));
+        }
+      }
+    },
+
+    /*
+     * Access data
+     */
+    access: function() {
+      var error, key, result;
+      key = arguments[0];
+      if (typeof key === "string") {
+        if (support.storage) {
+          result = localStorage.getItem(key);
+          if (result !== null) {
+            result = unescape(result);
+            try {
+              result = JSON.parse(result);
+            } catch (_error) {
+              error = _error;
+              result = result;
+            }
+          }
+        }
+      }
+      return result || null;
+    }
+  });
+
+
+  /*
+   * AJAX & SJAX 请求处理
+   * 
+   * @private
+   * @method  request
+   * @param   options {Object/String}   请求参数列表/请求地址
+   * @param   succeed {Function}        请求成功时的回调函数（）
+   * @param   fail {Function}           请求失败时的回调函数（code <= 0）
+   * @param   synch {Boolean}           是否为同步，默认为异步
+   * @return  {Object}
+   */
+
+  request = function(options, succeed, fail, synch) {
+    var handlers;
+    if (arguments.length === 0) {
+      return;
+    }
+    if ($.isPlainObject(options) === false) {
+      options = {
+        url: options
+      };
+    }
+    handlers = initializer("ajaxHandler")(succeed, fail);
+    if (!$.isFunction(options.success)) {
+      options.success = handlers.success;
+    }
+    if (!$.isFunction(options.error)) {
+      options.error = handlers.error;
+    }
+    return $.ajax($.extend(options, {
+      async: synch !== true
+    }));
+  };
+
+  $.extend(_H, {
+
+    /*
+     * Asynchronous JavaScript and XML
+     * 
+     * @method  ajax
+     * @param   options {Object/String}   请求参数列表/请求地址
+     * @param   succeed {Function}        请求成功时的回调函数（code > 0）
+     * @param   fail {Function}           请求失败时的回调函数（code <= 0）
+     * @return
+     */
+    ajax: function(options, succeed, fail) {
+      return request(options, succeed, fail);
+    },
+
+    /*
+     * Synchronous JavaScript and XML
+     * 
+     * @method  sjax
+     * @param   options {Object/String}   请求参数列表/请求地址
+     * @param   succeed {Function}        请求成功时的回调函数（code > 0）
+     * @param   fail {Function}           请求失败时的回调函数（code <= 0）
+     * @return
+     */
+    sjax: function(options, succeed, fail) {
+      return request(options, succeed, fail, true);
+    }
+  });
+
+  $.extend(_H, {
+    encodeEntities: function(string) {
+      if ($.type(string) === "string") {
+        return string.replace(/([<>&\'\"])/, function(match, chr) {
+          var et;
+          switch (chr) {
+            case "<":
+              et = lt;
+              break;
+            case ">":
+              et = gt;
+              break;
+            case "\"":
+              et = quot;
+              break;
+            case "'":
+              et = apos;
+              break;
+            case "&":
+              et = amp;
+          }
+          return "&" + et + ";";
+        });
+      } else {
+        return string;
+      }
+    },
+    decodeEntities: function(string) {}
   });
 
   window[LIB_CONFIG.name] = _H;

@@ -1,18 +1,4 @@
 ###
-# 获取当前脚本所在目录路径
-# 
-# @private
-# @method  currentPath
-# @return  {String}
-###
-currentPath = ->
-  script = last document.scripts
-  link = document.createElement "a"
-  link.href = if script.hasAttribute then script.src else script.getAttribute "src", 4
-
-  return link.pathname.replace /[^\/]+\.js$/i, ""
-
-###
 # 切割 Array Like 片段
 #
 # @private
@@ -299,17 +285,6 @@ pushHandler = ( handler, queue ) ->
   storage.fn[queue].push handler if $.isFunction handler
 
 ###
-# 重新配置系统参数
-# 
-# @private
-# @method  resetConfig
-# @param   setting {Object}      配置参数
-# @return  {Object}              （修改后的）系统配置信息
-###
-resetConfig = ( setting ) ->
-  return clone if $.isPlainObject(setting) then $.extend(storage.config, setting) else storage.config
-
-###
 # 克隆对象并返回副本
 # 
 # @private
@@ -328,23 +303,6 @@ clone = ( source ) ->
   return result
 
 ###
-# 设置初始化函数
-# 
-# @private
-# @method  initialize
-# @return
-###
-initialize = ->
-  args = arguments
-  key = args[0]
-  func = args[1]
-
-  if $.isPlainObject key
-    $.each key, initialize
-  else if $.type(key) is "string" and storage.fn.init.hasOwnProperty(key) and $.isFunction func
-    storage.fn.init[key] = func
-
-###
 # 获取初始化函数
 # 
 # @private
@@ -353,67 +311,6 @@ initialize = ->
 ###
 initializer = ( key ) ->
   return storage.fn.init[key]
-
-###
-# AJAX & SJAX 请求处理
-# 
-# @private
-# @method  request
-# @param   options {Object/String}   请求参数列表/请求地址
-# @param   succeed {Function}        请求成功时的回调函数（）
-# @param   fail {Function}           请求失败时的回调函数（code <= 0）
-# @param   synch {Boolean}           是否为同步，默认为异步
-# @return  {Object}
-###
-request = ( options, succeed, fail, synch ) ->
-  # 无参数时跳出
-  if arguments.length is 0
-    return
-  
-  # 当 options 不是纯对象时将其当作 url 来处理（不考虑其变量类型）
-  options = url: options if $.isPlainObject(options) is false
-  handlers = initializer("ajaxHandler") succeed, fail
-  options.success = handlers.success if not $.isFunction options.success
-  options.error = handlers.error if not $.isFunction options.error
-
-  return $.ajax $.extend options, async: synch isnt true
-
-###
-# 通过 HTML 构建 dataset
-# 
-# @private
-# @method  constructDatasetByHTML
-# @param   html {HTML}   Node's outer html string
-# @return  {JSON}
-###
-constructDatasetByHTML = ( html ) ->
-  dataset = {}
-  fragment = html.match /<[a-z]+[^>]*>/i
-
-  if fragment isnt null
-    $.each fragment[0].match(/(data(-[a-z]+)+=[^\s>]*)/ig) || [], ( idx, attr ) ->
-      attr = attr.match /data-(.*)="([^\s"]*)"/i
-      dataset[$.camelCase attr[1]] = attr[2]
-      return true
-
-  return dataset
-
-###
-# 通过属性列表构建 dataset
-# 
-# @private
-# @method  constructDatasetByAttributes
-# @param   attributes {NodeList}   Attribute node list
-# @return  {JSON}
-###
-constructDatasetByAttributes = ( attributes ) ->
-  dataset = {}
-
-  $.each attributes, ( idx, attr ) ->
-    dataset[$.camelCase match(1)] = attr.nodeValue if attr.nodeType is ATTRIBUTE_NODE and (match = attr.nodeName.match /^data-(.*)$/i)
-    return true
-
-  return dataset
 
 ###
 # Get data from internal storage
