@@ -158,10 +158,22 @@ storage =
   web_api: {}
 
 ###
+# 判断某个对象是否有自己的指定属性
+#
+# !!! 不能用 object.hasOwnProperty(prop) 这种方式，低版本 IE 不支持。
+#
+# @private
+# @method   hasOwnProp
+# @return   {Boolean}
+###
+hasOwnProp = ( obj, prop ) ->
+  return Object.prototype.hasOwnProperty.call obj, prop
+
+###
 # 切割 Array Like 片段
 #
 # @private
-# @method  slicer
+# @method   slicer
 # @return
 ###
 slicer = ( args, index ) ->
@@ -245,7 +257,7 @@ systemDialog = ( type, message, okHandler, cancelHandler ) ->
     if $.isFunction $.fn.dialog
       poolName = "systemDialog"
       i18nText = storage.i18n._SYS.dialog[_H.config "lang"]
-      storage.pool[poolName] = {} if not storage.pool.hasOwnProperty poolName
+      storage.pool[poolName] = {} if not hasOwnProp(storage.pool, poolName)
       dlg = storage.pool[poolName][type]
 
       if not dlg
@@ -488,7 +500,7 @@ getStorageData = ( ns_str, ignore ) ->
     result = storage
 
     $.each parts, ( idx, part ) ->
-      rv = result.hasOwnProperty part
+      rv = hasOwnProp(result, part)
       result = result[part]
       return rv
 
@@ -510,13 +522,13 @@ setStorageData = ( ns_str, data ) ->
 
   if length is 1
     key = parts[0]
-    result = setData storage, key, data, storage.hasOwnProperty key
+    result = setData storage, key, data, hasOwnProp(storage, key)
   else
     result = storage
 
     $.each parts, ( i, n ) ->
       if i < length - 1
-        result[n] = {} if not result.hasOwnProperty n
+        result[n] = {} if not hasOwnProp(result, n)
       else
         result[n] = setData result, n, data, $.isPlainObject result[n]
       result = result[n]
@@ -543,7 +555,7 @@ setData = ( target, key, data, condition ) ->
 # @return  {Boolean}
 ###
 isExisted = ( host, prop, type ) ->
-  return $.type(host) is "object" and $.type(prop) is "string" and host.hasOwnProperty(prop) and $.type(host[prop]) is type
+  return $.type(host) is "object" and $.type(prop) is "string" and hasOwnProp(host, prop) and $.type(host[prop]) is type
 
 ###
 # Determines whether a key in a limited key list
@@ -817,7 +829,7 @@ initialize = ->
 
   if $.isPlainObject key
     $.each key, initialize
-  else if $.type(key) is "string" and storage.fn.init.hasOwnProperty(key) and $.isFunction func
+  else if $.type(key) is "string" and hasOwnProp(storage.fn.init, key) and $.isFunction func
     storage.fn.init[key] = func
 
 ###
@@ -844,7 +856,7 @@ $.extend _H,
     result = false
 
     if $.type(guise) is "string"
-      if window.hasOwnProperty guise
+      if hasOwnProp window, guise
         console.error "'#{guise}' has existed as a property of Window object." if window.console
       else
         window[guise] = window[LIB_CONFIG.name]

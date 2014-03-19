@@ -1,6 +1,6 @@
 (function() {
   "use strict";
-  var $, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, LIB_CONFIG, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, TEXT_NODE, api_ver, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, request, resetConfig, runHandler, setData, setStorageData, setup, slicer, storage, support, systemDialog, systemDialogHandler, _H;
+  var $, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, LIB_CONFIG, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, TEXT_NODE, api_ver, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, getStorageData, hasOwnProp, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, request, resetConfig, runHandler, setData, setStorageData, setup, slicer, storage, support, systemDialog, systemDialogHandler, _H;
 
   LIB_CONFIG = {
     name: "Tatami",
@@ -176,10 +176,25 @@
 
 
   /*
+   * 判断某个对象是否有自己的指定属性
+   *
+   * !!! 不能用 object.hasOwnProperty(prop) 这种方式，低版本 IE 不支持。
+   *
+   * @private
+   * @method   hasOwnProp
+   * @return   {Boolean}
+   */
+
+  hasOwnProp = function(obj, prop) {
+    return Object.prototype.hasOwnProperty.call(obj, prop);
+  };
+
+
+  /*
    * 切割 Array Like 片段
    *
    * @private
-   * @method  slicer
+   * @method   slicer
    * @return
    */
 
@@ -241,7 +256,7 @@
       if ($.isFunction($.fn.dialog)) {
         poolName = "systemDialog";
         i18nText = storage.i18n._SYS.dialog[_H.config("lang")];
-        if (!storage.pool.hasOwnProperty(poolName)) {
+        if (!hasOwnProp(storage.pool, poolName)) {
           storage.pool[poolName] = {};
         }
         dlg = storage.pool[poolName][type];
@@ -524,7 +539,7 @@
       result = storage;
       $.each(parts, function(idx, part) {
         var rv;
-        rv = result.hasOwnProperty(part);
+        rv = hasOwnProp(result, part);
         result = result[part];
         return rv;
       });
@@ -550,12 +565,12 @@
     isObj = $.isPlainObject(data);
     if (length === 1) {
       key = parts[0];
-      result = setData(storage, key, data, storage.hasOwnProperty(key));
+      result = setData(storage, key, data, hasOwnProp(storage, key));
     } else {
       result = storage;
       $.each(parts, function(i, n) {
         if (i < length - 1) {
-          if (!result.hasOwnProperty(n)) {
+          if (!hasOwnProp(result, n)) {
             result[n] = {};
           }
         } else {
@@ -590,7 +605,7 @@
    */
 
   isExisted = function(host, prop, type) {
-    return $.type(host) === "object" && $.type(prop) === "string" && host.hasOwnProperty(prop) && $.type(host[prop]) === type;
+    return $.type(host) === "object" && $.type(prop) === "string" && hasOwnProp(host, prop) && $.type(host[prop]) === type;
   };
 
 
@@ -886,7 +901,7 @@
     func = args[1];
     if ($.isPlainObject(key)) {
       return $.each(key, initialize);
-    } else if ($.type(key) === "string" && storage.fn.init.hasOwnProperty(key) && $.isFunction(func)) {
+    } else if ($.type(key) === "string" && hasOwnProp(storage.fn.init, key) && $.isFunction(func)) {
       return storage.fn.init[key] = func;
     }
   };
@@ -923,7 +938,7 @@
       var result;
       result = false;
       if ($.type(guise) === "string") {
-        if (window.hasOwnProperty(guise)) {
+        if (hasOwnProp(window, guise)) {
           if (window.console) {
             console.error("'" + guise + "' has existed as a property of Window object.");
           }
@@ -1122,7 +1137,7 @@
           }
         }
       }
-      return result || null;
+      return result != null ? result : null;
     },
 
     /*
