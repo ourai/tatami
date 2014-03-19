@@ -935,7 +935,7 @@
      * @return   {Boolean}
      */
     mask: function(guise) {
-      var result;
+      var error, result;
       result = false;
       if ($.type(guise) === "string") {
         if (hasOwnProp(window, guise)) {
@@ -944,7 +944,13 @@
           }
         } else {
           window[guise] = window[LIB_CONFIG.name];
-          result = delete window[LIB_CONFIG.name];
+          try {
+            result = delete window[LIB_CONFIG.name];
+          } catch (_error) {
+            error = _error;
+            window[LIB_CONFIG.name] = void 0;
+            result = true;
+          }
           LIB_CONFIG.name = guise;
         }
       }

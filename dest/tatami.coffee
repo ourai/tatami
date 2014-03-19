@@ -860,7 +860,14 @@ $.extend _H,
         console.error "'#{guise}' has existed as a property of Window object." if window.console
       else
         window[guise] = window[LIB_CONFIG.name]
-        result = delete window[LIB_CONFIG.name]
+
+        # IE9- 不能用 delete 关键字删除 window 的属性
+        try
+          result = delete window[LIB_CONFIG.name]
+        catch error
+          window[LIB_CONFIG.name] = undefined
+          result = true
+        
         LIB_CONFIG.name = guise
 
     return result
