@@ -12,7 +12,7 @@ initialize = ->
 
   if $.isPlainObject key
     $.each key, initialize
-  else if $.type(key) is "string" and storage.fn.init.hasOwnProperty(key) and $.isFunction func
+  else if $.type(key) is "string" and hasOwnProp(storage.fn.init, key) and $.isFunction func
     storage.fn.init[key] = func
 
 ###
@@ -39,7 +39,7 @@ $.extend _H,
     result = false
 
     if $.type(guise) is "string"
-      if window.hasOwnProperty guise
+      if hasOwnProp window, guise
         console.error "'#{guise}' has existed as a property of Window object." if window.console
       else
         window[guise] = window[LIB_CONFIG.name]
