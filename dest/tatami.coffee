@@ -1028,7 +1028,7 @@ $.extend _H,
         #   });
         # }
 
-    return result || null
+    return result ? null
 
   ###
   # Save data
