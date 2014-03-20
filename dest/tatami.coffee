@@ -431,16 +431,15 @@ bindHandler = ->
 # @return  {Variant}
 ###
 runHandler = ( name ) ->
-  args = slicer arguments, 1
-  func = storage.fn.handler[name]
   result = null
   
-  # 指定函数名时，从函数池里提取对应函数
-  if typeof name is "string" and $.isFunction func
-    result = func.apply window, args
   # 指定函数列表（数组）时
-  else if $.isArray name
-    func.call window for func in name when $.isFunction func
+  if $.isArray name
+    func.call window for func in name when $.isFunction(func) || $.isFunction(func = storage.fn.handler[func])
+  # 指定函数名时，从函数池里提取对应函数
+  else if typeof name is "string"
+    func = storage.fn.handler[name]
+    result = func.apply window, slicer(arguments, 1) if $.isFunction func
   
   return result
 

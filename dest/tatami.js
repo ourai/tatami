@@ -453,18 +453,19 @@
    */
 
   runHandler = function(name) {
-    var args, func, result, _i, _len;
-    args = slicer(arguments, 1);
-    func = storage.fn.handler[name];
+    var func, result, _i, _len;
     result = null;
-    if (typeof name === "string" && $.isFunction(func)) {
-      result = func.apply(window, args);
-    } else if ($.isArray(name)) {
+    if ($.isArray(name)) {
       for (_i = 0, _len = name.length; _i < _len; _i++) {
         func = name[_i];
-        if ($.isFunction(func)) {
+        if ($.isFunction(func) || $.isFunction(func = storage.fn.handler[func])) {
           func.call(window);
         }
+      }
+    } else if (typeof name === "string") {
+      func = storage.fn.handler[name];
+      if ($.isFunction(func)) {
+        result = func.apply(window, slicer(arguments, 1));
       }
     }
     return result;
