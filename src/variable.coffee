@@ -17,6 +17,8 @@ REG_NAMESPACE = /^[0-9A-Z_.]+[^_.]?$/i
 
 # Main objects
 _H = {}
+_ENV =
+  lang: document.documentElement.lang || document.documentElement.getAttribute("lang") || navigator.language || navigator.browserLanguage
 $ = jQuery
 
 # JavaScript API's support
@@ -56,10 +58,8 @@ storage =
     platform: ""
     # Web API 版本
     api: ""
-    lang: (document.documentElement.lang ||
-      document.documentElement.getAttribute("lang") ||
-      navigator.language ||
-      navigator.browserLanguage).split("-")[0]
+    locale: _ENV.lang
+    lang: _ENV.lang.split("-")[0]
 
   ###
   # 函数
