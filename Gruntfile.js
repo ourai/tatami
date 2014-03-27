@@ -17,6 +17,7 @@ module.exports = function( grunt ) {
     pkg: pkg,
     dirs: {
       src: "src",
+      coffee: "src/coffee",
       dest: "dest/<%= pkg.version %>"
     },
     concat: {
@@ -27,27 +28,34 @@ module.exports = function( grunt ) {
           });
         }
       },
-      build: {
-        src: ["<%= dirs.src %>/intro.coffee",
-              "<%= dirs.src %>/variable.coffee",
-              "<%= dirs.src %>/function.coffee",
-              "<%= dirs.src %>/util.coffee",
-              "<%= dirs.src %>/flow.coffee",
-              "<%= dirs.src %>/project.coffee",
-              "<%= dirs.src %>/storage.coffee",
-              "<%= dirs.src %>/request.coffee",
-              "<%= dirs.src %>/html.coffee",
-              "<%= dirs.src %>/outro.coffee"],
+      coffee: {
+        src: ["<%= dirs.coffee %>/intro.coffee",
+              "<%= dirs.coffee %>/variable.coffee",
+              "<%= dirs.coffee %>/function.coffee",
+              "<%= dirs.coffee %>/util.coffee",
+              "<%= dirs.coffee %>/flow.coffee",
+              "<%= dirs.coffee %>/project.coffee",
+              "<%= dirs.coffee %>/storage.coffee",
+              "<%= dirs.coffee %>/request.coffee",
+              "<%= dirs.coffee %>/html.coffee",
+              "<%= dirs.coffee %>/outro.coffee"],
         dest: "<%= dirs.dest %>/<%= pkg.name %>.coffee"
+      },
+      js: {
+        src: ["<%= dirs.src %>/intro.js",
+              "<%= dirs.src %>/<%= pkg.name %>.js",
+              "<%= dirs.src %>/outro.js"],
+        dest: "<%= dirs.dest %>/<%= pkg.name %>.js"
       }
     },
     coffee: {
       options: {
+        bare: true,
         separator: "\x20"
       },
       build: {
         src: "<%= dirs.dest %>/<%= pkg.name %>.coffee",
-        dest: "<%= dirs.dest %>/<%= pkg.name %>.js"
+        dest: "<%= dirs.src %>/<%= pkg.name %>.js"
       }
     },
     uglify: {
@@ -73,5 +81,6 @@ module.exports = function( grunt ) {
     grunt.loadNpmTasks(npmTasks[index]);
   }
 
-  grunt.registerTask("default", ["concat", "coffee", "uglify", "copy"]);
+  grunt.registerTask("script", ["concat:coffee", "coffee", "concat:js", "uglify"]);
+  grunt.registerTask("default", ["script", "copy"]);
 };
