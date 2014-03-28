@@ -21,13 +21,6 @@ module.exports = function( grunt ) {
       dest: "dest/<%= pkg.version %>"
     },
     concat: {
-      options: {
-        process: function( src, filepath ) {
-          return src.replace(/@(NAME|VERSION)/g, function( text, key ) {
-            return info[key.toLowerCase()];
-          });
-        }
-      },
       coffee: {
         src: ["<%= dirs.coffee %>/intro.coffee",
               "<%= dirs.coffee %>/variable.coffee",
@@ -42,6 +35,13 @@ module.exports = function( grunt ) {
         dest: "<%= dirs.dest %>/<%= pkg.name %>.coffee"
       },
       js: {
+        options: {
+          process: function( src, filepath ) {
+            return src.replace(/@(NAME|VERSION)/g, function( text, key ) {
+              return info[key.toLowerCase()];
+            });
+          }
+        },
         src: ["<%= dirs.src %>/intro.js",
               "<%= dirs.src %>/<%= pkg.name %>.js",
               "<%= dirs.src %>/outro.js"],
@@ -70,7 +70,7 @@ module.exports = function( grunt ) {
     copy: {
       build: {
         cwd: "<%= dirs.dest %>",
-        src: ["**"],
+        src: ["**.js"],
         dest: "dest",
         expand: true
       }
