@@ -1,0 +1,15 @@
+{
+  "name": "tatami",
+  "version": "0.1.1-alpha",
+  "main": "dest/tatami.min.js",
+  "license": "MIT",
+  "ignore": ["**/*", "!dest/**/*"],
+  "devDependencies": {
+    "matcha": "https://github.com/ourai/matcha.git"
+  },
+  "keywords": [
+    "coffee",
+    "CoffeeScript",
+    "library"
+  ]
+}
