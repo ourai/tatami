@@ -23,8 +23,8 @@ module.exports = function( grunt ) {
     concat: {
       coffee: {
         src: ["<%= dirs.coffee %>/intro.coffee",
-              "<%= dirs.coffee %>/variable.coffee",
-              "<%= dirs.coffee %>/function.coffee",
+              "<%= dirs.coffee %>/variables.coffee",
+              "<%= dirs.coffee %>/functions.coffee",
               "<%= dirs.coffee %>/util.coffee",
               "<%= dirs.coffee %>/flow.coffee",
               "<%= dirs.coffee %>/project.coffee",
