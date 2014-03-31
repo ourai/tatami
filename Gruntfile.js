@@ -69,10 +69,16 @@ module.exports = function( grunt ) {
     },
     copy: {
       build: {
+        expand: true,
         cwd: "<%= dirs.dest %>",
         src: ["**.js"],
-        dest: "dest",
-        expand: true
+        dest: "dest"
+      },
+      matcha: {
+        expand: true,
+        cwd: "vendors",
+        src: ["matcha/dest/**/*"],
+        dest: "src/vendors"
       }
     }
   });
