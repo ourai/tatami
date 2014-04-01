@@ -18,6 +18,7 @@ module.exports = function( grunt ) {
     dirs: {
       src: "src",
       coffee: "src/coffee",
+      matcha: "src/vendors/matcha",
       dest: "dest/<%= pkg.version %>"
     },
     concat: {
@@ -46,6 +47,12 @@ module.exports = function( grunt ) {
               "<%= dirs.src %>/<%= pkg.name %>.js",
               "<%= dirs.src %>/outro.js"],
         dest: "<%= dirs.dest %>/<%= pkg.name %>.js"
+      },
+      css: {
+        files: {
+          "<%= dirs.dest %>/<%= pkg.name %>.css": "<%= dirs.matcha %>/matcha.css",
+          "<%= dirs.dest %>/<%= pkg.name %>.min.css": "<%= dirs.matcha %>/matcha.min.css"
+        }
       }
     },
     coffee: {
@@ -71,14 +78,14 @@ module.exports = function( grunt ) {
       build: {
         expand: true,
         cwd: "<%= dirs.dest %>",
-        src: ["**.js"],
+        src: ["**.js", "**.css", "**/*.scss"],
         dest: "dest"
       },
       matcha: {
         expand: true,
-        cwd: "vendors",
-        src: ["matcha/dest/**/*"],
-        dest: "src/vendors"
+        cwd: "<%= dirs.matcha %>",
+        src: ["**/*.scss"],
+        dest: "<%= dirs.dest %>"
       }
     }
   });
@@ -88,5 +95,6 @@ module.exports = function( grunt ) {
   }
 
   grunt.registerTask("script", ["concat:coffee", "coffee", "concat:js", "uglify"]);
-  grunt.registerTask("default", ["script", "copy"]);
+  grunt.registerTask("style", ["concat:css", "copy:matcha"]);
+  grunt.registerTask("default", ["script", "style", "copy:build"]);
 };
