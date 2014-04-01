@@ -458,17 +458,39 @@ img {
 }
 
 /* line 20, _rules.scss */
-.tabs .tabs__triggers {
+.Tabs .Tabs-triggers {
   overflow: hidden;
 }
 /* line 24, _rules.scss */
-.tabs .tabs__trigger {
+.Tabs .Tabs-trigger {
+  display: -moz-inline-stack;
   display: inline-block;
+  *vertical-align: auto;
+  zoom: 1;
   *display: inline;
-  *zoom: 1;
+  padding: 0 2em;
+  cursor: pointer;
+}
+/* line 29, _rules.scss */
+.Tabs .Tabs-trigger.is-selected {
+  background-color: #FFF;
+  font-weight: bold;
+  cursor: default;
+}
+/* line 36, _rules.scss */
+.Tabs a.Tabs-trigger {
+  text-decoration: none !important;
+}
+/* line 40, _rules.scss */
+.Tabs .Tabs-content {
+  display: none;
+}
+/* line 43, _rules.scss */
+.Tabs .Tabs-content.is-selected {
+  display: block;
 }
 
-/* line 30, _rules.scss */
+/* line 50, _rules.scss */
 html[lang^="en"] tbody th {
   text-transform: uppercase;
 }

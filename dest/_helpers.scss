@@ -1,8 +1,4 @@
-@mixin inline-block {
-  display: inline-block;
-  *display: inline;
-  *zoom: 1;
-}
+@import "compass";
 
 // Font
 $font_family: "Open Sans", "Helvetica Neue", Helvetica, Arial, Sans-serif;
@@ -56,7 +52,7 @@ $border_color: #B8C4C8;
 }
 
 @mixin tag_unit {
-  @include inline-block;
+  @include inline-block(none);
   max-width: 120px;
   margin-right: 5px; padding: 0 8px;
   border-radius: 2px;
@@ -111,3 +107,17 @@ $border_color: #B8C4C8;
   padding: 0;
 }
 
+// refer to http://nicolasgallagher.com/micro-clearfix-hack/
+@mixin clearfix {
+  *zoom: 1;
+
+  &:before,
+  &:after {
+    content: "\0020";
+    display: table;
+  }
+
+  &:after {
+    clear: both;
+  }
+}
