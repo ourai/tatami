@@ -842,6 +842,18 @@ $.extend(_H, {
       }
     }
     return result;
+  },
+
+  /*
+   * 判断某个对象是否有自己的指定属性
+   *
+   * @method   hasOwnProp
+   * @param    obj {Object}    Target object
+   * @param    prop {String}   Property to be tested
+   * @return   {Boolean}
+   */
+  hasOwnProp: function(obj, prop) {
+    return hasOwnProp.apply(window, slicer(arguments));
   }
 });
 
