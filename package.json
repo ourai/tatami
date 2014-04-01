@@ -1,6 +1,6 @@
 {
   "name": "tatami",
-  "version": "0.1.1-alpha",
+  "version": "0.1.1",
   "description": "JavaScript library for project",
   "homepage": "http://ourai.github.io/tatami/",
   "keywords": [
@@ -19,9 +19,9 @@
   "engines": "node >= 0.8.0",
   "devDependencies": {
     "grunt": "~0.4.1",
-    "grunt-contrib-concat": "~0.3.0",
     "grunt-contrib-coffee": "~0.10.0",
     "grunt-contrib-uglify": "~0.4.0",
+    "grunt-contrib-concat": "~0.3.0",
     "grunt-contrib-copy": "~0.5.0"
   }
 }

@@ -43,7 +43,8 @@ module.exports = function( grunt ) {
             });
           }
         },
-        src: ["<%= dirs.src %>/intro.js",
+        src: ["<%= dirs.matcha %>/matcha.js",
+              "<%= dirs.src %>/intro.js",
               "<%= dirs.src %>/<%= pkg.name %>.js",
               "<%= dirs.src %>/outro.js"],
         dest: "<%= dirs.dest %>/<%= pkg.name %>.js"
