@@ -20,7 +20,7 @@ var LIB_CONFIG, getStorageData, hasOwnProp, hook, storage;
 
 LIB_CONFIG = {
   name: "Matcha",
-  version: "0.1.1-alpha"
+  version: "0.1.1"
 };
 
 storage = {
