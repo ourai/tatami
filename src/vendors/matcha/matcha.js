@@ -16,12 +16,14 @@
 }(typeof window !== "undefined" ? window : this, function( window, noGlobal ) {
 
 "use strict";
-var LIB_CONFIG, getStorageData, hasOwnProp, hook, storage;
+var LIB_CONFIG, getStorageData, hasOwnProp, hook, storage, _H;
 
 LIB_CONFIG = {
   name: "Matcha",
   version: "0.1.1"
 };
+
+_H = {};
 
 storage = {
 
