@@ -176,10 +176,10 @@ $.extend _H,
   ###
   # 判断某个对象是否有自己的指定属性
   #
-  # @method   hasOwnProp
+  # @method   hasProp
   # @param    obj {Object}    Target object
   # @param    prop {String}   Property to be tested
   # @return   {Boolean}
   ###
-  hasOwnProp: ( obj, prop ) ->
+  hasProp: ( obj, prop ) ->
     return hasOwnProp.apply window, slicer arguments
