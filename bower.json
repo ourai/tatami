@@ -1,7 +1,9 @@
 {
   "name": "tatami",
   "version": "0.1.1",
-  "main": ["dest/tatami.min.js", "dest/tatami.min.css"],
+  "main": [
+    "dest/javascripts/tatami.min.js",
+    "dest/stylesheets/tatami.min.css"],
   "license": "MIT",
   "ignore": ["**/*", "!dest/**/*"],
   "dependencies": {

@@ -8,32 +8,38 @@ module.exports = function( grunt ) {
       "grunt-contrib-concat",
       "grunt-contrib-coffee",
       "grunt-contrib-uglify",
-      "grunt-contrib-copy"
+      "grunt-contrib-copy",
+      "grunt-contrib-clean"
     ];
   var index = 0;
   var length = npmTasks.length;
 
   grunt.initConfig({
+    repo: info,
     pkg: pkg,
-    dirs: {
+    meta: {
       src: "src",
-      coffee: "src/coffee",
-      matcha: "src/vendors/matcha",
-      dest: "dest/<%= pkg.version %>"
+      coffee: "<%= meta.src %>/coffee",
+      vendor: "<%= meta.src %>/vendors",
+      matcha: "<%= meta.vendor %>/matcha",
+      dest: "dest",
+      dest_style: "<%= meta.dest %>/stylesheets",
+      dest_script: "<%= meta.dest %>/javascripts",
+      dest_image: "<%= meta.dest %>/images"
     },
     concat: {
       coffee: {
-        src: ["<%= dirs.coffee %>/intro.coffee",
-              "<%= dirs.coffee %>/variables.coffee",
-              "<%= dirs.coffee %>/functions.coffee",
-              "<%= dirs.coffee %>/util.coffee",
-              "<%= dirs.coffee %>/flow.coffee",
-              "<%= dirs.coffee %>/project.coffee",
-              "<%= dirs.coffee %>/storage.coffee",
-              "<%= dirs.coffee %>/request.coffee",
-              "<%= dirs.coffee %>/html.coffee",
-              "<%= dirs.coffee %>/outro.coffee"],
-        dest: "<%= dirs.dest %>/<%= pkg.name %>.coffee"
+        src: ["<%= meta.coffee %>/intro.coffee",
+              "<%= meta.coffee %>/variables.coffee",
+              "<%= meta.coffee %>/functions.coffee",
+              "<%= meta.coffee %>/util.coffee",
+              "<%= meta.coffee %>/flow.coffee",
+              "<%= meta.coffee %>/project.coffee",
+              "<%= meta.coffee %>/storage.coffee",
+              "<%= meta.coffee %>/request.coffee",
+              "<%= meta.coffee %>/html.coffee",
+              "<%= meta.coffee %>/outro.coffee"],
+        dest: "<%= meta.dest_script %>/<%= pkg.name %>.coffee"
       },
       js: {
         options: {
@@ -43,16 +49,17 @@ module.exports = function( grunt ) {
             });
           }
         },
-        src: ["<%= dirs.matcha %>/matcha.js",
-              "<%= dirs.src %>/intro.js",
-              "<%= dirs.src %>/<%= pkg.name %>.js",
-              "<%= dirs.src %>/outro.js"],
-        dest: "<%= dirs.dest %>/<%= pkg.name %>.js"
+        src: ["<%= meta.vendor %>/ronin/ronin.js",
+              "<%= meta.matcha %>/javascripts/matcha.js",
+              "<%= meta.src %>/intro.js",
+              "<%= meta.src %>/<%= pkg.name %>.js",
+              "<%= meta.src %>/outro.js"],
+        dest: "<%= meta.dest_script %>/<%= pkg.name %>.js"
       },
       css: {
         files: {
-          "<%= dirs.dest %>/<%= pkg.name %>.css": "<%= dirs.matcha %>/matcha.css",
-          "<%= dirs.dest %>/<%= pkg.name %>.min.css": "<%= dirs.matcha %>/matcha.min.css"
+          "<%= meta.dest_style %>/<%= pkg.name %>.css": "<%= meta.matcha %>/stylesheets/matcha.css",
+          "<%= meta.dest_style %>/<%= pkg.name %>.min.css": "<%= meta.matcha %>/stylesheets/matcha.min.css"
         }
       }
     },
@@ -62,31 +69,44 @@ module.exports = function( grunt ) {
         separator: "\x20"
       },
       build: {
-        src: "<%= dirs.dest %>/<%= pkg.name %>.coffee",
-        dest: "<%= dirs.src %>/<%= pkg.name %>.js"
+        src: "<%= meta.dest_script %>/<%= pkg.name %>.coffee",
+        dest: "<%= meta.src %>/<%= pkg.name %>.js"
       }
     },
     uglify: {
       options: {
-        banner: "/*! <%= pkg.name %> <%= grunt.template.today('yyyy-mm-dd') %> */\n"
+        banner: "/*!\n" +
+                " * <%= repo.name %> v<%= repo.version %>\n" +
+                " * <%= pkg.homepage %>\n" +
+                " *\n" +
+                " * Copyright 2013, <%= grunt.template.today('yyyy') %> Ourairyu, http://ourai.ws/\n" +
+                " *\n" +
+                " * Date: <%= grunt.template.today('yyyy-mm-dd') %>\n" +
+                " */\n",
+        sourceMap: true
       },
       build: {
-        src: "<%= dirs.dest %>/<%= pkg.name %>.js",
-        dest: "<%= dirs.dest %>/<%= pkg.name %>.min.js"
+        src: "<%= meta.dest_script %>/<%= pkg.name %>.js",
+        dest: "<%= meta.dest_script %>/<%= pkg.name %>.min.js"
       }
     },
     copy: {
       build: {
         expand: true,
-        cwd: "<%= dirs.dest %>",
+        cwd: "<%= meta.dest %>",
         src: ["**.js", "**.css", "**/*.scss"],
         dest: "dest"
       },
       matcha: {
         expand: true,
-        cwd: "<%= dirs.matcha %>",
-        src: ["**/*.scss"],
-        dest: "<%= dirs.dest %>"
+        cwd: "<%= meta.matcha %>",
+        src: ["**/*.scss", "**/*.gif", "**/*.jpg", "**/*.png"],
+        dest: "<%= meta.dest %>"
+      }
+    },
+    clean: {
+      compiled: {
+        src: ["<%= meta.dest_script %>/*.coffee"]
       }
     }
   });
@@ -97,5 +117,5 @@ module.exports = function( grunt ) {
 
   grunt.registerTask("script", ["concat:coffee", "coffee", "concat:js", "uglify"]);
   grunt.registerTask("style", ["concat:css", "copy:matcha"]);
-  grunt.registerTask("default", ["script", "style", "copy:build"]);
+  grunt.registerTask("default", ["script", "style", "clean"]);
 };

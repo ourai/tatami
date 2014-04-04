@@ -89,7 +89,7 @@ $border_color: #B8C4C8;
   font: 0px/0 a;
   text-shadow: none;
   // Use a transparent image to set as the background of it to fix bug of IE6/7/8.
-  background: transparent image-url("bg-transparent.gif") repeat;
+  background: transparent image-url("transparent.gif") repeat;
 }
 
 @mixin line_feed {

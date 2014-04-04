@@ -1,5 +1,5 @@
 "use strict";
-var $, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, LIB_CONFIG, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, TEXT_NODE, api_ver, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, getStorageData, hasOwnProp, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, request, resetConfig, runHandler, setData, setStorageData, setup, slicer, storage, support, systemDialog, systemDialogHandler, _ENV, _H;
+var $, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, LIB_CONFIG, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, TEXT_NODE, api_ver, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, request, resetConfig, runHandler, setData, setStorageData, setup, storage, support, systemDialog, systemDialogHandler, _ENV, _H;
 
 LIB_CONFIG = {
   name: "@NAME",
@@ -32,7 +32,7 @@ NOTATION_NODE = 12;
 
 REG_NAMESPACE = /^[0-9A-Z_.]+[^_.]?$/i;
 
-_H = {};
+_H = Ronin;
 
 _ENV = {
   lang: document.documentElement.lang || document.documentElement.getAttribute("lang") || navigator.language || navigator.browserLanguage
@@ -96,7 +96,7 @@ storage = {
         return {
           success: function(data, textStatus, jqXHR) {
             var args;
-            args = slicer(arguments);
+            args = _H.slice(arguments);
 
             /*
              * 服务端在返回请求结果时必须是个 JSON，如下：
@@ -180,34 +180,6 @@ storage = {
 
 
 /*
- * 判断某个对象是否有自己的指定属性
- *
- * !!! 不能用 object.hasOwnProperty(prop) 这种方式，低版本 IE 不支持。
- *
- * @private
- * @method   hasOwnProp
- * @return   {Boolean}
- */
-
-hasOwnProp = function(obj, prop) {
-  return Object.prototype.hasOwnProperty.call(obj, prop);
-};
-
-
-/*
- * 切割 Array Like 片段
- *
- * @private
- * @method   slicer
- * @return
- */
-
-slicer = function(args, index) {
-  return [].slice.call(args, Number(index) || 0);
-};
-
-
-/*
  * 取得数组或类数组对象中最后一个元素
  *
  * @private
@@ -216,7 +188,7 @@ slicer = function(args, index) {
  */
 
 last = function(array) {
-  return slicer(array, -1)[0];
+  return _H.slice(array, -1)[0];
 };
 
 
@@ -260,7 +232,7 @@ systemDialog = function(type, message, okHandler, cancelHandler) {
     if ($.isFunction($.fn.dialog)) {
       poolName = "systemDialog";
       i18nText = storage.i18n._SYS.dialog[_H.config("lang")];
-      if (!hasOwnProp(storage.pool, poolName)) {
+      if (!_H.hasProp(storage.pool, poolName)) {
         storage.pool[poolName] = {};
       }
       dlg = storage.pool[poolName][type];
@@ -469,7 +441,7 @@ runHandler = function(name) {
   } else if (typeof name === "string") {
     func = storage.fn.handler[name];
     if ($.isFunction(func)) {
-      result = func.apply(window, slicer(arguments, 1));
+      result = func.apply(window, _H.slice(arguments, 1));
     }
   }
   return result;
@@ -505,7 +477,7 @@ clone = function(source) {
   var result;
   result = null;
   if ($.isArray(source) || source.length !== void 0) {
-    result = [].concat([], slicer(source));
+    result = [].concat([], _H.slice(source));
   } else if ($.isPlainObject(source)) {
     result = $.extend(true, {}, source);
   }
@@ -544,7 +516,7 @@ getStorageData = function(ns_str, ignore) {
     result = storage;
     $.each(parts, function(idx, part) {
       var rv;
-      rv = hasOwnProp(result, part);
+      rv = _H.hasProp(result, part);
       result = result[part];
       return rv;
     });
@@ -570,12 +542,12 @@ setStorageData = function(ns_str, data) {
   isObj = $.isPlainObject(data);
   if (length === 1) {
     key = parts[0];
-    result = setData(storage, key, data, hasOwnProp(storage, key));
+    result = setData(storage, key, data, _H.hasProp(storage, key));
   } else {
     result = storage;
     $.each(parts, function(i, n) {
       if (i < length - 1) {
-        if (!hasOwnProp(result, n)) {
+        if (!_H.hasProp(result, n)) {
           result[n] = {};
         }
       } else {
@@ -610,7 +582,7 @@ setData = function(target, key, data, condition) {
  */
 
 isExisted = function(host, prop, type) {
-  return $.type(host) === "object" && $.type(prop) === "string" && hasOwnProp(host, prop) && $.type(host[prop]) === type;
+  return $.type(host) === "object" && $.type(prop) === "string" && _H.hasProp(host, prop) && $.type(host[prop]) === type;
 };
 
 
@@ -689,7 +661,7 @@ $.extend(_H, {
    * @return
    */
   queue: function() {
-    return bindHandler.apply(window, slicer(arguments));
+    return bindHandler.apply(window, this.slice(arguments));
   },
 
   /*
@@ -699,7 +671,7 @@ $.extend(_H, {
    * @return  {Variant}
    */
   run: function() {
-    return runHandler.apply(window, slicer(arguments));
+    return runHandler.apply(window, this.slice(arguments));
   },
   url: function() {
     var loc, url;
@@ -825,18 +797,6 @@ $.extend(_H, {
       }
     }
     return result;
-  },
-
-  /*
-   * 判断某个对象是否有自己的指定属性
-   *
-   * @method   hasProp
-   * @param    obj {Object}    Target object
-   * @param    prop {String}   Property to be tested
-   * @return   {Boolean}
-   */
-  hasProp: function(obj, prop) {
-    return hasOwnProp.apply(window, slicer(arguments));
   }
 });
 
@@ -918,7 +878,7 @@ initialize = function() {
   func = args[1];
   if ($.isPlainObject(key)) {
     return $.each(key, initialize);
-  } else if ($.type(key) === "string" && hasOwnProp(storage.fn.init, key) && $.isFunction(func)) {
+  } else if ($.type(key) === "string" && _H.hasProp(storage.fn.init, key) && $.isFunction(func)) {
     return storage.fn.init[key] = func;
   }
 };
@@ -955,7 +915,7 @@ $.extend(_H, {
     var error, result;
     result = false;
     if ($.type(guise) === "string") {
-      if (hasOwnProp(window, guise)) {
+      if (this.hasProp(window, guise)) {
         if (window.console) {
           console.error("'" + guise + "' has existed as a property of Window object.");
         }
@@ -996,7 +956,7 @@ $.extend(_H, {
    * @return
    */
   init: function() {
-    return initialize.apply(window, slicer(arguments));
+    return initialize.apply(window, this.slice(arguments));
   },
 
   /*
