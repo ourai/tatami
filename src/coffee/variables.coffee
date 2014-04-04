@@ -16,7 +16,7 @@ NOTATION_NODE = 12
 REG_NAMESPACE = /^[0-9A-Z_.]+[^_.]?$/i
 
 # Main objects
-_H = {}
+_H = Ronin
 _ENV =
   lang: document.documentElement.lang || document.documentElement.getAttribute("lang") || navigator.language || navigator.browserLanguage
 $ = jQuery
@@ -81,7 +81,7 @@ storage =
         return {
           # 状态码为 200
           success: ( data, textStatus, jqXHR ) ->
-            args = slicer arguments
+            args = _H.slice arguments
             ###
             # 服务端在返回请求结果时必须是个 JSON，如下：
             #    {

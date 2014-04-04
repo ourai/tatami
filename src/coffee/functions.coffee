@@ -1,26 +1,4 @@
 ###
-# 判断某个对象是否有自己的指定属性
-#
-# !!! 不能用 object.hasOwnProperty(prop) 这种方式，低版本 IE 不支持。
-#
-# @private
-# @method   hasOwnProp
-# @return   {Boolean}
-###
-hasOwnProp = ( obj, prop ) ->
-  return Object.prototype.hasOwnProperty.call obj, prop
-
-###
-# 切割 Array Like 片段
-#
-# @private
-# @method   slicer
-# @return
-###
-slicer = ( args, index ) ->
-  return [].slice.call args, (Number(index) || 0)
-
-###
 # 取得数组或类数组对象中最后一个元素
 #
 # @private
@@ -28,7 +6,7 @@ slicer = ( args, index ) ->
 # @return
 ###
 last = ( array ) ->
-  return slicer(array, -1)[0]
+  return _H.slice(array, -1)[0]
 
 ###
 # 全局配置
@@ -98,7 +76,7 @@ systemDialog = ( type, message, okHandler, cancelHandler ) ->
     if $.isFunction $.fn.dialog
       poolName = "systemDialog"
       i18nText = storage.i18n._SYS.dialog[_H.config "lang"]
-      storage.pool[poolName] = {} if not hasOwnProp(storage.pool, poolName)
+      storage.pool[poolName] = {} if not _H.hasProp(storage.pool, poolName)
       dlg = storage.pool[poolName][type]
 
       if not dlg
@@ -280,7 +258,7 @@ runHandler = ( name ) ->
   # 指定函数名时，从函数池里提取对应函数
   else if typeof name is "string"
     func = storage.fn.handler[name]
-    result = func.apply window, slicer(arguments, 1) if $.isFunction func
+    result = func.apply window, _H.slice(arguments, 1) if $.isFunction func
   
   return result
 
@@ -307,7 +285,7 @@ clone = ( source ) ->
   result = null
   
   if $.isArray(source) or source.length isnt undefined
-    result = [].concat [], slicer source
+    result = [].concat [], _H.slice source
   else if $.isPlainObject source
     result = $.extend true, {}, source
   
@@ -340,7 +318,7 @@ getStorageData = ( ns_str, ignore ) ->
     result = storage
 
     $.each parts, ( idx, part ) ->
-      rv = hasOwnProp(result, part)
+      rv = _H.hasProp(result, part)
       result = result[part]
       return rv
 
@@ -362,13 +340,13 @@ setStorageData = ( ns_str, data ) ->
 
   if length is 1
     key = parts[0]
-    result = setData storage, key, data, hasOwnProp(storage, key)
+    result = setData storage, key, data, _H.hasProp(storage, key)
   else
     result = storage
 
     $.each parts, ( i, n ) ->
       if i < length - 1
-        result[n] = {} if not hasOwnProp(result, n)
+        result[n] = {} if not _H.hasProp(result, n)
       else
         result[n] = setData result, n, data, $.isPlainObject result[n]
       result = result[n]
@@ -395,7 +373,7 @@ setData = ( target, key, data, condition ) ->
 # @return  {Boolean}
 ###
 isExisted = ( host, prop, type ) ->
-  return $.type(host) is "object" and $.type(prop) is "string" and hasOwnProp(host, prop) and $.type(host[prop]) is type
+  return $.type(host) is "object" and $.type(prop) is "string" and _H.hasProp(host, prop) and $.type(host[prop]) is type
 
 ###
 # Determines whether a key in a limited key list
