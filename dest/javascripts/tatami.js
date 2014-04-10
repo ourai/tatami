@@ -286,6 +286,126 @@ _builtin.each("Boolean Number String Function Array Date RegExp Object".split(" 
   };
 });
 
+_builtin.mixin({
+
+  /*
+   * 判断是否为 window 对象
+   * 
+   * @method  isWindow
+   * @param   object {Mixed}
+   * @return  {String}
+   */
+  isWindow: function(object) {
+    return object && this.type(object) === "object" && "setInterval" in object;
+  },
+
+  /*
+   * 判断是否为数字类型（字符串）
+   * 
+   * @method  isNumeric
+   * @param   object {Mixed}
+   * @return  {Boolean}
+   */
+  isNumeric: function(object) {
+    return !isNaN(parseFloat(object)) && isFinite(object);
+  },
+
+  /*
+   * Determine whether a number is an integer.
+   *
+   * @method  isInteger
+   * @param   object {Mixed}
+   * @return  {Boolean}
+   */
+  isInteger: function(object) {
+    return this.isNumeric(object) && /^-?[1-9]\d*$/.test(object);
+  },
+
+  /*
+   * 判断对象是否为纯粹的对象（由 {} 或 new Object 创建）
+   * 
+   * @method  isPlainObject
+   * @param   object {Mixed}
+   * @return  {Boolean}
+   */
+  isPlainObject: function(object) {
+    var error, key;
+    if (!object || this.type(object) !== "object" || object.nodeType || this.isWindow(object)) {
+      return false;
+    }
+    try {
+      if (object.constructor && !this.hasProp(object, "constructor") && !this.hasProp(object.constructor.prototype, "isPrototypeOf")) {
+        return false;
+      }
+    } catch (_error) {
+      error = _error;
+      return false;
+    }
+    for (key in object) {
+      key;
+    }
+    return key === void 0 || this.hasProp(object, key);
+  },
+
+  /*
+   * Determin whether a variable is considered to be empty.
+   *
+   * A variable is considered empty if its value is or like:
+   *  - null
+   *  - undefined
+   *  - false
+   *  - ""
+   *  - []
+   *  - {}
+   *  - 0
+   *  - 0.0
+   *  - "0"
+   *  - "0.0"
+   *
+   * @method  isEmpty
+   * @param   object {Mixed}
+   * @return  {Boolean}
+   *
+   * refer: http://www.php.net/manual/en/function.empty.php
+   */
+  isEmpty: function(object) {
+    var name, result;
+    result = false;
+    if ((object == null) || !object) {
+      result = true;
+    } else if (this.type(object) === "object") {
+      result = true;
+      for (name in object) {
+        result = false;
+        break;
+      }
+    }
+    return result;
+  },
+
+  /*
+   * 是否为类数组对象
+   *
+   * @method  isArrayLike
+   * @param   object {Mixed}
+   * @return  {Boolean}
+   */
+  isArrayLike: function(object) {
+    var length, result, type;
+    result = false;
+    if (this.type(object) === "object" && object !== null) {
+      if (!this.isWindow(object)) {
+        type = this.type(object);
+        length = object.length;
+        if (object.nodeType === 1 && length || type === "array" || type !== "function" && (length === 0 || this.isNumber(length) && length > 0 && (length - 1) in object)) {
+          result = true;
+        }
+      }
+    }
+    return result;
+  }
+});
+
 
 /*
  * A constructor to construct methods
@@ -427,6 +547,57 @@ storage.modules.Core.push([
       {
 
         /*
+         * 别名
+         * 
+         * @method  alias
+         * @param   name {String}
+         * @return
+         */
+        name: "alias",
+        handler: function(name) {
+          if (this.isString(name)) {
+            if (window[name] === void 0) {
+              window[name] = this;
+            }
+          }
+          return window[String(name)];
+        }
+      }, {
+
+        /*
+         * 更改 LIB_CONFIG.name 以适应项目「本土化」
+         * 
+         * @method   mask
+         * @param    guise {String}    New name for library
+         * @return   {Boolean}
+         */
+        name: "mask",
+        handler: function(guise) {
+          var error, result;
+          if (this.hasProp(window, guise)) {
+            if (window.console) {
+              console.error("'" + guise + "' has existed as a property of Window object.");
+            }
+          } else {
+            window[guise] = window[LIB_CONFIG.name];
+            try {
+              result = delete window[LIB_CONFIG.name];
+            } catch (_error) {
+              error = _error;
+              window[LIB_CONFIG.name] = void 0;
+              result = true;
+            }
+            LIB_CONFIG.name = guise;
+          }
+          return result;
+        },
+        value: false,
+        validator: function(guise) {
+          return this.isString(guise);
+        }
+      }, {
+
+        /*
          * Returns the namespace specified and creates it if it doesn't exist.
          * Be careful when naming packages.
          * Reserved words may work in some browsers and not others.
@@ -465,138 +636,6 @@ storage.modules.Core.push([
             return true;
           });
           return ns;
-        }
-      }, {
-
-        /*
-         * 判断是否为 window 对象
-         * 
-         * @method  isWindow
-         * @param   object {Mixed}
-         * @return  {String}
-         */
-        name: "isWindow",
-        handler: function(object) {
-          return object && typeof object === "object" && "setInterval" in object;
-        }
-      }, {
-
-        /*
-         * 判断是否为数字类型（字符串）
-         * 
-         * @method  isNumeric
-         * @param   object {Mixed}
-         * @return  {Boolean}
-         */
-        name: "isNumeric",
-        handler: function(object) {
-          return !isNaN(parseFloat(object)) && isFinite(object);
-        }
-      }, {
-
-        /*
-         * Determine whether a number is an integer.
-         *
-         * @method  isInteger
-         * @param   object {Mixed}
-         * @return  {Boolean}
-         */
-        name: "isInteger",
-        handler: function(object) {
-          return this.isNumeric(object) && /^-?[1-9]\d*$/.test(object);
-        }
-      }, {
-
-        /*
-         * 判断对象是否为纯粹的对象（由 {} 或 new Object 创建）
-         * 
-         * @method  isPlainObject
-         * @param   object {Mixed}
-         * @return  {Boolean}
-         */
-        name: "isPlainObject",
-        handler: function(object) {
-          var error, key;
-          if (!object || this.type(object) !== "object" || object.nodeType || this.isWindow(object)) {
-            return false;
-          }
-          try {
-            if (object.constructor && !this.hasProp(object, "constructor") && !this.hasProp(object.constructor.prototype, "isPrototypeOf")) {
-              return false;
-            }
-          } catch (_error) {
-            error = _error;
-            return false;
-          }
-          for (key in object) {
-            key;
-          }
-          return key === void 0 || this.hasProp(object, key);
-        }
-      }, {
-
-        /*
-         * Determin whether a variable is considered to be empty.
-         *
-         * A variable is considered empty if its value is or like:
-         *  - null
-         *  - undefined
-         *  - false
-         *  - ""
-         *  - []
-         *  - {}
-         *  - 0
-         *  - 0.0
-         *  - "0"
-         *  - "0.0"
-         *
-         * @method  isEmpty
-         * @param   object {Mixed}
-         * @return  {Boolean}
-         *
-         * refer: http://www.php.net/manual/en/function.empty.php
-         */
-        name: "isEmpty",
-        handler: function(object) {
-          var name, result;
-          result = false;
-          if ((object == null) || !object) {
-            result = true;
-          } else if (typeof object === "object") {
-            result = true;
-            for (name in object) {
-              result = false;
-              break;
-            }
-          }
-          return result;
-        },
-        validator: function() {
-          return true;
-        }
-      }, {
-
-        /*
-         * 是否为类数组对象
-         *
-         * @method  isArrayLike
-         * @param   object {Mixed}
-         * @return  {Boolean}
-         */
-        name: "isArrayLike",
-        handler: function(object) {
-          var length, result, type;
-          result = false;
-          if (typeof object === "object" && object !== null) {
-            if (!this.isWindow(object)) {
-              type = this.type(object);
-              length = object.length;
-              if (object.nodeType === 1 && length || type === "array" || type !== "function" && (length === 0 || this.isNumber(length) && length > 0 && (length - 1) in object)) {
-                result = true;
-              }
-            }
-          }
-          return result;
         }
       }, {
 
@@ -2650,36 +2689,6 @@ api_ver = function() {
 };
 
 $.extend(_H, {
-
-  /*
-   * 更改 LIB_CONFIG.name 以适应项目「本土化」
-   * 
-   * @method   mask
-   * @param    guise {String}    New name for library
-   * @return   {Boolean}
-   */
-  mask: function(guise) {
-    var error, result;
-    result = false;
-    if ($.type(guise) === "string") {
-      if (this.hasProp(window, guise)) {
-        if (window.console) {
-          console.error("'" + guise + "' has existed as a property of Window object.");
-        }
-      } else {
-        window[guise] = window[LIB_CONFIG.name];
-        try {
-          result = delete window[LIB_CONFIG.name];
-        } catch (_error) {
-          error = _error;
-          window[LIB_CONFIG.name] = void 0;
-          result = true;
-        }
-        LIB_CONFIG.name = guise;
-      }
-    }
-    return result;
-  },
 
   /*
    * 获取系统信息
