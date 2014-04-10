@@ -1892,11 +1892,11 @@ storage = {
              *    }
              */
             if (data.code > 0) {
-              if ($.isFunction(succeed)) {
+              if (_H.isFunction(succeed)) {
                 return succeed.apply($, args);
               }
             } else {
-              if ($.isFunction(fail)) {
+              if (_H.isFunction(fail)) {
                 return fail.apply($, args);
               } else {
                 return systemDialog("alert", data.message);
@@ -2013,9 +2013,9 @@ setup = function() {
 systemDialog = function(type, message, okHandler, cancelHandler) {
   var dlg, i18nText, poolName, result;
   result = false;
-  if ($.type(type) === "string") {
+  if (_H.isString(type)) {
     type = type.toLowerCase();
-    if ($.isFunction($.fn.dialog)) {
+    if (_H.isFunction($.fn.dialog)) {
       poolName = "systemDialog";
       i18nText = storage.i18n._SYS.dialog[_H.config("lang")];
       if (!_H.hasProp(storage.pool, poolName)) {
@@ -2029,7 +2029,7 @@ systemDialog = function(type, message, okHandler, cancelHandler) {
             return $(".ui-dialog-buttonset .ui-button", $(this).closest(".ui-dialog")).each(function() {
               var btn;
               btn = $(this);
-              switch ($.trim(btn.text())) {
+              switch (_H.trim(btn.text())) {
                 case i18nText.ok:
                   type = "ok";
                   break;
@@ -2065,11 +2065,11 @@ systemDialog = function(type, message, okHandler, cancelHandler) {
         window.alert(message);
       } else {
         if (window.confirm(message)) {
-          if ($.isFunction(okHandler)) {
+          if (_H.isFunction(okHandler)) {
             okHandler();
           }
         } else {
-          if ($.isFunction(cancelHandler)) {
+          if (_H.isFunction(cancelHandler)) {
             cancelHandler();
           }
         }
@@ -2097,7 +2097,7 @@ systemDialogHandler = function(type, message, okHandler, cancelHandler) {
   i18nText = storage.i18n._SYS.dialog[_H.config("lang")];
   handler = function(cb, rv) {
     $(this).dialog("close");
-    if ($.isFunction(cb)) {
+    if (_H.isFunction(cb)) {
       cb();
     }
     return rv;
@@ -2186,16 +2186,16 @@ bindHandler = function() {
   fnList = storage.fn.handler;
   if (args.length === 0) {
     handler = clone(fnList);
-  } else if (typeof name === "string") {
-    if ($.isFunction(handler)) {
+  } else if (_H.isString(name)) {
+    if (_H.isFunction(handler)) {
       fnList[name] = handler;
     } else {
       handler = fnList[name];
     }
-  } else if ($.isPlainObject(name)) {
+  } else if (_H.isPlainObject(name)) {
     for (funcName in name) {
       func = name[funcName];
-      if ($.isFunction(func)) {
+      if (_H.isFunction(func)) {
         fnList[funcName] = func;
       }
     }
@@ -2217,16 +2217,16 @@ bindHandler = function() {
 runHandler = function(name) {
   var func, result, _i, _len;
   result = null;
-  if ($.isArray(name)) {
+  if (_H.isArray(name)) {
     for (_i = 0, _len = name.length; _i < _len; _i++) {
       func = name[_i];
-      if ($.isFunction(func) || $.isFunction(func = storage.fn.handler[func])) {
+      if (_H.isFunction(func) || _H.isFunction(func = storage.fn.handler[func])) {
         func.call(window);
       }
     }
-  } else if (typeof name === "string") {
+  } else if (_H.isString(name)) {
     func = storage.fn.handler[name];
-    if ($.isFunction(func)) {
+    if (_H.isFunction(func)) {
       result = func.apply(window, _H.slice(arguments, 1));
     }
   }
@@ -2244,7 +2244,7 @@ runHandler = function(name) {
  */
 
 pushHandler = function(handler, queue) {
-  if ($.isFunction(handler)) {
+  if (_H.isFunction(handler)) {
     return storage.fn[queue].push(handler);
   }
 };
@@ -2262,9 +2262,9 @@ pushHandler = function(handler, queue) {
 clone = function(source) {
   var result;
   result = null;
-  if ($.isArray(source) || source.length !== void 0) {
+  if (_H.isArray(source) || source.length !== void 0) {
     result = [].concat([], _H.slice(source));
-  } else if ($.isPlainObject(source)) {
+  } else if (_H.isPlainObject(source)) {
     result = $.extend(true, {}, source);
   }
   return result;
@@ -2325,7 +2325,7 @@ setStorageData = function(ns_str, data) {
   var isObj, key, length, parts, result;
   parts = ns_str.split(".");
   length = parts.length;
-  isObj = $.isPlainObject(data);
+  isObj = _H.isPlainObject(data);
   if (length === 1) {
     key = parts[0];
     result = setData(storage, key, data, _H.hasProp(storage, key));
@@ -2337,7 +2337,7 @@ setStorageData = function(ns_str, data) {
           result[n] = {};
         }
       } else {
-        result[n] = setData(result, n, data, $.isPlainObject(result[n]));
+        result[n] = setData(result, n, data, _H.isPlainObject(result[n]));
       }
       result = result[n];
       return true;
@@ -2347,7 +2347,7 @@ setStorageData = function(ns_str, data) {
 };
 
 setData = function(target, key, data, condition) {
-  if (condition && $.isPlainObject(data)) {
+  if (condition && _H.isPlainObject(data)) {
     $.extend(true, target[key], data);
   } else {
     target[key] = data;
@@ -2368,7 +2368,7 @@ setData = function(target, key, data, condition) {
  */
 
 isExisted = function(host, prop, type) {
-  return $.type(host) === "object" && $.type(prop) === "string" && _H.hasProp(host, prop) && $.type(host[prop]) === type;
+  return _H.isObject(host) && _H.isString(prop) && _H.hasProp(host, prop) && _H.type(host[prop]) === type;
 };
 
 
@@ -2400,7 +2400,7 @@ limit = function(key) {
   return limiter.key.storage.push(key);
 };
 
-$.extend(_H, {
+_H.mixin({
 
   /*
    * 自定义警告提示框
@@ -2469,7 +2469,7 @@ $.extend(_H, {
     };
     $.each(url.search.split("&"), function(i, str) {
       str = str.split("=");
-      if ($.trim(str[0]) !== "") {
+      if (_H.trim(str[0]) !== "") {
         return url.query[str[0]] = str[1];
       }
     });
@@ -2513,76 +2513,6 @@ $.extend(_H, {
    */
   functionExists: function(funcName, isWindow) {
     return isExisted((isWindow === true ? window : storage.fn.handler), funcName, "function");
-  },
-
-  /*
-   * 用指定占位符填补字符串
-   * 
-   * @method  pad
-   * @param   string {String}         源字符串
-   * @param   length {Integer}        生成字符串的长度，正数为在后面补充，负数则在前面补充
-   * @param   placeholder {String}    占位符
-   * @return  {String}
-   */
-  pad: function(string, length, placeholder) {
-    var index, len, unit;
-    if ($.type(string) in {
-      string: true,
-      number: true
-    }) {
-      if ($.type(placeholder) !== "string" || placeholder.length !== 1) {
-        placeholder = "\x20";
-      }
-      if (!($.isNumeric(length) && /^-?[1-9]\d*$/.test(length))) {
-        length = 0;
-      }
-      string = String(string);
-      index = 1;
-      unit = String(placeholder);
-      len = Math.abs(length) - string.length;
-      if (len > 0) {
-        while (index < len) {
-          placeholder += unit;
-          index++;
-        }
-        string = length > 0 ? string + placeholder : placeholder + string;
-      }
-    }
-    return string;
-  },
-
-  /*
-   * 补零（前导零）
-   * 
-   * @method  zerofill
-   * @param   number {Number}   源数字
-   * @param   digit {Integer}   数字位数，正数为在后面补充，负数则在前面补充
-   * @return  {String}
-   */
-  zerofill: function(number, digit) {
-    var isFloat, prefix, result, rfloat;
-    result = "";
-    if ($.isNumeric(number) && $.isNumeric(digit) && /^-?[1-9]\d*$/.test(digit)) {
-      rfloat = /^([-+]?\d+)\.(\d+)$/;
-      isFloat = rfloat.test(number);
-      prefix = "";
-      digit = parseInt(digit);
-      if (digit > 0 && isFloat) {
-        number = ("" + number).match(rfloat);
-        prefix = "" + (number[1] * 1) + ".";
-        number = number[2];
-      } else if (number * 1 < 0) {
-        prefix = "-";
-        number = ("" + number).substring(1);
-      }
-      result = this.pad(number, digit, "0");
-      if (digit < 0 && isFloat) {
-        result = "";
-      } else {
-        result = prefix + result;
-      }
-    }
-    return result;
   }
 });
 
@@ -2597,10 +2527,10 @@ $.extend(_H, {
  */
 
 resetConfig = function(setting) {
-  return clone($.isPlainObject(setting) ? $.extend(storage.config, setting) : storage.config);
+  return clone(_H.isPlainObject(setting) ? $.extend(storage.config, setting) : storage.config);
 };
 
-$.extend(_H, {
+_H.mixin({
 
   /*
    * 沙盒
@@ -2662,9 +2592,9 @@ initialize = function() {
   args = arguments;
   key = args[0];
   func = args[1];
-  if ($.isPlainObject(key)) {
+  if (_H.isPlainObject(key)) {
     return $.each(key, initialize);
-  } else if ($.type(key) === "string" && _H.hasProp(storage.fn.init, key) && $.isFunction(func)) {
+  } else if (_H.isString(key) && _H.hasProp(storage.fn.init, key) && _H.isFunction(func)) {
     return storage.fn.init[key] = func;
   }
 };
@@ -2681,14 +2611,14 @@ initialize = function() {
 api_ver = function() {
   var ver;
   ver = _H.config("api");
-  if ($.type(ver) === "string" && $.trim(ver) !== "") {
+  if (_H.isString(ver) && _H.trim(ver) !== "") {
     return "/" + ver;
   } else {
     return "";
   }
 };
 
-$.extend(_H, {
+_H.mixin({
 
   /*
    * 获取系统信息
@@ -2698,7 +2628,7 @@ $.extend(_H, {
    * @return  {Object}
    */
   config: function(key) {
-    if ($.type(key) === "string") {
+    if (this.isString(key)) {
       return storage.config[key];
     } else {
       return clone(storage.config);
@@ -2726,24 +2656,24 @@ $.extend(_H, {
     args = arguments;
     key = args[0];
     result = null;
-    if ($.isPlainObject(key)) {
+    if (this.isPlainObject(key)) {
       $.extend(storage.i18n, key);
     } else if (REG_NAMESPACE.test(key)) {
       data = args[1];
-      if (args.length === 2 && typeof data === "string" && !REG_NAMESPACE.test(data)) {
+      if (args.length === 2 && this.isString(data) && !REG_NAMESPACE.test(data)) {
 
-      } else if ($.isPlainObject(data)) {
+      } else if (this.isPlainObject(data)) {
         result = getStorageData("i18n." + key, true);
-        result = (typeof result === "string" ? result : "").replace(/\{%\s*([A-Z0-9_]+)\s*%\}/ig, function(txt, k) {
+        result = (this.isString(result) ? result : "").replace(/\{%\s*([A-Z0-9_]+)\s*%\}/ig, function(txt, k) {
           return data[k];
         });
       } else {
         result = "";
         $.each(args, function(i, txt) {
           var r;
-          if (typeof txt === "string" && REG_NAMESPACE.test(txt)) {
+          if (_H.isString(txt) && REG_NAMESPACE.test(txt)) {
             r = getStorageData("i18n." + txt, true);
-            return result += (typeof r === "string" ? r : "");
+            return result += (_H.isString(r) ? r : "");
           }
         });
       }
@@ -2762,9 +2692,9 @@ $.extend(_H, {
     args = arguments;
     key = args[0];
     result = null;
-    if ($.isPlainObject(key)) {
+    if (this.isPlainObject(key)) {
       $.extend(storage.web_api, key);
-    } else if ($.type(key) === "string") {
+    } else if (this.isString(key)) {
       regexp = /^([a-z]+)_/;
       match = ((_ref = key.match(regexp)) != null ? _ref : [])[1];
       data = args[1];
@@ -2781,7 +2711,7 @@ $.extend(_H, {
         type = "common";
       }
       result = api_ver() + getStorageData("web_api." + type + "." + key, true);
-      if ($.isPlainObject(data)) {
+      if (this.isPlainObject(data)) {
         result = result.replace(/\:([a-z_]+)/g, function(m, k) {
           return data[k];
         });
@@ -2808,7 +2738,7 @@ constructDatasetByHTML = function(html) {
   if (fragment !== null) {
     $.each(fragment[0].match(/(data(-[a-z]+)+=[^\s>]*)/ig) || [], function(idx, attr) {
       attr = attr.match(/data-(.*)="([^\s"]*)"/i);
-      dataset[$.camelCase(attr[1])] = attr[2];
+      dataset[_H.camelCase(attr[1])] = attr[2];
       return true;
     });
   }
@@ -2831,14 +2761,14 @@ constructDatasetByAttributes = function(attributes) {
   $.each(attributes, function(idx, attr) {
     var match;
     if (attr.nodeType === ATTRIBUTE_NODE && (match = attr.nodeName.match(/^data-(.*)$/i))) {
-      dataset[$.camelCase(match(1))] = attr.nodeValue;
+      dataset[_H.camelCase(match(1))] = attr.nodeValue;
     }
     return true;
   });
   return dataset;
 };
 
-$.extend(_H, {
+_H.mixin({
 
   /*
    * 获取 DOM 的「data-*」属性集或存储数据到内部/从内部获取数据
@@ -2868,7 +2798,7 @@ $.extend(_H, {
           result = constructDatasetByAttributes(node.attributes);
         }
       } else {
-        if (typeof target === "string" && REG_NAMESPACE.test(target)) {
+        if (this.isString(target) && REG_NAMESPACE.test(target)) {
           result = length === 1 ? getStorageData(target) : setStorageData(target, args[1]);
           if (length > 1 && last(args) === true) {
             limit(target.split(".")[0]);
@@ -2888,9 +2818,9 @@ $.extend(_H, {
     key = args[0];
     val = args[1];
     if (support.storage) {
-      if (typeof key === "string") {
+      if (this.isString(key)) {
         oldVal = this.access(key);
-        return localStorage.setItem(key, escape($.isPlainObject(oldVal) ? JSON.stringify($.extend(oldVal, val)) : val));
+        return localStorage.setItem(key, escape(this.isPlainObject(oldVal) ? JSON.stringify($.extend(oldVal, val)) : val));
       }
     }
   },
@@ -2901,7 +2831,7 @@ $.extend(_H, {
   access: function() {
     var error, key, result;
     key = arguments[0];
-    if (typeof key === "string") {
+    if (this.isString(key)) {
       if (support.storage) {
         result = localStorage.getItem(key);
         if (result !== null) {
@@ -2937,16 +2867,16 @@ request = function(options, succeed, fail, synch) {
   if (arguments.length === 0) {
     return;
   }
-  if ($.isPlainObject(options) === false) {
+  if (_H.isPlainObject(options) === false) {
     options = {
       url: options
     };
   }
   handlers = initializer("ajaxHandler")(succeed, fail);
-  if (!$.isFunction(options.success)) {
+  if (!_H.isFunction(options.success)) {
     options.success = handlers.success;
   }
-  if (!$.isFunction(options.error)) {
+  if (!_H.isFunction(options.error)) {
     options.error = handlers.error;
   }
   return $.ajax($.extend(options, {
@@ -2954,7 +2884,7 @@ request = function(options, succeed, fail, synch) {
   }));
 };
 
-$.extend(_H, {
+_H.mixin({
 
   /*
    * Asynchronous JavaScript and XML
@@ -2983,9 +2913,9 @@ $.extend(_H, {
   }
 });
 
-$.extend(_H, {
+_H.mixin({
   encodeEntities: function(string) {
-    if ($.type(string) === "string") {
+    if (this.isString(string)) {
       return string.replace(/([<>&\'\"])/, function(match, chr) {
         var et;
         switch (chr) {
