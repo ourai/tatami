@@ -253,7 +253,7 @@ runHandler = ( name ) ->
   result = null
   
   # 指定函数列表（数组）时
-  if $.isArray name
+  if _H.isArray name
     func.call window for func in name when $.isFunction(func) || $.isFunction(func = storage.fn.handler[func])
   # 指定函数名时，从函数池里提取对应函数
   else if typeof name is "string"
@@ -284,7 +284,7 @@ pushHandler = ( handler, queue ) ->
 clone = ( source ) ->
   result = null
   
-  if $.isArray(source) or source.length isnt undefined
+  if _H.isArray(source) or source.length isnt undefined
     result = [].concat [], _H.slice source
   else if $.isPlainObject source
     result = $.extend true, {}, source
