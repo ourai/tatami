@@ -35,7 +35,7 @@ constructDatasetByAttributes = ( attributes ) ->
 
   return dataset
 
-$.extend _H,
+_H.mixin
   ###
   # 获取 DOM 的「data-*」属性集或存储数据到内部/从内部获取数据
   # 

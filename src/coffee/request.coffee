@@ -22,7 +22,7 @@ request = ( options, succeed, fail, synch ) ->
 
   return $.ajax $.extend options, async: synch isnt true
 
-$.extend _H,
+_H.mixin
   ###
   # Asynchronous JavaScript and XML
   # 

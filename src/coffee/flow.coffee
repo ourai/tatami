@@ -9,7 +9,7 @@
 resetConfig = ( setting ) ->
   return clone if $.isPlainObject(setting) then $.extend(storage.config, setting) else storage.config
 
-$.extend _H,
+_H.mixin
   ###
   # 沙盒
   #

@@ -1,4 +1,4 @@
-$.extend _H,
+_H.mixin
   encodeEntities: ( string ) ->
     return if $.type(string) is "string" then string.replace /([<>&\'\"])/, ( match, chr ) ->
       switch chr

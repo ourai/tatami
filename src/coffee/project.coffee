@@ -27,7 +27,7 @@ api_ver = ->
 
   return if $.type(ver) is "string" && $.trim(ver) isnt "" then "/#{ver}" else ""
 
-$.extend _H,
+_H.mixin
   ###
   # 获取系统信息
   # 
