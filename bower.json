@@ -11,7 +11,8 @@
   },
   "devDependencies": {
     "ronin": "https://github.com/ourai/ronin.git",
-    "matcha": "https://github.com/ourai/matcha.git"
+    "matcha": "https://github.com/ourai/matcha.git",
+    "store": "https://github.com/marcuswestin/store.js.git"
   },
   "keywords": [
     "coffee",
