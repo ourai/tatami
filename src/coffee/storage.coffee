@@ -13,7 +13,7 @@ constructDatasetByHTML = ( html ) ->
   if fragment isnt null
     $.each fragment[0].match(/(data(-[a-z]+)+=[^\s>]*)/ig) || [], ( idx, attr ) ->
       attr = attr.match /data-(.*)="([^\s"]*)"/i
-      dataset[$.camelCase attr[1]] = attr[2]
+      dataset[_H.camelCase attr[1]] = attr[2]
       return true
 
   return dataset
@@ -30,7 +30,7 @@ constructDatasetByAttributes = ( attributes ) ->
   dataset = {}
 
   $.each attributes, ( idx, attr ) ->
-    dataset[$.camelCase match(1)] = attr.nodeValue if attr.nodeType is ATTRIBUTE_NODE and (match = attr.nodeName.match /^data-(.*)$/i)
+    dataset[_H.camelCase match(1)] = attr.nodeValue if attr.nodeType is ATTRIBUTE_NODE and (match = attr.nodeName.match /^data-(.*)$/i)
     return true
 
   return dataset
