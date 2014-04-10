@@ -25,7 +25,10 @@ module.exports = function( grunt ) {
       dest: "dest",
       dest_style: "<%= meta.dest %>/stylesheets",
       dest_script: "<%= meta.dest %>/javascripts",
-      dest_image: "<%= meta.dest %>/images"
+      dest_image: "<%= meta.dest %>/images",
+      build: "build",
+      tests: "<%= meta.build %>/tests",
+      tasks: "<%= meta.build %>/tasks"
     },
     concat: {
       coffee: {
@@ -97,6 +100,12 @@ module.exports = function( grunt ) {
         src: ["**.js", "**.css", "**/*.scss"],
         dest: "dest"
       },
+      test: {
+        expand: true,
+        cwd: "<%= meta.dest_script %>",
+        src: ["**.js"],
+        dest: "<%= meta.tests %>"
+      },
       matcha: {
         expand: true,
         cwd: "<%= meta.matcha %>",
@@ -117,5 +126,5 @@ module.exports = function( grunt ) {
 
   grunt.registerTask("script", ["concat:coffee", "coffee", "concat:js", "uglify"]);
   grunt.registerTask("style", ["concat:css", "copy:matcha"]);
-  grunt.registerTask("default", ["script", "style", "clean"]);
+  grunt.registerTask("default", ["script", "style", "clean", "copy:test"]);
 };
