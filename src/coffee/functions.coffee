@@ -69,7 +69,7 @@ setup = ->
 systemDialog = ( type, message, okHandler, cancelHandler ) ->
   result = false
 
-  if $.type(type) is "string"
+  if _H.isString type
     type = type.toLowerCase()
 
     # jQuery UI Dialog
@@ -90,7 +90,7 @@ systemDialog = ( type, message, okHandler, cancelHandler ) ->
               $(".ui-dialog-buttonset .ui-button", $(this).closest(".ui-dialog")).each ->
                 btn = $(this)
 
-                switch $.trim btn.text()
+                switch _H.trim btn.text()
                   when i18nText.ok
                     type = "ok"
                   when i18nText.cancel
@@ -227,7 +227,7 @@ bindHandler = ->
   if args.length is 0
     handler = clone fnList
   # 传入函数名
-  else if typeof name is "string"
+  else if _H.isString name
     # 保存
     if _H.isFunction handler
       fnList[name] = handler
@@ -256,7 +256,7 @@ runHandler = ( name ) ->
   if _H.isArray name
     func.call window for func in name when _H.isFunction(func) || _H.isFunction(func = storage.fn.handler[func])
   # 指定函数名时，从函数池里提取对应函数
-  else if typeof name is "string"
+  else if _H.isString name
     func = storage.fn.handler[name]
     result = func.apply window, _H.slice(arguments, 1) if _H.isFunction func
   
@@ -373,7 +373,7 @@ setData = ( target, key, data, condition ) ->
 # @return  {Boolean}
 ###
 isExisted = ( host, prop, type ) ->
-  return $.type(host) is "object" and $.type(prop) is "string" and _H.hasProp(host, prop) and $.type(host[prop]) is type
+  return _H.isObject(host) and _H.isString(prop) and _H.hasProp(host, prop) and _H.type(host[prop]) is type
 
 ###
 # Determines whether a key in a limited key list

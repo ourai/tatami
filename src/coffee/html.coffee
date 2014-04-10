@@ -1,6 +1,6 @@
 _H.mixin
   encodeEntities: ( string ) ->
-    return if $.type(string) is "string" then string.replace /([<>&\'\"])/, ( match, chr ) ->
+    return if @isString(string) then string.replace /([<>&\'\"])/, ( match, chr ) ->
       switch chr
         when "<"
           et = lt

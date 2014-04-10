@@ -12,7 +12,7 @@ initialize = ->
 
   if _H.isPlainObject key
     $.each key, initialize
-  else if $.type(key) is "string" and _H.hasProp(storage.fn.init, key) and _H.isFunction func
+  else if _H.isString(key) and _H.hasProp(storage.fn.init, key) and _H.isFunction func
     storage.fn.init[key] = func
 
 ###
@@ -25,7 +25,7 @@ initialize = ->
 api_ver = ->
   ver = _H.config "api"
 
-  return if $.type(ver) is "string" && $.trim(ver) isnt "" then "/#{ver}" else ""
+  return if _H.isString(ver) && _H.trim(ver) isnt "" then "/#{ver}" else ""
 
 _H.mixin
   ###
@@ -36,7 +36,7 @@ _H.mixin
   # @return  {Object}
   ###
   config: ( key ) ->
-    return if $.type(key) is "string" then storage.config[key] else clone storage.config
+    return if @isString(key) then storage.config[key] else clone storage.config
   
   ###
   # 设置初始化信息
@@ -66,21 +66,21 @@ _H.mixin
       data = args[1]
 
       # 单个存储（用 namespace 格式字符串）
-      if args.length is 2 and typeof data is "string" and not REG_NAMESPACE.test data
+      if args.length is 2 and @isString(data) and not REG_NAMESPACE.test data
         # to do sth.
       # 取出并进行格式替换
       else if @isPlainObject data
         result = getStorageData "i18n.#{key}", true
-        result = (if typeof result is "string" then result else "").replace  /\{%\s*([A-Z0-9_]+)\s*%\}/ig, ( txt, k ) ->
+        result = (if @isString(result) then result else "").replace  /\{%\s*([A-Z0-9_]+)\s*%\}/ig, ( txt, k ) ->
           return data[k]
       # 拼接多个数据
       else
         result = ""
 
         $.each args, ( i, txt ) ->
-          if typeof txt is "string" and REG_NAMESPACE.test txt
+          if _H.isString(txt) and REG_NAMESPACE.test txt
             r = getStorageData "i18n.#{txt}", true
-            result += (if typeof r is "string" then r else "")
+            result += (if _H.isString(r) then r else "")
 
     return result
 
@@ -97,7 +97,7 @@ _H.mixin
 
     if @isPlainObject key
       $.extend storage.web_api, key
-    else if $.type(key) is "string"
+    else if @isString key
       regexp = /^([a-z]+)_/
       match = (key.match(regexp) ? [])[1]
       data = args[1]

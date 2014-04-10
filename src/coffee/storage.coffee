@@ -68,7 +68,7 @@ _H.mixin
           result = constructDatasetByAttributes node.attributes
       # 存储数据到内部/从内部获取数据
       else
-        if typeof target is "string" and REG_NAMESPACE.test(target)
+        if @isString(target) and REG_NAMESPACE.test(target)
           result = if length is 1 then getStorageData(target) else setStorageData target, args[1]
 
           # 将访问的 key 锁住，在第一次设置之后无法再读写到内部
@@ -92,7 +92,7 @@ _H.mixin
 
     # Use localStorage
     if support.storage
-      if typeof key is "string"
+      if @isString key
         oldVal = this.access key
 
         localStorage.setItem key, escape if @isPlainObject(oldVal) then JSON.stringify($.extend oldVal, val) else val
@@ -105,7 +105,7 @@ _H.mixin
   access: ->
     key = arguments[0]
 
-    if typeof key is "string"
+    if @isString key
       # localStorage
       if support.storage
         result = localStorage.getItem key

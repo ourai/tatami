@@ -61,7 +61,7 @@ _H.mixin
 
     $.each url.search.split("&"), ( i, str ) ->
       str = str.split("=")
-      url.query[str[0]] = str[1] if $.trim(str[0]) isnt ""
+      url.query[str[0]] = str[1] if _H.trim(str[0]) isnt ""
 
     return url
 
