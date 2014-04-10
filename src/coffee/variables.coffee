@@ -21,7 +21,7 @@ _ENV =
   lang: document.documentElement.lang || document.documentElement.getAttribute("lang") || navigator.language || navigator.browserLanguage
 $ = jQuery
 
-# JavaScript API's support
+# JavaScript APIs' support
 support =
   storage: !!window.localStorage
 
