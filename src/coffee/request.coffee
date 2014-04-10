@@ -17,8 +17,8 @@ request = ( options, succeed, fail, synch ) ->
   # 当 options 不是纯对象时将其当作 url 来处理（不考虑其变量类型）
   options = url: options if _H.isPlainObject(options) is false
   handlers = initializer("ajaxHandler") succeed, fail
-  options.success = handlers.success if not $.isFunction options.success
-  options.error = handlers.error if not $.isFunction options.error
+  options.success = handlers.success if not _H.isFunction options.success
+  options.error = handlers.error if not _H.isFunction options.error
 
   return $.ajax $.extend options, async: synch isnt true
 

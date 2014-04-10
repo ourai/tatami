@@ -90,9 +90,9 @@ storage =
             #    }
             ###
             if data.code > 0
-              succeed.apply($, args) if $.isFunction succeed
+              succeed.apply($, args) if _H.isFunction succeed
             else
-              if $.isFunction fail
+              if _H.isFunction fail
                 fail.apply $, args
               # 默认弹出警告对话框
               else

@@ -48,7 +48,7 @@ setup = ->
   #           return false;
   #         });
   #       }
-  #       else if ( $.isFunction(CB_Enter) ) {
+  #       else if ( _H.isFunction(CB_Enter) ) {
   #         CB_Enter.call(pointer);
   #       }
   #     }
@@ -73,7 +73,7 @@ systemDialog = ( type, message, okHandler, cancelHandler ) ->
     type = type.toLowerCase()
 
     # jQuery UI Dialog
-    if $.isFunction $.fn.dialog
+    if _H.isFunction $.fn.dialog
       poolName = "systemDialog"
       i18nText = storage.i18n._SYS.dialog[_H.config "lang"]
       storage.pool[poolName] = {} if not _H.hasProp(storage.pool, poolName)
@@ -125,9 +125,9 @@ systemDialog = ( type, message, okHandler, cancelHandler ) ->
         window.alert message
       else
         if window.confirm message
-          okHandler() if $.isFunction okHandler
+          okHandler() if _H.isFunction okHandler
         else
-          cancelHandler() if $.isFunction cancelHandler
+          cancelHandler() if _H.isFunction cancelHandler
 
   return result
 
@@ -147,7 +147,7 @@ systemDialogHandler = ( type, message, okHandler, cancelHandler ) ->
   handler = ( cb, rv ) ->
     $(this).dialog "close"
 
-    cb() if $.isFunction cb
+    cb() if _H.isFunction cb
 
     return rv
 
@@ -229,14 +229,14 @@ bindHandler = ->
   # 传入函数名
   else if typeof name is "string"
     # 保存
-    if $.isFunction handler
+    if _H.isFunction handler
       fnList[name] = handler
     # 获取
     else
       handler = fnList[name]
   # 传入函数列表
   else if _H.isPlainObject name
-    fnList[funcName] = func for funcName, func of name when $.isFunction func
+    fnList[funcName] = func for funcName, func of name when _H.isFunction func
     
   return handler
 
@@ -254,11 +254,11 @@ runHandler = ( name ) ->
   
   # 指定函数列表（数组）时
   if _H.isArray name
-    func.call window for func in name when $.isFunction(func) || $.isFunction(func = storage.fn.handler[func])
+    func.call window for func in name when _H.isFunction(func) || _H.isFunction(func = storage.fn.handler[func])
   # 指定函数名时，从函数池里提取对应函数
   else if typeof name is "string"
     func = storage.fn.handler[name]
-    result = func.apply window, _H.slice(arguments, 1) if $.isFunction func
+    result = func.apply window, _H.slice(arguments, 1) if _H.isFunction func
   
   return result
 
@@ -271,7 +271,7 @@ runHandler = ( name ) ->
 # @param   queue {String}        队列名
 ###
 pushHandler = ( handler, queue ) ->
-  storage.fn[queue].push handler if $.isFunction handler
+  storage.fn[queue].push handler if _H.isFunction handler
 
 ###
 # 克隆对象并返回副本

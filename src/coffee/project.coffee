@@ -12,7 +12,7 @@ initialize = ->
 
   if _H.isPlainObject key
     $.each key, initialize
-  else if $.type(key) is "string" and _H.hasProp(storage.fn.init, key) and $.isFunction func
+  else if $.type(key) is "string" and _H.hasProp(storage.fn.init, key) and _H.isFunction func
     storage.fn.init[key] = func
 
 ###
