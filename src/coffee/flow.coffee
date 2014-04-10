@@ -7,7 +7,7 @@
 # @return  {Object}              （修改后的）系统配置信息
 ###
 resetConfig = ( setting ) ->
-  return clone if $.isPlainObject(setting) then $.extend(storage.config, setting) else storage.config
+  return clone if _H.isPlainObject(setting) then $.extend(storage.config, setting) else storage.config
 
 _H.mixin
   ###

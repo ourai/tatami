@@ -235,7 +235,7 @@ bindHandler = ->
     else
       handler = fnList[name]
   # 传入函数列表
-  else if $.isPlainObject name
+  else if _H.isPlainObject name
     fnList[funcName] = func for funcName, func of name when $.isFunction func
     
   return handler
@@ -286,7 +286,7 @@ clone = ( source ) ->
   
   if _H.isArray(source) or source.length isnt undefined
     result = [].concat [], _H.slice source
-  else if $.isPlainObject source
+  else if _H.isPlainObject source
     result = $.extend true, {}, source
   
   return result
@@ -336,7 +336,7 @@ getStorageData = ( ns_str, ignore ) ->
 setStorageData = ( ns_str, data ) ->
   parts = ns_str.split "."
   length = parts.length
-  isObj = $.isPlainObject data
+  isObj = _H.isPlainObject data
 
   if length is 1
     key = parts[0]
@@ -348,14 +348,14 @@ setStorageData = ( ns_str, data ) ->
       if i < length - 1
         result[n] = {} if not _H.hasProp(result, n)
       else
-        result[n] = setData result, n, data, $.isPlainObject result[n]
+        result[n] = setData result, n, data, _H.isPlainObject result[n]
       result = result[n]
       return true
 
   return result
 
 setData = ( target, key, data, condition ) ->
-  if condition && $.isPlainObject data
+  if condition && _H.isPlainObject data
     $.extend true, target[key], data
   else
     target[key] = data

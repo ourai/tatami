@@ -10,7 +10,7 @@ initialize = ->
   key = args[0]
   func = args[1]
 
-  if $.isPlainObject key
+  if _H.isPlainObject key
     $.each key, initialize
   else if $.type(key) is "string" and _H.hasProp(storage.fn.init, key) and $.isFunction func
     storage.fn.init[key] = func
@@ -60,7 +60,7 @@ _H.mixin
 
     # 批量存储
     # 调用方式：func({})
-    if $.isPlainObject key
+    if @isPlainObject key
       $.extend storage.i18n, key
     else if REG_NAMESPACE.test key
       data = args[1]
@@ -69,7 +69,7 @@ _H.mixin
       if args.length is 2 and typeof data is "string" and not REG_NAMESPACE.test data
         # to do sth.
       # 取出并进行格式替换
-      else if $.isPlainObject data
+      else if @isPlainObject data
         result = getStorageData "i18n.#{key}", true
         result = (if typeof result is "string" then result else "").replace  /\{%\s*([A-Z0-9_]+)\s*%\}/ig, ( txt, k ) ->
           return data[k]
@@ -95,7 +95,7 @@ _H.mixin
     key = args[0]
     result = null
 
-    if $.isPlainObject key
+    if @isPlainObject key
       $.extend storage.web_api, key
     else if $.type(key) is "string"
       regexp = /^([a-z]+)_/
@@ -115,7 +115,7 @@ _H.mixin
 
       result = api_ver() + getStorageData "web_api.#{type}.#{key}", true
 
-      if $.isPlainObject data
+      if @isPlainObject data
         result = result.replace /\:([a-z_]+)/g, ( m, k ) ->
           return data[k]
 

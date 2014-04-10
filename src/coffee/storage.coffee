@@ -95,7 +95,7 @@ _H.mixin
       if typeof key is "string"
         oldVal = this.access key
 
-        localStorage.setItem key, escape if $.isPlainObject(oldVal) then JSON.stringify($.extend oldVal, val) else val
+        localStorage.setItem key, escape if @isPlainObject(oldVal) then JSON.stringify($.extend oldVal, val) else val
     # Use cookie
     # else
 
