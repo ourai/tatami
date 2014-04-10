@@ -29,33 +29,6 @@ api_ver = ->
 
 $.extend _H,
   ###
-  # 更改 LIB_CONFIG.name 以适应项目「本土化」
-  # 
-  # @method   mask
-  # @param    guise {String}    New name for library
-  # @return   {Boolean}
-  ###
-  mask: ( guise ) ->
-    result = false
-
-    if $.type(guise) is "string"
-      if @hasProp window, guise
-        console.error "'#{guise}' has existed as a property of Window object." if window.console
-      else
-        window[guise] = window[LIB_CONFIG.name]
-
-        # IE9- 不能用 delete 关键字删除 window 的属性
-        try
-          result = delete window[LIB_CONFIG.name]
-        catch error
-          window[LIB_CONFIG.name] = undefined
-          result = true
-        
-        LIB_CONFIG.name = guise
-
-    return result
-
-  ###
   # 获取系统信息
   # 
   # @method  config
