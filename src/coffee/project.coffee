@@ -7,11 +7,11 @@
 ###
 initialize = ->
   args = arguments
-  key = args[0]
-  func = args[1]
+  func = args[0]
+  key = args[1]
 
   if _H.isPlainObject key
-    $.each key, initialize
+    _H.each key, initialize
   else if _H.isString(key) and _H.hasProp(storage.fn.init, key) and _H.isFunction func
     storage.fn.init[key] = func
 
@@ -77,7 +77,7 @@ _H.mixin
       else
         result = ""
 
-        $.each args, ( i, txt ) ->
+        @each args, ( txt ) ->
           if _H.isString(txt) and REG_NAMESPACE.test txt
             r = getStorageData "i18n.#{txt}", true
             result += (if _H.isString(r) then r else "")
@@ -103,7 +103,7 @@ _H.mixin
       data = args[1]
       type = undefined
 
-      $.each ["front", "admin"], ( i, n ) ->
+      @each ["front", "admin"], ( n ) ->
         if match is n
           type = n
           return false

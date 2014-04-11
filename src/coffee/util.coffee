@@ -59,7 +59,7 @@ _H.mixin
       hash: loc.hash.substring(1)
       query: {}
 
-    $.each url.search.split("&"), ( i, str ) ->
+    @each url.search.split("&"), ( str ) ->
       str = str.split("=")
       url.query[str[0]] = str[1] if _H.trim(str[0]) isnt ""
 

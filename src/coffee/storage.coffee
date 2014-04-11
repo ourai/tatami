@@ -11,7 +11,7 @@ constructDatasetByHTML = ( html ) ->
   fragment = html.match /<[a-z]+[^>]*>/i
 
   if fragment isnt null
-    $.each fragment[0].match(/(data(-[a-z]+)+=[^\s>]*)/ig) || [], ( idx, attr ) ->
+    _H.each fragment[0].match(/(data(-[a-z]+)+=[^\s>]*)/ig) || [], ( attr ) ->
       attr = attr.match /data-(.*)="([^\s"]*)"/i
       dataset[_H.camelCase attr[1]] = attr[2]
       return true
@@ -29,7 +29,7 @@ constructDatasetByHTML = ( html ) ->
 constructDatasetByAttributes = ( attributes ) ->
   dataset = {}
 
-  $.each attributes, ( idx, attr ) ->
+  _H.each attributes, ( attr ) ->
     dataset[_H.camelCase match(1)] = attr.nodeValue if attr.nodeType is ATTRIBUTE_NODE and (match = attr.nodeName.match /^data-(.*)$/i)
     return true
 
@@ -75,7 +75,7 @@ _H.mixin
           limit(target.split(".")[0]) if length > 1 and last(args) is true
         # 有可能覆盖被禁止存取的内部 key，暂时不允许批量添加
         # else {
-        #   $.each(args, function( i, n ) {
+        #   @each(args, function( n ) {
         #     $.extend(storage, n);
         #   });
         # }

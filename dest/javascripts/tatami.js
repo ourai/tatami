@@ -2309,7 +2309,7 @@ getStorageData = function(ns_str, ignore) {
   result = null;
   if (ignore || !isLimited(parts[0], limiter.key.storage)) {
     result = storage;
-    $.each(parts, function(idx, part) {
+    _H.each(parts, function(part) {
       var rv;
       rv = _H.hasProp(result, part);
       result = result[part];
@@ -2340,7 +2340,7 @@ setStorageData = function(ns_str, data) {
     result = setData(storage, key, data, _H.hasProp(storage, key));
   } else {
     result = storage;
-    $.each(parts, function(i, n) {
+    _H.each(parts, function(n, i) {
       if (i < length - 1) {
         if (!_H.hasProp(result, n)) {
           result[n] = {};
@@ -2476,7 +2476,7 @@ _H.mixin({
       hash: loc.hash.substring(1),
       query: {}
     };
-    $.each(url.search.split("&"), function(i, str) {
+    this.each(url.search.split("&"), function(str) {
       str = str.split("=");
       if (_H.trim(str[0]) !== "") {
         return url.query[str[0]] = str[1];
@@ -2599,10 +2599,10 @@ _H.mixin({
 initialize = function() {
   var args, func, key;
   args = arguments;
-  key = args[0];
-  func = args[1];
+  func = args[0];
+  key = args[1];
   if (_H.isPlainObject(key)) {
-    return $.each(key, initialize);
+    return _H.each(key, initialize);
   } else if (_H.isString(key) && _H.hasProp(storage.fn.init, key) && _H.isFunction(func)) {
     return storage.fn.init[key] = func;
   }
@@ -2678,7 +2678,7 @@ _H.mixin({
         });
       } else {
         result = "";
-        $.each(args, function(i, txt) {
+        this.each(args, function(txt) {
           var r;
           if (_H.isString(txt) && REG_NAMESPACE.test(txt)) {
             r = getStorageData("i18n." + txt, true);
@@ -2708,7 +2708,7 @@ _H.mixin({
       match = ((_ref = key.match(regexp)) != null ? _ref : [])[1];
       data = args[1];
       type = void 0;
-      $.each(["front", "admin"], function(i, n) {
+      this.each(["front", "admin"], function(n) {
         if (match === n) {
           type = n;
           return false;
@@ -2745,7 +2745,7 @@ constructDatasetByHTML = function(html) {
   dataset = {};
   fragment = html.match(/<[a-z]+[^>]*>/i);
   if (fragment !== null) {
-    $.each(fragment[0].match(/(data(-[a-z]+)+=[^\s>]*)/ig) || [], function(idx, attr) {
+    _H.each(fragment[0].match(/(data(-[a-z]+)+=[^\s>]*)/ig) || [], function(attr) {
       attr = attr.match(/data-(.*)="([^\s"]*)"/i);
       dataset[_H.camelCase(attr[1])] = attr[2];
       return true;
@@ -2767,7 +2767,7 @@ constructDatasetByHTML = function(html) {
 constructDatasetByAttributes = function(attributes) {
   var dataset;
   dataset = {};
-  $.each(attributes, function(idx, attr) {
+  _H.each(attributes, function(attr) {
     var match;
     if (attr.nodeType === ATTRIBUTE_NODE && (match = attr.nodeName.match(/^data-(.*)$/i))) {
       dataset[_H.camelCase(match(1))] = attr.nodeValue;

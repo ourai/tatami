@@ -317,7 +317,7 @@ getStorageData = ( ns_str, ignore ) ->
   if ignore || !isLimited parts[0], limiter.key.storage
     result = storage
 
-    $.each parts, ( idx, part ) ->
+    _H.each parts, ( part ) ->
       rv = _H.hasProp(result, part)
       result = result[part]
       return rv
@@ -344,7 +344,7 @@ setStorageData = ( ns_str, data ) ->
   else
     result = storage
 
-    $.each parts, ( i, n ) ->
+    _H.each parts, ( n, i ) ->
       if i < length - 1
         result[n] = {} if not _H.hasProp(result, n)
       else
