@@ -8,7 +8,8 @@ $line_height: 1.5;
 
 // Text
 $color-title: #444;
-$color-text: #666;
+$color-text: #333;
+$color-text-medium: #666;
 $color-text-light: #888;
 $color-link: #3F6D77;
 $color-link-hover: #518C99;
@@ -18,6 +19,17 @@ $border_color: #B8C4C8;
 
 @function percent( $divisor, $dividend ) {
   @return $divisor / $dividend * 100%;
+}
+
+@mixin base-font( $font_size: $font_size ) {
+  font: {
+    style: normal;
+    weight: normal;
+    family: $font_family;
+    size: $font_size;
+  }
+
+  line-height: $line_height;
 }
 
 // IE6 only
@@ -65,17 +77,6 @@ $border_color: #B8C4C8;
 
 
 // !!! Placefolders for future
-
-@mixin base-font {
-  font: {
-    style: normal;
-    weight: normal;
-    family: $font_family;
-    size: $font_size;
-  }
-
-  line-height: $line_height;
-}
 
 @mixin text-ellipsis {
   white-space: nowrap;
