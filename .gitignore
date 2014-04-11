@@ -1,4 +1,5 @@
 # Directories
+/build
 /vendors
 /node_modules
 /dest/*.*/
