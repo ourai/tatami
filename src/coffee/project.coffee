@@ -10,8 +10,8 @@ initialize = ->
   func = args[0]
   key = args[1]
 
-  if _H.isPlainObject key
-    _H.each key, initialize
+  if _H.isPlainObject func
+    _H.each func, initialize
   else if _H.isString(key) and _H.hasProp(storage.fn.init, key) and _H.isFunction func
     storage.fn.init[key] = func
 

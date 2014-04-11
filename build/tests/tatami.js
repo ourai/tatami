@@ -2601,8 +2601,8 @@ initialize = function() {
   args = arguments;
   func = args[0];
   key = args[1];
-  if (_H.isPlainObject(key)) {
-    return _H.each(key, initialize);
+  if (_H.isPlainObject(func)) {
+    return _H.each(func, initialize);
   } else if (_H.isString(key) && _H.hasProp(storage.fn.init, key) && _H.isFunction(func)) {
     return storage.fn.init[key] = func;
   }
