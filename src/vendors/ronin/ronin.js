@@ -573,21 +573,22 @@ storage.modules.Core.push([
          */
         name: "mask",
         handler: function(guise) {
-          var error, result;
+          var error, lib_name, result;
           if (this.hasProp(window, guise)) {
             if (window.console) {
               console.error("'" + guise + "' has existed as a property of Window object.");
             }
           } else {
-            window[guise] = window[LIB_CONFIG.name];
+            lib_name = this.__meta__.name;
+            window[guise] = window[lib_name];
             try {
-              result = delete window[LIB_CONFIG.name];
+              result = delete window[lib_name];
             } catch (_error) {
               error = _error;
-              window[LIB_CONFIG.name] = void 0;
+              window[lib_name] = void 0;
               result = true;
             }
-            LIB_CONFIG.name = guise;
+            this.__meta__.name = guise;
           }
           return result;
         },
@@ -1661,6 +1662,10 @@ storage.modules.Core.push([
 _H = function() {};
 
 new Miso(storage.modules.Core, _H);
+
+_H.mixin({
+  __meta__: LIB_CONFIG
+});
 
 window[LIB_CONFIG.name] = _H;
 

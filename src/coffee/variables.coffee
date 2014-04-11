@@ -16,10 +16,13 @@ NOTATION_NODE = 12
 REG_NAMESPACE = /^[0-9A-Z_.]+[^_.]?$/i
 
 # Main objects
-_H = Ronin
+$ = jQuery
 _ENV =
   lang: document.documentElement.lang || document.documentElement.getAttribute("lang") || navigator.language || navigator.browserLanguage
-$ = jQuery
+_H = Ronin
+
+_H.mask LIB_CONFIG.name
+_H.__meta__ = LIB_CONFIG
 
 # JavaScript APIs' support
 support =
