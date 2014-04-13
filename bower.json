@@ -1,16 +1,14 @@
 {
   "name": "tatami",
   "version": "0.1.1",
-  "main": [
-    "dest/javascripts/tatami.min.js",
-    "dest/stylesheets/tatami.min.css"],
+  "main": ["dest/tatami.min.js"],
   "license": "MIT",
   "ignore": ["**/*", "!dest/**/*"],
   "dependencies": {
     "jquery": "https://github.com/jquery/jquery.git#1.8.3"
   },
   "devDependencies": {
-    "ronin": "https://github.com/ourai/ronin.git",
+    "ronin": "https://github.com/ourai/ronin.git#0.2.2",
     "matcha": "https://github.com/ourai/matcha.git",
     "store": "https://github.com/marcuswestin/store.js.git"
   },
