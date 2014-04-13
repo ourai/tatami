@@ -49,7 +49,7 @@ module.exports = ( grunt ) ->
             return src.replace /@(NAME|VERSION)/g, ( text, key ) ->
               return info[key.toLowerCase()]
         src: [
-            "<%= meta.ronin %>/ronin.js"
+            # "<%= meta.ronin %>/ronin.js"
             # "<%= meta.matcha %>/javascripts/matcha.js"
             "<%= meta.src %>/intro.js"
             "<%= meta.src %>/<%= pkg.name %>.js"
@@ -62,6 +62,7 @@ module.exports = ( grunt ) ->
           "<%= meta.dest_style %>/<%= pkg.name %>.min.css": "<%= meta.matcha %>/stylesheets/matcha.min.css"
       vendors:
         files:
+          "<%= meta.tests %>/ronin.js": "<%= meta.ronin %>/ronin.js"
           "<%= meta.tests %>/jquery.js": "<%= meta.jquery %>/jquery.js"
     coffee:
       options:
