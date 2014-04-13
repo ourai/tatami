@@ -17,12 +17,14 @@ module.exports = ( grunt ) ->
     meta:
       src: "src"
       coffee: "<%= meta.src %>/coffee"
-      vendor: "<%= meta.src %>/vendors"
-      matcha: "<%= meta.vendor %>/matcha"
       dest: "dest"
       dest_style: "<%= meta.dest %>/stylesheets"
-      dest_script: "<%= meta.dest %>/javascripts"
+      dest_script: "<%= meta.dest %>"
       dest_image: "<%= meta.dest %>/images"
+      vendors: "vendors"
+      ronin: "<%= meta.vendors %>/ronin/dest"
+      matcha: "<%= meta.vendors %>/matcha/dest"
+      jquery: "<%= meta.vendors %>/jquery"
       build: "build"
       tests: "<%= meta.build %>/tests"
       tasks: "<%= meta.build %>/tasks"
@@ -47,8 +49,8 @@ module.exports = ( grunt ) ->
             return src.replace /@(NAME|VERSION)/g, ( text, key ) ->
               return info[key.toLowerCase()]
         src: [
-            "<%= meta.vendor %>/ronin/ronin.js"
-            "<%= meta.matcha %>/javascripts/matcha.js"
+            "<%= meta.ronin %>/ronin.js"
+            # "<%= meta.matcha %>/javascripts/matcha.js"
             "<%= meta.src %>/intro.js"
             "<%= meta.src %>/<%= pkg.name %>.js"
             "<%= meta.src %>/outro.js"
@@ -58,6 +60,9 @@ module.exports = ( grunt ) ->
         files:
           "<%= meta.dest_style %>/<%= pkg.name %>.css": "<%= meta.matcha %>/stylesheets/matcha.css"
           "<%= meta.dest_style %>/<%= pkg.name %>.min.css": "<%= meta.matcha %>/stylesheets/matcha.min.css"
+      vendors:
+        files:
+          "<%= meta.tests %>/jquery.js": "<%= meta.jquery %>/jquery.js"
     coffee:
       options:
         bare: true
@@ -103,4 +108,4 @@ module.exports = ( grunt ) ->
 
   grunt.registerTask "script", ["concat:coffee", "coffee", "concat:js", "uglify"]
   grunt.registerTask "style", ["concat:css", "copy:matcha"]
-  grunt.registerTask "default", ["script", "style", "clean", "copy:test"]
+  grunt.registerTask "default", ["script", "clean", "copy:test", "concat:vendors"]
