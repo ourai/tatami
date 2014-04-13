@@ -9,6 +9,7 @@ module.exports = ( grunt ) ->
       "grunt-contrib-uglify"
       "grunt-contrib-copy"
       "grunt-contrib-clean"
+      "grunt-contrib-jasmine"
     ]
 
   grunt.initConfig
@@ -104,6 +105,11 @@ module.exports = ( grunt ) ->
     clean:
       compiled:
         src: ["<%= meta.dest_script %>/*.coffee"]
+    jasmine:
+      test:
+        src: "<%= meta.tests %>/<%= pkg.name %>.js"
+        options:
+          specs: "<%= meta.tests %>/*Spec.js"
 
   grunt.loadNpmTasks task for task in npmTasks
 
