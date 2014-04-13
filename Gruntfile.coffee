@@ -110,6 +110,9 @@ module.exports = ( grunt ) ->
         src: "<%= meta.tests %>/<%= pkg.name %>.js"
         options:
           specs: "<%= meta.tests %>/*Spec.js"
+          vendor: [
+            "<%= meta.tests %>/jquery.js"
+          ]
 
   grunt.loadNpmTasks task for task in npmTasks
 
