@@ -1595,7 +1595,7 @@ var $, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE,
 
 LIB_CONFIG = {
   name: "Tatami",
-  version: "0.1.1"
+  version: "0.2.1"
 };
 
 ELEMENT_NODE = 1;
