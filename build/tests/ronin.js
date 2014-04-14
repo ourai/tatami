@@ -20,7 +20,7 @@ var LIB_CONFIG, attach, batch, defineProp, hasOwnProp, settings, storage, toStri
 
 LIB_CONFIG = {
   name: "Miso",
-  version: "0.3.0"
+  version: "0.3.2"
 };
 
 toString = {}.toString;
@@ -65,15 +65,16 @@ hasOwnProp = function(obj, prop) {
  */
 
 defineProp = function(target) {
-  var prop, value;
+  var error, prop, value;
   prop = "__" + (LIB_CONFIG.name.toLowerCase()) + "__";
   value = true;
-  if (hasOwnProp(Object, "defineProperty")) {
+  try {
     Object.defineProperty(target, prop, {
       __proto__: null,
       value: value
     });
-  } else {
+  } catch (_error) {
+    error = _error;
     target[prop] = value;
   }
   return true;
@@ -257,10 +258,21 @@ storage.methods = {
    * 
    * @method  isWindow
    * @param   object {Mixed}
-   * @return  {String}
+   * @return  {Boolean}
    */
   isWindow: function(object) {
     return object && this.isObject(object) && "setInterval" in object;
+  },
+
+  /*
+   * 判断是否为 DOM 对象
+   * 
+   * @method  isElement
+   * @param   object {Mixed}
+   * @return  {Boolean}
+   */
+  isElement: function(object) {
+    return object && this.isObject(object) && object.nodeType === 1;
   },
 
   /*
@@ -409,11 +421,11 @@ window[LIB_CONFIG.name] = _H;
 }(typeof window !== "undefined" ? window : this, function( window, noGlobal ) {
 
 "use strict";
-var LIB_CONFIG, NAMESPACE_EXP, compareObjects, filterElement, flattenArray, floatLength, func, getMaxMin, ignoreSubStr, isArr, isCollection, name, range, storage, toString, unicode, utf8_to_base64, _H;
+var LIB_CONFIG, NAMESPACE_EXP, compareObjects, error, filterElement, flattenArray, floatLength, func, getMaxMin, ignoreSubStr, isArr, isCollection, name, range, storage, toString, unicode, utf8_to_base64, _H;
 
 LIB_CONFIG = {
   name: "Ronin",
-  version: "0.2.2"
+  version: "0.2.3"
 };
 
 toString = {}.toString;
@@ -1565,13 +1577,14 @@ storage.modules.Core.String = {
 
 _H = Miso(storage.modules.Core);
 
-if (_H.hasProp(Object, "defineProperty")) {
+try {
   Object.defineProperty(_H, "__meta__", {
     __proto__: null,
     writable: true,
     value: LIB_CONFIG
   });
-} else {
+} catch (_error) {
+  error = _error;
   _H.mixin({
     __meta__: LIB_CONFIG
   });
