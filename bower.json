@@ -8,7 +8,7 @@
     "jquery": "https://github.com/jquery/jquery.git#1.8.3"
   },
   "devDependencies": {
-    "ronin": "https://github.com/ourai/ronin.git#0.2.3",
+    "ronin": "https://github.com/ourai/ronin.git#0.2.4",
     "matcha": "https://github.com/ourai/matcha.git",
     "store": "https://github.com/marcuswestin/store.js.git"
   },
