@@ -899,9 +899,15 @@ _H.mixin({
 
       } else if (this.isPlainObject(data)) {
         result = getStorageData("i18n." + key, true);
-        result = (this.isString(result) ? result : "").replace(/\{%\s*([A-Z0-9_]+)\s*%\}/ig, function(txt, k) {
-          return data[k];
-        });
+        result = (this.isString(result) ? result : "").replace(/\{%\s*([A-Z0-9_]+)\s*%\}/ig, (function(_this) {
+          return function(txt, k) {
+            if (_this.hasProp(data, k)) {
+              return data[k];
+            } else {
+              return "";
+            }
+          };
+        })(this));
       } else {
         result = "";
         this.each(args, function(txt) {
