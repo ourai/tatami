@@ -236,7 +236,7 @@ systemDialog = function(type, message, okHandler, cancelHandler) {
     if (_H.isFunction($.fn.dialog)) {
       poolName = "systemDialog";
       i18nText = storage.i18n._SYS.dialog[_H.config("lang")];
-      if (!_H.hasProp(storage.pool, poolName)) {
+      if (!_H.hasProp(poolName, storage.pool)) {
         storage.pool[poolName] = {};
       }
       dlg = storage.pool[poolName][type];
@@ -520,7 +520,7 @@ getStorageData = function(ns_str, ignore) {
     result = storage;
     _H.each(parts, function(part) {
       var rv;
-      rv = _H.hasProp(result, part);
+      rv = _H.hasProp(part, result);
       result = result[part];
       return rv;
     });
@@ -546,12 +546,12 @@ setStorageData = function(ns_str, data) {
   isObj = _H.isPlainObject(data);
   if (length === 1) {
     key = parts[0];
-    result = setData(storage, key, data, _H.hasProp(storage, key));
+    result = setData(storage, key, data, _H.hasProp(key, storage));
   } else {
     result = storage;
     _H.each(parts, function(n, i) {
       if (i < length - 1) {
-        if (!_H.hasProp(result, n)) {
+        if (!_H.hasProp(n, result)) {
           result[n] = {};
         }
       } else {
@@ -586,7 +586,7 @@ setData = function(target, key, data, condition) {
  */
 
 isExisted = function(host, prop, type) {
-  return _H.isObject(host) && _H.isString(prop) && _H.hasProp(host, prop) && _H.type(host[prop]) === type;
+  return _H.isObject(host) && _H.isString(prop) && _H.hasProp(prop, host) && _H.type(host[prop]) === type;
 };
 
 
@@ -812,7 +812,7 @@ initialize = function() {
   key = args[1];
   if (_H.isPlainObject(func)) {
     return _H.each(func, initialize);
-  } else if (_H.isString(key) && _H.hasProp(storage.fn.init, key) && _H.isFunction(func)) {
+  } else if (_H.isString(key) && _H.hasProp(key, storage.fn.init) && _H.isFunction(func)) {
     return storage.fn.init[key] = func;
   }
 };
@@ -884,7 +884,7 @@ _H.mixin({
         result = getStorageData("i18n." + key, true);
         result = (this.isString(result) ? result : "").replace(/\{%\s*([A-Z0-9_]+)\s*%\}/ig, (function(_this) {
           return function(txt, k) {
-            if (_this.hasProp(data, k)) {
+            if (_this.hasProp(k, data)) {
               return data[k];
             } else {
               return "";

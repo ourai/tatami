@@ -12,7 +12,7 @@ initialize = ->
 
   if _H.isPlainObject func
     _H.each func, initialize
-  else if _H.isString(key) and _H.hasProp(storage.fn.init, key) and _H.isFunction func
+  else if _H.isString(key) and _H.hasProp(key, storage.fn.init) and _H.isFunction func
     storage.fn.init[key] = func
 
 ###
@@ -72,7 +72,7 @@ _H.mixin
       else if @isPlainObject data
         result = getStorageData "i18n.#{key}", true
         result = (if @isString(result) then result else "").replace  /\{%\s*([A-Z0-9_]+)\s*%\}/ig, ( txt, k ) =>
-          return if @hasProp(data, k) then data[k] else ""
+          return if @hasProp(k, data) then data[k] else ""
       # 拼接多个数据
       else
         result = ""

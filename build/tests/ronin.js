@@ -20,15 +20,13 @@ var LIB_CONFIG, attach, batch, defineProp, hasOwnProp, settings, storage, toStri
 
 LIB_CONFIG = {
   name: "Miso",
-  version: "0.3.3"
+  version: "0.3.2"
 };
 
 toString = {}.toString;
 
 settings = {
-  validator: function() {
-    return true;
-  }
+  validator: function() {}
 };
 
 storage = {
@@ -128,11 +126,7 @@ attach = function(set, data, host) {
   if (!methods.isFunction(host[name])) {
     handler = set.handler;
     value = hasOwnProp(set, "value") ? set.value : data.value;
-    validators = [
-      set.validator, data.validator, settings.validator, function() {
-        return true;
-      }
-    ];
+    validators = [set.validator, data.validator, settings.validator, function() {}];
     for (_i = 0, _len = validators.length; _i < _len; _i++) {
       validator = validators[_i];
       if (methods.isFunction(validator)) {
@@ -335,9 +329,14 @@ storage.methods = {
    * A variable is considered empty if its value is or like:
    *  - null
    *  - undefined
+   *  - false
    *  - ""
    *  - []
    *  - {}
+   *  - 0
+   *  - 0.0
+   *  - "0"
+   *  - "0.0"
    *
    * @method  isEmpty
    * @param   object {Mixed}
@@ -348,9 +347,7 @@ storage.methods = {
   isEmpty: function(object) {
     var name, result;
     result = false;
-    if ((object == null) || object === "") {
-      result = true;
-    } else if ((this.isArray(object) || this.isArrayLike(object)) && object.length === 0) {
+    if ((object == null) || !object) {
       result = true;
     } else if (this.isObject(object)) {
       result = true;
@@ -424,12 +421,11 @@ window[LIB_CONFIG.name] = _H;
 }(typeof window !== "undefined" ? window : this, function( window, noGlobal ) {
 
 "use strict";
-var DateTimeFormats, DateTimeNames, ISOstr2date, LIB_CONFIG, NAMESPACE_EXP, UTCstr2date, compareObjects, dateStr2obj, dtwz, error, filterElement, flattenArray, floatLength, formatDate, func, getMaxMin, ignoreSubStr, isArr, isCollection, name, range, storage, stringifyCollection, timezoneOffset, toString, unicode, utf8_to_base64, _H,
-  __slice = [].slice;
+var LIB_CONFIG, NAMESPACE_EXP, compareObjects, error, filterElement, flattenArray, floatLength, func, getMaxMin, ignoreSubStr, isArr, isCollection, name, range, storage, toString, unicode, utf8_to_base64, _H;
 
 LIB_CONFIG = {
   name: "Ronin",
-  version: "0.2.4"
+  version: "0.2.3"
 };
 
 toString = {}.toString;
@@ -437,17 +433,15 @@ toString = {}.toString;
 NAMESPACE_EXP = /^[0-9A-Z_.]+[^_.]?$/i;
 
 storage = {
-  regexps: {
-    date: {
-      iso8601: /^(\d{4})\-(\d{2})\-(\d{2})(?:T(\d{2})\:(\d{2})\:(\d{2})(?:(?:\.)(\d{3}))?(Z|[+-]\d{2}\:\d{2})?)?$/
-    }
-  },
   modules: {
     Core: {}
   }
 };
 
 storage.modules.Core.BuiltIn = {
+  validator: function() {
+    return true;
+  },
   handlers: (function() {
     var _results;
     _results = [];
@@ -507,43 +501,10 @@ compareObjects = function(base, target, strict, connate) {
   return result;
 };
 
-
-/*
- * 将 Array、Object 转化为字符串
- * 
- * @private
- * @method  stringifyCollection
- * @param   collection {Array/Plain Object}
- * @return  {String}
- */
-
-stringifyCollection = function(collection) {
-  var ele, key, stack, val;
-  if (this.isArray(collection)) {
-    stack = (function() {
-      var _i, _len, _results;
-      _results = [];
-      for (_i = 0, _len = collection.length; _i < _len; _i++) {
-        ele = collection[_i];
-        _results.push(this.stringify(ele));
-      }
-      return _results;
-    }).call(this);
-  } else {
-    stack = (function() {
-      var _results;
-      _results = [];
-      for (key in collection) {
-        val = collection[key];
-        _results.push("\"" + key + "\":" + (this.stringify(val)));
-      }
-      return _results;
-    }).call(this);
-  }
-  return stack.join(",");
-};
-
 storage.modules.Core.Global = {
+  validator: function() {
+    return true;
+  },
   handlers: [
     {
 
@@ -691,55 +652,14 @@ storage.modules.Core.Global = {
         }
         return min + Math.floor(Math.random() * (max - min + 1));
       }
-    }, {
-
-      /*
-       * 字符串化
-       *
-       * @method  stringify
-       * @param   target {Variant}
-       * @return  {String}
-       */
-      name: "stringify",
-      handler: function(target) {
-        var e, result;
-        switch (this.type(target)) {
-          case "array":
-            result = "[" + (stringifyCollection.call(this, target)) + "]";
-            break;
-          case "object":
-            if (this.isPlainObject(target)) {
-              try {
-                result = JSON.stringify(target);
-              } catch (_error) {
-                e = _error;
-                result = "{" + (stringifyCollection.call(this, target)) + "}";
-              }
-            }
-            break;
-          case "function":
-          case "date":
-          case "regexp":
-            result = target.toString();
-            break;
-          case "string":
-            result = "\"" + target + "\"";
-            break;
-          default:
-            try {
-              result = String(target);
-            } catch (_error) {
-              e = _error;
-              result = "";
-            }
-        }
-        return result;
-      }
     }
   ]
 };
 
 storage.modules.Core.Object = {
+  validator: function() {
+    return true;
+  },
   handlers: [
     {
 
@@ -1651,307 +1571,6 @@ storage.modules.Core.String = {
         return result;
       },
       value: null
-    }
-  ]
-};
-
-
-/*
- * 将日期字符串转化为日期对象
- *
- * @private
- * @method   dateStr2obj
- * @param    date_str {String}
- * @return   {Date}
- */
-
-dateStr2obj = function(date_str) {
-  var date, date_parts;
-  date_str = this.trim(date_str);
-  date = new Date(date_str);
-  if (isNaN(date.getTime())) {
-    date_parts = date_str.match(storage.regexps.date.iso8601);
-    date = date_parts != null ? ISOstr2date.call(this, date_parts) : new Date;
-  }
-  return date;
-};
-
-
-/*
- * ISO 8601 日期字符串转化为日期对象
- *
- * @private
- * @method   ISOstr2date
- * @param    date_parts {Array}
- * @return   {Date}
- */
-
-ISOstr2date = function(date_parts) {
-  var date, tz_offset;
-  date_parts.shift();
-  date = UTCstr2date.call(this, date_parts);
-  tz_offset = timezoneOffset(date_parts.slice(-1)[0]);
-  if (tz_offset !== 0) {
-    date.setTime(date.getTime() - tz_offset);
-  }
-  return date;
-};
-
-
-/*
- * 转化为 UTC 日期对象
- *
- * @private
- * @method   UTCstr2date
- * @param    date_parts {Array}
- * @return   {Date}
- */
-
-UTCstr2date = function(date_parts) {
-  var date, handlers;
-  handlers = ["FullYear", "Month", "Date", "Hours", "Minutes", "Seconds", "Milliseconds"];
-  date = new Date;
-  this.each(date_parts, function(ele, i) {
-    var handler;
-    if ((ele != null) && ele !== "") {
-      handler = handlers[i];
-      if (handler != null) {
-        return date["setUTC" + handler](ele * 1 + (handler === "Month" ? -1 : 0));
-      }
-    }
-  });
-  return date;
-};
-
-
-/*
- * 相对于 UTC 的偏移值
- *
- * @private
- * @method   timezoneOffset
- * @param    timezone {String}
- * @return   {Integer}
- */
-
-timezoneOffset = function(timezone) {
-  var cap, offset;
-  offset = 0;
-  if (/^(Z|[+-]\d{2}\:\d{2})$/.test(timezone)) {
-    cap = timezone.charAt(0);
-    if (cap !== "Z") {
-      offset = timezone.substring(1).split(":");
-      offset = (cap + (offset[0] * 60 + offset[1] * 1)) * 60 * 1000;
-    }
-  }
-  return offset;
-};
-
-DateTimeNames = {
-  month: {
-    long: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-    short: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-  },
-  week: {
-    long: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thurday", "Friday", "Saturday"],
-    short: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-  }
-};
-
-DateTimeFormats = {
-  "d": function(date) {
-    return dtwz.call(this, date.getDate());
-  },
-  "D": function(date) {
-    return DateTimeNames.week.short[date.getDay()];
-  },
-  "j": function(date) {
-    return date.getDate();
-  },
-  "l": function(date) {
-    return DateTimeNames.week.long[date.getDay()];
-  },
-  "N": function(date) {
-    var day;
-    day = date.getDay();
-    if (day === 0) {
-      day = 7;
-    }
-    return day;
-  },
-  "S": function(date) {
-    var suffix;
-    switch (String(date.getDate()).slice(-1)) {
-      case "1":
-        suffix = "st";
-        break;
-      case "2":
-        suffix = "nd";
-        break;
-      case "3":
-        suffix = "rd";
-        break;
-      default:
-        suffix = "th";
-    }
-    return suffix;
-  },
-  "w": function(date) {
-    return date.getDay();
-  },
-  "F": function(date) {
-    return DateTimeNames.month.long[date.getMonth()];
-  },
-  "m": function(date) {
-    return dtwz.call(this, DateTimeFormats.n.call(this, date));
-  },
-  "M": function(date) {
-    return DateTimeNames.month.short[date.getMonth()];
-  },
-  "n": function(date) {
-    return date.getMonth() + 1;
-  },
-  "Y": function(date) {
-    return date.getFullYear();
-  },
-  "y": function(date) {
-    return String(date.getFullYear()).slice(-2);
-  },
-  "a": function(date) {
-    var h;
-    h = date.getHours();
-    if ((0 < h && h < 12)) {
-      return "am";
-    } else {
-      return "pm";
-    }
-  },
-  "A": function(date) {
-    return DateTimeFormats.a.call(this, date).toUpperCase();
-  },
-  "g": function(date) {
-    var h;
-    h = date.getHours();
-    if (h === 0) {
-      h = 24;
-    }
-    if (h > 12) {
-      return h - 12;
-    } else {
-      return h;
-    }
-  },
-  "G": function(date) {
-    return date.getHours();
-  },
-  "h": function(date) {
-    return dtwz.call(this, DateTimeFormats.g.call(this, date));
-  },
-  "H": function(date) {
-    return dtwz.call(this, DateTimeFormats.G.call(this, date));
-  },
-  "i": function(date) {
-    return dtwz.call(this, date.getMinutes());
-  },
-  "s": function(date) {
-    return dtwz.call(this, date.getSeconds());
-  }
-};
-
-
-/*
- * 添加前导“0”
- *
- * @private
- * @method   dtwz
- * @param    datetime {Integer}
- * @return   {String}
- */
-
-dtwz = function(datetime) {
-  return this.pad(datetime, -2, "0");
-};
-
-
-/*
- * 格式化日期
- *
- * @private
- * @method   formatDate
- * @param    format {String}
- * @param    date {Date}
- * @return   {String}
- */
-
-formatDate = function(format, date) {
-  var context, formatted;
-  if (!this.isDate(date) || isNaN(date.getTime())) {
-    date = new Date;
-  }
-  context = this;
-  formatted = format.replace(new RegExp("([a-z]|\\\\)", "gi"), function() {
-    var handler, m, o, p, s, _i;
-    m = arguments[0], p = 4 <= arguments.length ? __slice.call(arguments, 1, _i = arguments.length - 2) : (_i = 1, []), o = arguments[_i++], s = arguments[_i++];
-    if (m === "\\") {
-      return "";
-    } else {
-      if (s.charAt(o - 1) !== "\\") {
-        handler = DateTimeFormats[m];
-      }
-    }
-    if (handler != null) {
-      return handler.call(context, date);
-    } else {
-      return m;
-    }
-  });
-  return formatted;
-};
-
-storage.modules.Core.Date = {
-  handlers: [
-    {
-
-      /*
-       * 格式化日期对象/字符串
-       *
-       * format 参照 PHP：
-       *   http://www.php.net/manual/en/function.date.php
-       * 
-       * @method  date
-       * @param   format {String}
-       * @param   [date] {Date/String}
-       * @return  {String}
-       */
-      name: "date",
-      handler: function(format, date) {
-        if (this.isString(date)) {
-          date = dateStr2obj.call(this, date);
-        }
-        return formatDate.apply(this, [format, date]);
-      },
-      value: "",
-      validator: function(format) {
-        return this.isString(format);
-      }
-    }, {
-
-      /*
-       * 取得当前时间
-       *
-       * @method   now
-       * @param    [is_object] {Boolean}
-       * @return   {Integer/Date}
-       */
-      name: "now",
-      handler: function(is_object) {
-        var date;
-        date = new Date;
-        if (is_object === true) {
-          return date;
-        } else {
-          return date.getTime();
-        }
-      }
     }
   ]
 };

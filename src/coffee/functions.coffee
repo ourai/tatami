@@ -76,7 +76,7 @@ systemDialog = ( type, message, okHandler, cancelHandler ) ->
     if _H.isFunction $.fn.dialog
       poolName = "systemDialog"
       i18nText = storage.i18n._SYS.dialog[_H.config "lang"]
-      storage.pool[poolName] = {} if not _H.hasProp(storage.pool, poolName)
+      storage.pool[poolName] = {} if not _H.hasProp(poolName, storage.pool)
       dlg = storage.pool[poolName][type]
 
       if not dlg
@@ -318,7 +318,7 @@ getStorageData = ( ns_str, ignore ) ->
     result = storage
 
     _H.each parts, ( part ) ->
-      rv = _H.hasProp(result, part)
+      rv = _H.hasProp(part, result)
       result = result[part]
       return rv
 
@@ -340,13 +340,13 @@ setStorageData = ( ns_str, data ) ->
 
   if length is 1
     key = parts[0]
-    result = setData storage, key, data, _H.hasProp(storage, key)
+    result = setData storage, key, data, _H.hasProp(key, storage)
   else
     result = storage
 
     _H.each parts, ( n, i ) ->
       if i < length - 1
-        result[n] = {} if not _H.hasProp(result, n)
+        result[n] = {} if not _H.hasProp(n, result)
       else
         result[n] = setData result, n, data, _H.isPlainObject result[n]
       result = result[n]
@@ -373,7 +373,7 @@ setData = ( target, key, data, condition ) ->
 # @return  {Boolean}
 ###
 isExisted = ( host, prop, type ) ->
-  return _H.isObject(host) and _H.isString(prop) and _H.hasProp(host, prop) and _H.type(host[prop]) is type
+  return _H.isObject(host) and _H.isString(prop) and _H.hasProp(prop, host) and _H.type(host[prop]) is type
 
 ###
 # Determines whether a key in a limited key list
