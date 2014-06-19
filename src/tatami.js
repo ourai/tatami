@@ -871,7 +871,7 @@ _H.mixin({
    */
   i18n: function() {
     var args, data, key, result;
-    args = arguments;
+    args = this.slice(arguments);
     key = args[0];
     result = null;
     if (this.isPlainObject(key)) {
