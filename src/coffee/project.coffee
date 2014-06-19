@@ -1,3 +1,10 @@
+# Web API 数据载体
+storage.web_api = {}
+# Web API 版本
+storage.config.api = ""
+# 获取存在于内部的 Web API 的命名空间字符串（Namespace String）
+storage.fn.init.apiNS = ( key ) ->
+
 ###
 # 设置初始化函数
 # 
@@ -100,22 +107,10 @@ _H.mixin
       $.extend storage.web_api, key
     # 获取
     else if @isString key
-      regexp = /^([a-z]+)_/
-      match = (key.match(regexp) ? [])[1]
       data = args[1]
-      type = undefined
+      nsStr = initializer("apiNS") key
 
-      @each ["front", "admin"], ( n ) ->
-        if match is n
-          type = n
-          return false
-
-      if type
-        key = key.replace regexp, ""
-      else
-        type = "common"
-
-      result = api_ver() + getStorageData "web_api.#{type}.#{key}", true
+      result = api_ver() + (getStorageData("web_api.#{nsStr ? key}", true) ? "")
 
       if @isPlainObject data
         result = result.replace /\:([a-z_]+)/g, ( m, k ) =>

@@ -59,8 +59,6 @@ storage =
   config:
     debug: true
     platform: ""
-    # Web API 版本
-    api: ""
     locale: _ENV.lang
     lang: _ENV.lang.split("-")[0]
 
@@ -144,11 +142,3 @@ storage =
           cancel: "Cancel"
           yes: "Yes"
           no: "No"
-
-  ###
-  # Web API
-  #
-  # @property  api
-  # @type      {Object}
-  ###
-  web_api: {}
