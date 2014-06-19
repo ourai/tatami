@@ -116,7 +116,7 @@ _H.mixin
       result = api_ver() + getStorageData "web_api.#{type}.#{key}", true
 
       if @isPlainObject data
-        result = result.replace /\:([a-z_]+)/g, ( m, k ) ->
-          return data[k]
+        result = result.replace /\:([a-z_]+)/g, ( m, k ) =>
+          return if @hasProp(k, data) then data[k] else m
 
     return result

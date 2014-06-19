@@ -936,9 +936,15 @@ _H.mixin({
       }
       result = api_ver() + getStorageData("web_api." + type + "." + key, true);
       if (this.isPlainObject(data)) {
-        result = result.replace(/\:([a-z_]+)/g, function(m, k) {
-          return data[k];
-        });
+        result = result.replace(/\:([a-z_]+)/g, (function(_this) {
+          return function(m, k) {
+            if (_this.hasProp(k, data)) {
+              return data[k];
+            } else {
+              return m;
+            }
+          };
+        })(this));
       }
     }
     return result;
