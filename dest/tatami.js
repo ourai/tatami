@@ -97,7 +97,6 @@ storage = {
   config: {
     debug: true,
     platform: "",
-    api: "",
     locale: _ENV.lang,
     lang: _ENV.lang.split("-")[0]
   },
@@ -188,15 +187,7 @@ storage = {
         }
       }
     }
-  },
-
-  /*
-   * Web API
-   *
-   * @property  api
-   * @type      {Object}
-   */
-  web_api: {}
+  }
 };
 
 
@@ -813,6 +804,12 @@ _H.mixin({
   }
 });
 
+storage.web_api = {};
+
+storage.config.api = "";
+
+storage.fn.init.apiNS = function(key) {};
+
 
 /*
  * 设置初始化函数
@@ -888,7 +885,7 @@ _H.mixin({
    */
   i18n: function() {
     var args, data, key, result;
-    args = this.slice(arguments);
+    args = arguments;
     key = args[0];
     result = null;
     if (this.isPlainObject(key)) {
@@ -929,29 +926,16 @@ _H.mixin({
    * @return  {String}
    */
   api: function() {
-    var args, data, key, match, regexp, result, type, _ref;
+    var args, data, key, nsStr, result, _ref;
     args = arguments;
     key = args[0];
     result = null;
     if (this.isPlainObject(key)) {
       $.extend(storage.web_api, key);
     } else if (this.isString(key)) {
-      regexp = /^([a-z]+)_/;
-      match = ((_ref = key.match(regexp)) != null ? _ref : [])[1];
       data = args[1];
-      type = void 0;
-      this.each(["front", "admin"], function(n) {
-        if (match === n) {
-          type = n;
-          return false;
-        }
-      });
-      if (type) {
-        key = key.replace(regexp, "");
-      } else {
-        type = "common";
-      }
-      result = api_ver() + getStorageData("web_api." + type + "." + key, true);
+      nsStr = initializer("apiNS")(key);
+      result = api_ver() + ((_ref = getStorageData("web_api." + (nsStr != null ? nsStr : key), true)) != null ? _ref : "");
       if (this.isPlainObject(data)) {
         result = result.replace(/\:([a-z_]+)/g, (function(_this) {
           return function(m, k) {

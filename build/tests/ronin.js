@@ -16,11 +16,11 @@
 }(typeof window !== "undefined" ? window : this, function( window, noGlobal ) {
 
 "use strict";
-var LIB_CONFIG, attach, batch, defineProp, hasOwnProp, settings, storage, toString, _H;
+var LIB_CONFIG, attach, batch, defineProp, each, hasOwnProp, settings, storage, toString, _H;
 
 LIB_CONFIG = {
   name: "Miso",
-  version: "0.3.3"
+  version: "0.3.5"
 };
 
 toString = {}.toString;
@@ -33,6 +33,39 @@ settings = {
 
 storage = {
   types: {}
+};
+
+
+/*
+ * 遍历
+ * 
+ * @private
+ * @method  each
+ * @param   object {Object/Array/Array-Like/Function/String}
+ * @param   callback {Function}
+ * @return  {Mixed}
+ */
+
+each = function(object, callback) {
+  var ele, index, name, type, value;
+  type = storage.methods.type(object);
+  if (type === "object" || type === "function") {
+    for (name in object) {
+      value = object[name];
+      if (callback.apply(value, [value, name, object]) === false) {
+        break;
+      }
+    }
+  } else if (type === "array" || type === "string") {
+    index = 0;
+    while (index < object.length) {
+      ele = type === "array" ? object[index] : object.charAt(index);
+      if (callback.apply(object[index], [ele, index++, object]) === false) {
+        break;
+      }
+    }
+  }
+  return object;
 };
 
 
@@ -98,11 +131,11 @@ batch = function(handlers, data, host) {
   var methods;
   methods = storage.methods;
   if (methods.isArray(data) || (methods.isPlainObject(data) && !methods.isArray(data.handlers))) {
-    methods.each(data, function(d) {
+    each(data, function(d) {
       return batch(d != null ? d.handlers : void 0, d, host);
     });
   } else if (methods.isPlainObject(data) && methods.isArray(data.handlers)) {
-    methods.each(handlers, function(info) {
+    each(handlers, function(info) {
       return attach(info, data, host);
     });
   }
@@ -125,7 +158,7 @@ attach = function(set, data, host) {
   var handler, method, methods, name, validator, validators, value, _i, _len;
   name = set.name;
   methods = storage.methods;
-  if (!methods.isFunction(host[name])) {
+  if (set.expose !== false && !methods.isFunction(host[name])) {
     handler = set.handler;
     value = hasOwnProp(set, "value") ? set.value : data.value;
     validators = [
@@ -192,30 +225,12 @@ storage.methods = {
    * 遍历
    * 
    * @method  each
-   * @param   object {Object/Array/Function}
+   * @param   object {Object/Array/Array-Like/Function/String}
    * @param   callback {Function}
    * @return  {Mixed}
    */
   each: function(object, callback) {
-    var ele, index, name, type, value;
-    type = this.type(object);
-    if (type === "object" || type === "function") {
-      for (name in object) {
-        value = object[name];
-        if (callback.apply(value, [value, name, object]) === false) {
-          break;
-        }
-      }
-    } else if (type === "array" || type === "string") {
-      index = 0;
-      while (index < object.length) {
-        ele = type === "array" ? object[index] : object.charAt(index);
-        if (callback.apply(object[index], [ele, index++, object]) === false) {
-          break;
-        }
-      }
-    }
-    return object;
+    return each((this.isArrayLike(object) ? this.slice(object) : object), callback);
   },
 
   /*
@@ -253,10 +268,12 @@ storage.methods = {
    * 判断某个对象是否有自己的指定属性
    *
    * @method   hasProp
+   * @param    prop {String}   Property to be tested
+   * @param    obj {Object}    Target object
    * @return   {Boolean}
    */
-  hasProp: function() {
-    return hasOwnProp.apply(this, this.slice(arguments));
+  hasProp: function(prop, obj) {
+    return hasOwnProp.apply(this, [(arguments.length < 2 ? window : obj), prop]);
   },
 
   /*
@@ -316,7 +333,7 @@ storage.methods = {
       return false;
     }
     try {
-      if (object.constructor && !this.hasProp(object, "constructor") && !this.hasProp(object.constructor.prototype, "isPrototypeOf")) {
+      if (object.constructor && !this.hasProp("constructor", object) && !this.hasProp("isPrototypeOf", object.constructor.prototype)) {
         return false;
       }
     } catch (_error) {
@@ -326,7 +343,7 @@ storage.methods = {
     for (key in object) {
       key;
     }
-    return key === void 0 || this.hasProp(object, key);
+    return key === void 0 || this.hasProp(key, object);
   },
 
   /*
@@ -365,6 +382,12 @@ storage.methods = {
   /*
    * 是否为类数组对象
    *
+   * 类数组对象（Array-Like Object）是指具备以下特征的对象：
+   * -
+   * 1. 不是数组（Array）
+   * 2. 有自动增长的 length 属性
+   * 3. 以从 0 开始的数字做属性名
+   *
    * @method  isArrayLike
    * @param   object {Mixed}
    * @return  {Boolean}
@@ -376,7 +399,7 @@ storage.methods = {
       if (!this.isWindow(object)) {
         type = this.type(object);
         length = object.length;
-        if (object.nodeType === 1 && length || this.isArray(type) || !this.isFunction(type) && (length === 0 || this.isNumber(length) && length > 0 && (length - 1) in object)) {
+        if (object.nodeType === 1 && length || !this.isArray(type) && !this.isFunction(type) && (length === 0 || this.isNumber(length) && length > 0 && (length - 1) in object)) {
           result = true;
         }
       }
@@ -385,7 +408,7 @@ storage.methods = {
   }
 };
 
-storage.methods.each("Boolean Number String Function Array Date RegExp Object".split(" "), function(name) {
+each("Boolean Number String Function Array Date RegExp Object".split(" "), function(name) {
   var lc;
   storage.types["[object " + name + "]"] = lc = name.toLowerCase();
   return storage.methods["is" + name] = function(target) {
@@ -397,7 +420,7 @@ _H = function(data, host) {
   return batch(data != null ? data.handlers : void 0, data, host != null ? host : {});
 };
 
-storage.methods.each(storage.methods, function(handler, name) {
+each(storage.methods, function(handler, name) {
   defineProp(handler);
   return _H[name] = handler;
 });
@@ -440,6 +463,10 @@ storage = {
   regexps: {
     date: {
       iso8601: /^(\d{4})\-(\d{2})\-(\d{2})(?:T(\d{2})\:(\d{2})\:(\d{2})(?:(?:\.)(\d{3}))?(Z|[+-]\d{2}\:\d{2})?)?$/
+    },
+    object: {
+      array: /\[(.*)\]/,
+      number: /(-?[0-9]+)/
     }
   },
   modules: {
@@ -575,7 +602,7 @@ storage.modules.Core.Global = {
       name: "mask",
       handler: function(guise) {
         var error, lib_name, result;
-        if (this.hasProp(window, guise)) {
+        if (this.hasProp(guise)) {
           if (window.console) {
             console.error("'" + guise + "' has existed as a property of Window object.");
           }
@@ -593,10 +620,10 @@ storage.modules.Core.Global = {
         }
         return result;
       },
-      value: false,
       validator: function(guise) {
         return this.isString(guise);
-      }
+      },
+      value: false
     }, {
 
       /*
@@ -702,39 +729,83 @@ storage.modules.Core.Global = {
        */
       name: "stringify",
       handler: function(target) {
-        var e, result;
-        switch (this.type(target)) {
-          case "array":
-            result = "[" + (stringifyCollection.call(this, target)) + "]";
-            break;
-          case "object":
-            if (this.isPlainObject(target)) {
-              try {
-                result = JSON.stringify(target);
-              } catch (_error) {
-                e = _error;
-                result = "{" + (stringifyCollection.call(this, target)) + "}";
-              }
-            }
-            break;
-          case "function":
-          case "date":
-          case "regexp":
-            result = target.toString();
-            break;
-          case "string":
-            result = "\"" + target + "\"";
-            break;
-          default:
+        var e, result, t;
+        t = this.type(target);
+        if (t === "object") {
+          if (this.isPlainObject(target)) {
             try {
-              result = String(target);
+              result = JSON.stringify(target);
             } catch (_error) {
               e = _error;
-              result = "";
+              result = "{" + (stringifyCollection.call(this, target)) + "}";
             }
+          } else {
+            result = "";
+          }
+        } else {
+          switch (t) {
+            case "array":
+              result = "[" + (stringifyCollection.call(this, target)) + "]";
+              break;
+            case "function":
+            case "date":
+            case "regexp":
+              result = target.toString();
+              break;
+            case "string":
+              result = "\"" + target + "\"";
+              break;
+            default:
+              try {
+                result = String(target);
+              } catch (_error) {
+                e = _error;
+                result = "";
+              }
+          }
         }
         return result;
       }
+    }, {
+      name: "parse",
+      handler: function(target) {
+        var result;
+        target = this.trim(target);
+        result = target;
+        this.each(storage.regexps.object, (function(_this) {
+          return function(r, o) {
+            var re_c, re_g, re_t;
+            re_t = new RegExp("^" + r.source + "$");
+            if (re_t.test(target)) {
+              switch (o) {
+                case "array":
+                  re_g = new RegExp("" + r.source, "g");
+                  re_c = /(\[.*\])/;
+                  r = re_g.exec(target);
+                  result = [];
+                  while (r != null) {
+                    _this.each(r[1].split(","), function(unit, idx) {
+                      return result.push(_this.parse(unit));
+                    });
+                    break;
+                  }
+                  break;
+                case "number":
+                  result *= 1;
+              }
+              return false;
+            } else {
+              return true;
+            }
+          };
+        })(this));
+        return result;
+      },
+      validator: function(target) {
+        return this.isString(target);
+      },
+      value: "",
+      expose: false
     }
   ]
 };
