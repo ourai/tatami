@@ -54,8 +54,7 @@ _H.mixin
   # @return  {String}
   ###
   i18n: ->
-    # 如果不转化为数组，在 IE8 中调用 .each 时会不认这个对象
-    args = @slice arguments
+    args = arguments
     key = args[0]
     result = null
 
@@ -96,8 +95,10 @@ _H.mixin
     key = args[0]
     result = null
 
+    # 设置
     if @isPlainObject key
       $.extend storage.web_api, key
+    # 获取
     else if @isString key
       regexp = /^([a-z]+)_/
       match = (key.match(regexp) ? [])[1]
