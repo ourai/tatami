@@ -1,5 +1,5 @@
 "use strict";
-var $, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, LIB_CONFIG, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, TEXT_NODE, api_ver, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, request, resetConfig, runHandler, setData, setStorageData, setup, storage, support, systemDialog, systemDialogHandler, _ENV, _H;
+var $, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, LIB_CONFIG, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, TEXT_NODE, api_ver, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, request, resetConfig, resolvePathname, runHandler, setData, setStorageData, setup, storage, support, systemDialog, systemDialogHandler, _ENV, _H;
 
 LIB_CONFIG = {
   name: "@NAME",
@@ -1155,6 +1155,28 @@ _H.mixin({
     }
   },
   decodeEntities: function(string) {}
+});
+
+resolvePathname = function(pathname) {
+  if (pathname.charAt(0) === "\/") {
+    return pathname;
+  } else {
+    return "\/" + pathname;
+  }
+};
+
+_H.mixin({
+
+  /*
+   * 获取 URL 的 pathname
+   *
+   * @method   pathname
+   * @param    url {String}
+   * @return   {String}
+   */
+  pathname: function(url) {
+    return resolvePathname(this.isString(url) ? url : location.pathname);
+  }
 });
 
 window[LIB_CONFIG.name] = _H;
