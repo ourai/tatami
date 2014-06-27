@@ -6,12 +6,12 @@
       __proto__: null
       writable: true
       value:
-        name: ""
+        name: "__util"
         version: ""
   catch error
     __util.mixin
       __meta__:
-        name: ""
+        name: "__util"
         version: ""
 
   return __util

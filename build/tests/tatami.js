@@ -1947,7 +1947,7 @@ __util = (function(window, __proc) {
       __proto__: null,
       writable: true,
       value: {
-        name: "",
+        name: "__util",
         version: ""
       }
     });
@@ -1955,7 +1955,7 @@ __util = (function(window, __proc) {
     error = _error;
     __util.mixin({
       __meta__: {
-        name: "",
+        name: "__util",
         version: ""
       }
     });
