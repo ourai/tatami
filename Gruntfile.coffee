@@ -32,16 +32,17 @@ module.exports = ( grunt ) ->
       tests: "<%= meta.build %>/tests"
       tasks: "<%= meta.build %>/tasks"
     concat:
-      coffee:
+      coffee_miso:
         src: [
-            "<%= meta.coffee %>/intro.coffee"
-            # preprocessor
             "<%= meta.proc %>/intro.coffee"
             "<%= meta.proc %>/variables.coffee"
             "<%= meta.proc %>/functions.coffee"
             "<%= meta.proc %>/methods.coffee"
             "<%= meta.proc %>/outro.coffee"
-            # utils
+          ]
+        dest: "<%= meta.coffee %>/miso.coffee"
+      coffee_ronin:
+        src: [
             "<%= meta.util %>/intro.coffee"
             "<%= meta.util %>/variables.coffee"
             "<%= meta.util %>/functions.coffee"
@@ -52,7 +53,13 @@ module.exports = ( grunt ) ->
             "<%= meta.util %>/string.coffee"
             "<%= meta.util %>/date.coffee"
             "<%= meta.util %>/outro.coffee"
-            # ---
+          ]
+        dest: "<%= meta.coffee %>/ronin.coffee"
+      coffee:
+        src: [
+            "<%= meta.coffee %>/intro.coffee"
+            "<%= meta.coffee %>/miso.coffee"
+            "<%= meta.coffee %>/ronin.coffee"
             "<%= meta.coffee %>/variables.coffee"
             "<%= meta.coffee %>/functions.coffee"
             "<%= meta.coffee %>/utils.coffee"
@@ -138,6 +145,7 @@ module.exports = ( grunt ) ->
 
   grunt.loadNpmTasks task for task in npmTasks
 
-  grunt.registerTask "script", ["concat:coffee", "coffee", "concat:js", "uglify"]
+  grunt.registerTask "concat_coffee", ["concat:coffee_miso", "concat:coffee_ronin", "concat:coffee"]
+  grunt.registerTask "script", ["concat_coffee", "coffee", "concat:js", "uglify"]
   grunt.registerTask "style", ["concat:css", "copy:matcha"]
   grunt.registerTask "default", ["script", "clean", "copy:test", "concat:vendors"]
