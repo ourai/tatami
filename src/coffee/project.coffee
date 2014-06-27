@@ -78,7 +78,7 @@ _H.mixin
       # 取出并进行格式替换
       else if @isPlainObject data
         result = getStorageData "i18n.#{key}", true
-        result = (if @isString(result) then result else "").replace  /\{%\s*([A-Z0-9_]+)\s*%\}/ig, ( txt, k ) =>
+        result = (if @isString(result) then result else "").replace /\{%\s*([A-Z0-9_]+)\s*%\}/ig, ( txt, k ) =>
           return if @hasProp(k, data) then data[k] else ""
       # 拼接多个数据
       else

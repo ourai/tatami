@@ -16,7 +16,7 @@
 }(typeof window !== "undefined" ? window : this, function( window, noGlobal ) {
 
 "use strict";
-var $, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, LIB_CONFIG, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, TEXT_NODE, api_ver, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, request, resetConfig, resolvePathname, runHandler, setData, setStorageData, setup, storage, support, systemDialog, systemDialogHandler, _ENV, _H, __proc, __util,
+var $, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, LIB_CONFIG, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, Storage, TEXT_NODE, api_ver, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, request, resetConfig, resolvePathname, runHandler, setData, setStorageData, setup, storage, support, systemDialog, systemDialogHandler, _ENV, _H, __proc, __util,
   __slice = [].slice;
 
 LIB_CONFIG = {
@@ -1962,6 +1962,79 @@ __util = (function(window, __proc) {
   }
   return __util;
 })(window, __proc);
+
+Storage = (function(__util) {
+  var getData, isNamespaceStr, storage, str2obj;
+  storage = {};
+  isNamespaceStr = function(str) {
+    return /^[0-9a-z_.]+[^_.]?$/i.test(str);
+  };
+  str2obj = function(str) {
+    var obj;
+    obj = storage;
+    __util.each(str.split("."), function(part) {
+      if (!__util.hasProp(part, obj)) {
+        obj[part] = {};
+      }
+      return obj = obj[part];
+    });
+    return obj;
+  };
+  getData = function(host, key, format_map) {
+    var result;
+    __util.each(key.split("."), function(part) {
+      var r;
+      r = __util.hasProp(part, host);
+      host = host[part];
+      return r;
+    });
+    result = host != null ? host : "";
+    if (__util.isPlainObject(format_map)) {
+      result = result.replace(this.settings.format_regexp, (function(_this) {
+        return function(m, k) {
+          if (__util.hasProp(k, format_map)) {
+            return format_map[k];
+          } else {
+            return m;
+          }
+        };
+      })(this));
+    }
+    return result;
+  };
+  Storage = (function() {
+    function Storage(namespace) {
+      this.storage = isNamespaceStr(namespace) ? str2obj("" + namespace) : storage;
+      this.settings = {
+        format_regexp: /.*/g,
+        allow_keys: false,
+        keys: {}
+      };
+    }
+
+    Storage.prototype.set = function(data) {
+      return __util.mixin(this.storage, data);
+    };
+
+    Storage.prototype.get = function(key, format_map) {
+      var data;
+      if (__util.isString(key)) {
+        data = getData.apply(this, [this.storage, key, format_map]);
+      } else if (this.settings.allow_keys === true) {
+        data = __util.keys(this.storage);
+      }
+      return data != null ? data : null;
+    };
+
+    Storage.prototype.config = function(settings) {
+      return __util.mixin(this.settings, settings);
+    };
+
+    return Storage;
+
+  })();
+  return Storage;
+})(__util);
 
 ELEMENT_NODE = 1;
 

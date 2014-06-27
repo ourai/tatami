@@ -20,6 +20,7 @@ module.exports = ( grunt ) ->
       coffee: "<%= meta.src %>/coffee"
       proc: "<%= meta.coffee %>/preprocessor"
       util: "<%= meta.coffee %>/utils"
+      classes: "<%= meta.coffee %>/classes"
       dest: "dest"
       dest_style: "<%= meta.dest %>/stylesheets"
       dest_script: "<%= meta.dest %>"
@@ -60,6 +61,7 @@ module.exports = ( grunt ) ->
             "<%= meta.coffee %>/intro.coffee"
             "<%= meta.coffee %>/miso.coffee"
             "<%= meta.coffee %>/ronin.coffee"
+            "<%= meta.classes %>/Storage.coffee"
             "<%= meta.coffee %>/variables.coffee"
             "<%= meta.coffee %>/functions.coffee"
             "<%= meta.coffee %>/utils.coffee"
@@ -148,4 +150,4 @@ module.exports = ( grunt ) ->
   grunt.registerTask "concat_coffee", ["concat:coffee_miso", "concat:coffee_ronin", "concat:coffee"]
   grunt.registerTask "script", ["concat_coffee", "coffee", "concat:js", "uglify"]
   grunt.registerTask "style", ["concat:css", "copy:matcha"]
-  grunt.registerTask "default", ["script", "clean", "copy:test", "concat:vendors"]
+  grunt.registerTask "default", ["script", "clean", "copy:test"]

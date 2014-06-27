@@ -1,4 +1,4 @@
-Storage = do ( __proc ) ->
+Storage = do ( __util ) ->
   storage = {}
 
   isNamespaceStr = ( str ) ->
@@ -29,30 +29,47 @@ Storage = do ( __proc ) ->
   str2obj = ( str ) ->
     obj = storage
 
-    __proc.each str.split("."), ( part ) ->
-      obj[part] = {} if not __proc.hasProp part, obj
+    __util.each str.split("."), ( part ) ->
+      obj[part] = {} if not __util.hasProp part, obj
       obj = obj[part]
 
     return obj
 
+  getData = ( host, key, format_map ) ->
+    __util.each key.split("."), ( part ) ->
+      r = __util.hasProp part, host
+      host = host[part]
+
+      return r
+
+    result = host ? ""
+
+    if __util.isPlainObject format_map
+      result = result.replace @settings.format_regexp, ( m, k ) =>
+        return if __util.hasProp(k, format_map) then format_map[k] else m
+
+    return result
+
   class Storage
     constructor: ( namespace ) ->
       @storage = if isNamespaceStr(namespace) then str2obj("#{namespace}") else storage
+      @settings =
+        format_regexp: /.*/g
+        allow_keys: false
+        keys: {}
 
     set: ( data ) ->
-      __proc.mixin(@storage, data) if __proc.isPlainObject data
+      __util.mixin @storage, data
 
     get: ( key, format_map ) ->
-      if __proc.isString key
-        data = @storage[key]
-      else
-        data = []
-        
-        __proc.each @storage, ( v ) ->
-          data.push v
+      if __util.isString key
+        data = getData.apply this, [@storage, key, format_map]
+      else if @settings.allow_keys is true
+        data = __util.keys @storage
 
-      return data
+      return data ? null
 
-    keys: ( key_map ) ->
+    config: ( settings ) ->
+      __util.mixin @settings, settings
 
   return Storage
