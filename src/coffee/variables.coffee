@@ -19,7 +19,7 @@ REG_NAMESPACE = /^[0-9A-Z_.]+[^_.]?$/i
 $ = jQuery
 _ENV =
   lang: document.documentElement.lang || document.documentElement.getAttribute("lang") || navigator.language || navigator.browserLanguage
-_H = Ronin
+_H = __util
 
 _H.mask LIB_CONFIG.name
 _H.__meta__ = LIB_CONFIG

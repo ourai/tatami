@@ -18,6 +18,8 @@ module.exports = ( grunt ) ->
     meta:
       src: "src"
       coffee: "<%= meta.src %>/coffee"
+      proc: "<%= meta.coffee %>/preprocessor"
+      util: "<%= meta.coffee %>/utils"
       dest: "dest"
       dest_style: "<%= meta.dest %>/stylesheets"
       dest_script: "<%= meta.dest %>"
@@ -33,6 +35,24 @@ module.exports = ( grunt ) ->
       coffee:
         src: [
             "<%= meta.coffee %>/intro.coffee"
+            # preprocessor
+            "<%= meta.proc %>/intro.coffee"
+            "<%= meta.proc %>/variables.coffee"
+            "<%= meta.proc %>/functions.coffee"
+            "<%= meta.proc %>/methods.coffee"
+            "<%= meta.proc %>/outro.coffee"
+            # utils
+            "<%= meta.util %>/intro.coffee"
+            "<%= meta.util %>/variables.coffee"
+            "<%= meta.util %>/functions.coffee"
+            "<%= meta.util %>/builtin.coffee"
+            "<%= meta.util %>/global.coffee"
+            "<%= meta.util %>/object.coffee"
+            "<%= meta.util %>/array.coffee"
+            "<%= meta.util %>/string.coffee"
+            "<%= meta.util %>/date.coffee"
+            "<%= meta.util %>/outro.coffee"
+            # ---
             "<%= meta.coffee %>/variables.coffee"
             "<%= meta.coffee %>/functions.coffee"
             "<%= meta.coffee %>/utils.coffee"
