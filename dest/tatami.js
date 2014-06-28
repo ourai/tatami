@@ -2998,6 +2998,14 @@ _H.api.formatList = function(map) {
   }
 };
 
+_H.route.formatList = function(map) {
+  if (_H.isPlainObject(map)) {
+    return route.config({
+      keys: map
+    });
+  }
+};
+
 
 /*
  * 通过 HTML 构建 dataset

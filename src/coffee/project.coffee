@@ -134,3 +134,6 @@ _H.mixin
 
 _H.api.formatList = ( map ) ->
   API.config keys: map if _H.isPlainObject map
+
+_H.route.formatList = ( map ) ->
+  route.config keys: map if _H.isPlainObject map
