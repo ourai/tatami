@@ -511,6 +511,20 @@ __util = (function(window, __proc) {
       {
 
         /*
+         * 扩充对象
+         * 
+         * @method   extend
+         * @param    data {Plain Object/Array}
+         * @param    host {Object}
+         * @return   {Object}
+         */
+        name: "extend",
+        handler: function(data, host) {
+          return __proc(data, host);
+        }
+      }, {
+
+        /*
          * 别名
          * 
          * @method  alias
@@ -2150,6 +2164,15 @@ storage = {
     },
     handler: {}
   },
+  modules: {
+    utils: {},
+    flow: {},
+    project: {},
+    storage: {},
+    request: {},
+    HTML: {},
+    URL: {}
+  },
 
   /*
    * 缓冲区，存储临时数据
@@ -2633,121 +2656,140 @@ limit = function(key) {
   return limiter.key.storage.push(key);
 };
 
-_H.mixin({
+storage.modules.utils = {
+  handlers: [
+    {
 
-  /*
-   * 自定义警告提示框
-   *
-   * @method  alert
-   * @param   message {String}
-   * @param   [callback] {Function}
-   * @return  {Boolean}
-   */
-  alert: function(message, callback) {
-    return systemDialog("alert", message, callback);
-  },
-
-  /*
-   * 自定义确认提示框（两个按钮）
-   *
-   * @method  confirm
-   * @param   message {String}
-   * @param   [ok] {Function}       Callback for 'OK' button
-   * @param   [cancel] {Function}   Callback for 'CANCEL' button
-   * @return  {Boolean}
-   */
-  confirm: function(message, ok, cancel) {
-    return systemDialog("confirm", message, ok, cancel);
-  },
-
-  /*
-   * 自定义确认提示框（两个按钮）
-   *
-   * @method  confirm
-   * @param   message {String}
-   * @param   [ok] {Function}       Callback for 'OK' button
-   * @param   [cancel] {Function}   Callback for 'CANCEL' button
-   * @return  {Boolean}
-   */
-  confirmEX: function(message, ok, cancel) {
-    return systemDialog("confirmEX", message, ok, cancel);
-  },
-
-  /*
-   * 将外部处理函数引入到沙盒中
-   * 
-   * @method  queue
-   * @return
-   */
-  queue: function() {
-    return bindHandler.apply(window, this.slice(arguments));
-  },
-
-  /*
-   * 执行指定函数
-   * 
-   * @method  run
-   * @return  {Variant}
-   */
-  run: function() {
-    return runHandler.apply(window, this.slice(arguments));
-  },
-  url: function() {
-    var loc, url;
-    loc = window.location;
-    url = {
-      search: loc.search.substring(1),
-      hash: loc.hash.substring(1),
-      query: {}
-    };
-    this.each(url.search.split("&"), function(str) {
-      str = str.split("=");
-      if (_H.trim(str[0]) !== "") {
-        return url.query[str[0]] = str[1];
+      /*
+       * 自定义警告提示框
+       *
+       * @method  alert
+       * @param   message {String}
+       * @param   [callback] {Function}
+       * @return  {Boolean}
+       */
+      name: "alert",
+      handler: function(message, callback) {
+        return systemDialog("alert", message, callback);
       }
-    });
-    return url;
-  },
+    }, {
 
-  /*
-   * Save web resource to local disk
-   *
-   * @method  download
-   * @param   fileURL {String}
-   * @param   fileName {String}
-   * @return
-   */
-  download: function(fileURL, fileName) {
-    var event, save, _window;
-    if (!window.ActiveXObject) {
-      save = document.createElement("a");
-      save.href = fileURL;
-      save.target = "_blank";
-      save.download = fileName || "unknown";
-      event = document.createEvent("Event");
-      event.initEvent("click", true, true);
-      save.dispatchEvent(event);
-      return (window.URL || window.webkitURL).revokeObjectURL(save.href);
-    } else if (!!window.ActiveXObject && document.execCommand) {
-      _window = window.open(fileURL, "_blank");
-      _window.document.close();
-      _window.document.execCommand("SaveAs", true, fileName || fileURL);
-      return _window.close();
+      /*
+       * 自定义确认提示框（两个按钮）
+       *
+       * @method  confirm
+       * @param   message {String}
+       * @param   [ok] {Function}       Callback for 'OK' button
+       * @param   [cancel] {Function}   Callback for 'CANCEL' button
+       * @return  {Boolean}
+       */
+      name: "confirm",
+      handler: function(message, ok, cancel) {
+        return systemDialog("confirm", message, ok, cancel);
+      }
+    }, {
+
+      /*
+       * 自定义确认提示框（两个按钮）
+       *
+       * @method  confirm
+       * @param   message {String}
+       * @param   [ok] {Function}       Callback for 'OK' button
+       * @param   [cancel] {Function}   Callback for 'CANCEL' button
+       * @return  {Boolean}
+       */
+      name: "confirmEX",
+      handler: function(message, ok, cancel) {
+        return systemDialog("confirmEX", message, ok, cancel);
+      }
+    }, {
+
+      /*
+       * 将外部处理函数引入到沙盒中
+       * 
+       * @method  queue
+       * @return
+       */
+      name: "queue",
+      handler: function() {
+        return bindHandler.apply(window, this.slice(arguments));
+      }
+    }, {
+
+      /*
+       * 执行指定函数
+       * 
+       * @method  run
+       * @return  {Variant}
+       */
+      name: "run",
+      handler: function() {
+        return runHandler.apply(window, this.slice(arguments));
+      }
+    }, {
+      name: "url",
+      handler: function() {
+        var loc, url;
+        loc = window.location;
+        url = {
+          search: loc.search.substring(1),
+          hash: loc.hash.substring(1),
+          query: {}
+        };
+        this.each(url.search.split("&"), function(str) {
+          str = str.split("=");
+          if (_H.trim(str[0]) !== "") {
+            return url.query[str[0]] = str[1];
+          }
+        });
+        return url;
+      }
+    }, {
+
+      /*
+       * Save web resource to local disk
+       *
+       * @method  download
+       * @param   fileURL {String}
+       * @param   fileName {String}
+       * @return
+       */
+      name: "download",
+      handler: function(fileURL, fileName) {
+        var event, save, _window;
+        if (!window.ActiveXObject) {
+          save = document.createElement("a");
+          save.href = fileURL;
+          save.target = "_blank";
+          save.download = fileName || "unknown";
+          event = document.createEvent("Event");
+          event.initEvent("click", true, true);
+          save.dispatchEvent(event);
+          return (window.URL || window.webkitURL).revokeObjectURL(save.href);
+        } else if (!!window.ActiveXObject && document.execCommand) {
+          _window = window.open(fileURL, "_blank");
+          _window.document.close();
+          _window.document.execCommand("SaveAs", true, fileName || fileURL);
+          return _window.close();
+        }
+      }
+    }, {
+
+      /*
+       * Determines whether a function has been defined
+       *
+       * @method  functionExists
+       * @param   funcName {String}
+       * @param   isWindow {Boolean}
+       * @return  {Boolean}
+       */
+      name: "functionExists",
+      handler: function(funcName, isWindow) {
+        return isExisted((isWindow === true ? window : storage.fn.handler), funcName, "function");
+      }
     }
-  },
-
-  /*
-   * Determines whether a function has been defined
-   *
-   * @method  functionExists
-   * @param   funcName {String}
-   * @param   isWindow {Boolean}
-   * @return  {Boolean}
-   */
-  functionExists: function(funcName, isWindow) {
-    return isExisted((isWindow === true ? window : storage.fn.handler), funcName, "function");
-  }
-});
+  ]
+};
 
 
 /*
@@ -2763,53 +2805,64 @@ resetConfig = function(setting) {
   return clone(_H.isPlainObject(setting) ? $.extend(storage.config, setting) : storage.config);
 };
 
-_H.mixin({
+storage.modules.flow = {
+  handlers: [
+    {
 
-  /*
-   * 沙盒
-   *
-   * 封闭运行环境的开关，每个页面只能运行一次
-   * 
-   * @method  sandbox
-   * @param   setting {Object}      系统环境配置
-   * @return  {Object/Boolean}      （修改后的）系统环境配置
-   */
-  sandbox: function(setting) {
-    var result;
-    if (storage.sandboxStarted !== true) {
-      result = resetConfig(setting);
-      runHandler(storage.fn.prepare);
-      $(document).ready(function() {
-        return runHandler(storage.fn.ready);
-      });
-      storage.sandboxStarted = true;
+      /*
+       * 沙盒
+       *
+       * 封闭运行环境的开关，每个页面只能运行一次
+       * 
+       * @method  sandbox
+       * @param   setting {Object}      系统环境配置
+       * @return  {Object/Boolean}      （修改后的）系统环境配置
+       */
+      name: "sandbox",
+      handler: function(setting) {
+        var result;
+        result = resetConfig(setting);
+        runHandler(storage.fn.prepare);
+        $(document).ready(function() {
+          return runHandler(storage.fn.ready);
+        });
+        storage.sandboxStarted = true;
+        return result || false;
+      },
+      value: false,
+      validator: function() {
+        return storage.sandboxStarted !== true;
+      }
+    }, {
+
+      /*
+       * DOM 未加载完时调用的处理函数
+       * 主要进行事件委派等与 DOM 加载进程无关的操作
+       *
+       * @method  prepare
+       * @param   handler {Function}
+       * @return
+       */
+      name: "prepare",
+      handler: function(handler) {
+        return pushHandler(handler, "prepare");
+      }
+    }, {
+
+      /*
+       * DOM 加载完成时调用的处理函数
+       *
+       * @method  ready
+       * @param   handler {Function}
+       * @return
+       */
+      name: "ready",
+      handler: function(handler) {
+        return pushHandler(handler, "ready");
+      }
     }
-    return result || false;
-  },
-
-  /*
-   * DOM 未加载完时调用的处理函数
-   * 主要进行事件委派等与 DOM 加载进程无关的操作
-   *
-   * @method  prepare
-   * @param   handler {Function}
-   * @return
-   */
-  prepare: function(handler) {
-    return pushHandler(handler, "prepare");
-  },
-
-  /*
-   * DOM 加载完成时调用的处理函数
-   *
-   * @method  ready
-   * @param   handler {Function}
-   * @return
-   */
-  ready: function(handler) {
-    return pushHandler(handler, "ready");
-  }
-});
+  ]
+};
 
 storage.web_api = {};
 
@@ -2886,107 +2939,104 @@ api_ver = function() {
   }
 };
 
-_H.mixin({
+storage.modules.project = {
+  handlers: [
+    {
 
-  /*
-   * 获取系统信息
-   * 
-   * @method  config
-   * @param   [key] {String}
-   * @return  {Object}
-   */
-  config: function(key) {
-    if (this.isString(key)) {
-      return storage.config[key];
-    } else {
-      return clone(storage.config);
-    }
-  },
-
-  /*
-   * 设置初始化信息
-   * 
-   * @method  init
-   * @return
-   */
-  init: function() {
-    return initialize.apply(window, this.slice(arguments));
-  },
-
-  /*
-   * 设置及获取国际化信息
-   * 
-   * @method   i18n
-   * @param    key {String}
-   * @param    [map] {Plain Object}
-   * @return   {String}
-   */
-  i18n: function(key, map) {
-    var args, result;
-    args = arguments;
-    if (this.isPlainObject(key)) {
-      I18n.set(key);
-    } else if (REG_NAMESPACE.test(key)) {
-      if (args.length === 2 && this.isString(map) && !REG_NAMESPACE.test(map)) {
-
-      } else {
-        if (this.isPlainObject(map)) {
-          result = I18n.get(key, map);
+      /*
+       * 获取系统信息
+       * 
+       * @method  config
+       * @param   [key] {String}
+       * @return  {Object}
+       */
+      name: "config",
+      handler: function(key) {
+        if (this.isString(key)) {
+          return storage.config[key];
         } else {
-          result = "";
-          this.each(args, function(txt) {
-            if (_H.isString(txt) && REG_NAMESPACE.test(txt)) {
-              return result += I18n.get(txt);
-            }
-          });
+          return clone(storage.config);
         }
       }
-    }
-    return result != null ? result : null;
-  },
+    }, {
 
-  /*
-   * 设置及获取 Web API
-   * 
-   * @method   api
-   * @param    key {String}
-   * @param    [map] {Plain Object}
-   * @return   {String}
-   */
-  api: function(key, map) {
-    var result, _ref;
-    if (this.isPlainObject(key)) {
-      API.set(key);
-    } else if (this.isString(key)) {
-      result = API.get((_ref = initializer("apiNS")(key)) != null ? _ref : key, map);
-    }
-    return result != null ? result : null;
-  },
-  route: function(key, map) {
-    var result;
-    if (this.isPlainObject(key)) {
-      route.set(key);
-    } else if (this.isString(key)) {
-      result = route.get(key, map);
-    }
-    return result != null ? result : null;
-  }
-});
+      /*
+       * 设置初始化信息
+       * 
+       * @method  init
+       * @return
+       */
+      name: "init",
+      handler: function() {
+        return initialize.apply(window, this.slice(arguments));
+      }
+    }, {
 
-_H.api.formatList = function(map) {
-  if (_H.isPlainObject(map)) {
-    return API.config({
-      keys: map
-    });
-  }
-};
+      /*
+       * 设置及获取国际化信息
+       * 
+       * @method   i18n
+       * @param    key {String}
+       * @param    [map] {Plain Object}
+       * @return   {String}
+       */
+      name: "i18n",
+      handler: function(key, map) {
+        var args, result;
+        args = arguments;
+        if (this.isPlainObject(key)) {
+          I18n.set(key);
+        } else if (REG_NAMESPACE.test(key)) {
+          if (args.length === 2 && this.isString(map) && !REG_NAMESPACE.test(map)) {
 
-_H.route.formatList = function(map) {
-  if (_H.isPlainObject(map)) {
-    return route.config({
-      keys: map
-    });
-  }
+          } else {
+            if (this.isPlainObject(map)) {
+              result = I18n.get(key, map);
+            } else {
+              result = "";
+              this.each(args, function(txt) {
+                if (_H.isString(txt) && REG_NAMESPACE.test(txt)) {
+                  return result += I18n.get(txt);
+                }
+              });
+            }
+          }
+        }
+        return result != null ? result : null;
+      }
+    }, {
+
+      /*
+       * 设置及获取 Web API
+       * 
+       * @method   api
+       * @param    key {String}
+       * @param    [map] {Plain Object}
+       * @return   {String}
+       */
+      name: "api",
+      handler: function(key, map) {
+        var result, _ref;
+        if (this.isPlainObject(key)) {
+          API.set(key);
+        } else if (this.isString(key)) {
+          result = API.get((_ref = initializer("apiNS")(key)) != null ? _ref : key, map);
+        }
+        return result != null ? result : null;
+      }
+    }, {
+      name: "route",
+      handler: function(key, map) {
+        var result;
+        if (this.isPlainObject(key)) {
+          route.set(key);
+        } else if (this.isString(key)) {
+          result = route.get(key, map);
+        }
+        return result != null ? result : null;
+      }
+    }
+  ]
 };
 
 
@@ -3036,86 +3086,101 @@ constructDatasetByAttributes = function(attributes) {
   return dataset;
 };
 
-_H.mixin({
+storage.modules.storage = {
+  handlers: [
+    {
 
-  /*
-   * 获取 DOM 的「data-*」属性集或存储数据到内部/从内部获取数据
-   * 
-   * @method  data
-   * @return  {Object}
-   */
-  data: function() {
-    var args, error, length, node, result, target;
-    args = arguments;
-    length = args.length;
-    if (length > 0) {
-      target = args[0];
-      try {
-        node = $(target).get(0);
-      } catch (_error) {
-        error = _error;
-        node = target;
-      }
-      if (node && node.nodeType === ELEMENT_NODE) {
-        result = {};
-        if (node.dataset) {
-          result = node.dataset;
-        } else if (node.outerHTML) {
-          result = constructDatasetByHTML(node.outerHTML);
-        } else if (node.attributes && $.isNumeric(node.attributes.length)) {
-          result = constructDatasetByAttributes(node.attributes);
-        }
-      } else {
-        if (this.isString(target) && REG_NAMESPACE.test(target)) {
-          result = length === 1 ? getStorageData(target) : setStorageData(target, args[1]);
-          if (length > 1 && last(args) === true) {
-            limit(target.split(".")[0]);
-          }
-        }
-      }
-    }
-    return result != null ? result : null;
-  },
-
-  /*
-   * Save data
-   */
-  save: function() {
-    var args, key, oldVal, val;
-    args = arguments;
-    key = args[0];
-    val = args[1];
-    if (support.storage) {
-      if (this.isString(key)) {
-        oldVal = this.access(key);
-        return localStorage.setItem(key, escape(this.isPlainObject(oldVal) ? JSON.stringify($.extend(oldVal, val)) : val));
-      }
-    }
-  },
-
-  /*
-   * Access data
-   */
-  access: function() {
-    var error, key, result;
-    key = arguments[0];
-    if (this.isString(key)) {
-      if (support.storage) {
-        result = localStorage.getItem(key);
-        if (result !== null) {
-          result = unescape(result);
+      /*
+       * 获取 DOM 的「data-*」属性集或存储数据到内部/从内部获取数据
+       * 
+       * @method  data
+       * @return  {Object}
+       */
+      name: "data",
+      handler: function() {
+        var args, error, length, node, result, target;
+        args = arguments;
+        length = args.length;
+        if (length > 0) {
+          target = args[0];
           try {
-            result = JSON.parse(result);
+            node = $(target).get(0);
           } catch (_error) {
             error = _error;
-            result = result;
+            node = target;
+          }
+          if (node && node.nodeType === ELEMENT_NODE) {
+            result = {};
+            if (node.dataset) {
+              result = node.dataset;
+            } else if (node.outerHTML) {
+              result = constructDatasetByHTML(node.outerHTML);
+            } else if (node.attributes && $.isNumeric(node.attributes.length)) {
+              result = constructDatasetByAttributes(node.attributes);
+            }
+          } else {
+            if (this.isString(target) && REG_NAMESPACE.test(target)) {
+              result = length === 1 ? getStorageData(target) : setStorageData(target, args[1]);
+              if (length > 1 && last(args) === true) {
+                limit(target.split(".")[0]);
+              }
+            }
+          }
+        }
+        return result != null ? result : null;
+      }
+    }, {
+
+      /*
+       * Save data
+       */
+      name: "save",
+      handler: function() {
+        var args, key, oldVal, val;
+        args = arguments;
+        key = args[0];
+        val = args[1];
+        if (support.storage) {
+          if (this.isString(key)) {
+            oldVal = this.access(key);
+            return localStorage.setItem(key, escape(this.isPlainObject(oldVal) ? JSON.stringify($.extend(oldVal, val)) : val));
           }
         }
       }
+    }, {
+
+      /*
+       * Access data
+       */
+      name: "access",
+      handler: function() {
+        var error, key, result;
+        key = arguments[0];
+        if (support.storage) {
+          result = localStorage.getItem(key);
+          if (result !== null) {
+            result = unescape(result);
+            try {
+              result = JSON.parse(result);
+            } catch (_error) {
+              error = _error;
+              result = result;
+            }
+          }
+        }
+        return result || null;
+      },
+      value: null,
+      validator: function(key) {
+        return this.isString(key);
+      }
+    }, {
+      name: "clear",
+      handler: function() {},
+      expose: false
     }
-    return result || null;
-  }
-});
+  ]
+};
 
 
 /*
@@ -3152,64 +3217,79 @@ request = function(options, succeed, fail, synch) {
   }));
 };
 
-_H.mixin({
+storage.modules.request = {
+  handlers: [
+    {
 
-  /*
-   * Asynchronous JavaScript and XML
-   * 
-   * @method  ajax
-   * @param   options {Object/String}   请求参数列表/请求地址
-   * @param   succeed {Function}        请求成功时的回调函数
-   * @param   fail {Function}           请求失败时的回调函数
-   * @return
-   */
-  ajax: function(options, succeed, fail) {
-    return request(options, succeed, fail);
-  },
+      /*
+       * Asynchronous JavaScript and XML
+       * 
+       * @method  ajax
+       * @param   options {Object/String}   请求参数列表/请求地址
+       * @param   succeed {Function}        请求成功时的回调函数
+       * @param   fail {Function}           请求失败时的回调函数
+       * @return
+       */
+      name: "ajax",
+      handler: function(options, succeed, fail) {
+        return request(options, succeed, fail);
+      }
+    }, {
 
-  /*
-   * Synchronous JavaScript and XML
-   * 
-   * @method  sjax
-   * @param   options {Object/String}   请求参数列表/请求地址
-   * @param   succeed {Function}        请求成功时的回调函数
-   * @param   fail {Function}           请求失败时的回调函数
-   * @return
-   */
-  sjax: function(options, succeed, fail) {
-    return request(options, succeed, fail, true);
-  }
-});
-
-_H.mixin({
-  encodeEntities: function(string) {
-    if (this.isString(string)) {
-      return string.replace(/([<>&\'\"])/, function(match, chr) {
-        var et;
-        switch (chr) {
-          case "<":
-            et = lt;
-            break;
-          case ">":
-            et = gt;
-            break;
-          case "\"":
-            et = quot;
-            break;
-          case "'":
-            et = apos;
-            break;
-          case "&":
-            et = amp;
-        }
-        return "&" + et + ";";
-      });
-    } else {
-      return string;
+      /*
+       * Synchronous JavaScript and XML
+       * 
+       * @method  sjax
+       * @param   options {Object/String}   请求参数列表/请求地址
+       * @param   succeed {Function}        请求成功时的回调函数
+       * @param   fail {Function}           请求失败时的回调函数
+       * @return
+       */
+      name: "sjax",
+      handler: function(options, succeed, fail) {
+        return request(options, succeed, fail, true);
+      }
     }
-  },
-  decodeEntities: function(string) {}
-});
+  ]
+};
+
+storage.modules.HTML = {
+  handlers: [
+    {
+      name: "encodeEntities",
+      handler: function(string) {
+        if (this.isString(string)) {
+          return string.replace(/([<>&\'\"])/, function(match, chr) {
+            var et;
+            switch (chr) {
+              case "<":
+                et = lt;
+                break;
+              case ">":
+                et = gt;
+                break;
+              case "\"":
+                et = quot;
+                break;
+              case "'":
+                et = apos;
+                break;
+              case "&":
+                et = amp;
+            }
+            return "&" + et + ";";
+          });
+        } else {
+          return string;
+        }
+      }
+    }, {
+      name: "decodeEntities",
+      handler: function(string) {},
+      expose: false
+    }
+  ]
+};
 
 resolvePathname = function(pathname) {
   if (pathname.charAt(0) === "\/") {
@@ -3219,18 +3299,41 @@ resolvePathname = function(pathname) {
   }
 };
 
-_H.mixin({
+storage.modules.URL = {
+  handlers: [
+    {
 
-  /*
-   * 获取 URL 的 pathname
-   *
-   * @method   pathname
-   * @param    url {String}
-   * @return   {String}
-   */
-  pathname: function(url) {
-    return resolvePathname(this.isString(url) ? url : location.pathname);
+      /*
+       * 获取 URL 的 pathname
+       *
+       * @method   pathname
+       * @param    url {String}
+       * @return   {String}
+       */
+      name: "pathname",
+      handler: function(url) {
+        return resolvePathname(this.isString(url) ? url : location.pathname);
+      }
+    }
+  ]
+};
+
+_H.extend(storage.modules, _H);
+
+_H.api.formatList = function(map) {
+  if (_H.isPlainObject(map)) {
+    return API.config({
+      keys: map
+    });
   }
-});
+};
+
+_H.route.formatList = function(map) {
+  if (_H.isPlainObject(map)) {
+    return route.config({
+      keys: map
+    });
+  }
+};
 
 window[LIB_CONFIG.name] = _H;
