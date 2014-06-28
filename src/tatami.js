@@ -1,5 +1,5 @@
 "use strict";
-var $, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, LIB_CONFIG, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, Storage, TEXT_NODE, api_ver, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, request, resetConfig, resolvePathname, runHandler, setData, setStorageData, setup, storage, support, systemDialog, systemDialogHandler, _ENV, _H, __proc, __util,
+var $, API, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, I18n, LIB_CONFIG, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, Storage, TEXT_NODE, api_ver, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, request, resetConfig, resolvePathname, runHandler, setData, setStorageData, setup, storage, support, systemDialog, systemDialogHandler, _ENV, _H, __proc, __util,
   __slice = [].slice;
 
 LIB_CONFIG = {
@@ -1947,7 +1947,9 @@ __util = (function(window, __proc) {
 })(window, __proc);
 
 Storage = (function(__util) {
-  var getData, isNamespaceStr, storage, str2obj;
+  var getData, hasProp, isNamespaceStr, isPlainObj, storage, str2obj;
+  hasProp = __util.hasProp;
+  isPlainObj = __util.isPlainObject;
   storage = {};
   isNamespaceStr = function(str) {
     return /^[0-9a-z_.]+[^_.]?$/i.test(str);
@@ -1956,7 +1958,7 @@ Storage = (function(__util) {
     var obj;
     obj = storage;
     __util.each(str.split("."), function(part) {
-      if (!__util.hasProp(part, obj)) {
+      if (!hasProp(part, obj)) {
         obj[part] = {};
       }
       return obj = obj[part];
@@ -1964,22 +1966,28 @@ Storage = (function(__util) {
     return obj;
   };
   getData = function(host, key, format_map) {
-    var result;
+    var keys, result, s;
     __util.each(key.split("."), function(part) {
       var r;
-      r = __util.hasProp(part, host);
+      r = hasProp(part, host);
       host = host[part];
       return r;
     });
-    result = host != null ? host : "";
-    if (__util.isPlainObject(format_map)) {
-      result = result.replace(this.settings.format_regexp, (function(_this) {
+    s = this.settings;
+    result = s.value(host);
+    if (isPlainObj(format_map)) {
+      keys = isPlainObj(s.keys) ? s.keys : {};
+      result = result.replace(s.format_regexp, (function(_this) {
         return function(m, k) {
-          if (__util.hasProp(k, format_map)) {
-            return format_map[k];
+          var r;
+          if (hasProp(k, format_map)) {
+            r = format_map[k];
+          } else if (hasProp(k, keys)) {
+            r = keys[k];
           } else {
-            return m;
+            r = m;
           }
+          return r;
         };
       })(this));
     }
@@ -1987,12 +1995,15 @@ Storage = (function(__util) {
   };
   Storage = (function() {
     function Storage(namespace) {
-      this.storage = isNamespaceStr(namespace) ? str2obj("" + namespace) : storage;
       this.settings = {
         format_regexp: /.*/g,
         allow_keys: false,
-        keys: {}
+        keys: {},
+        value: function(v) {
+          return v != null ? v : "";
+        }
       };
+      this.storage = isNamespaceStr(namespace) ? str2obj("" + namespace) : storage;
     }
 
     Storage.prototype.set = function(data) {
@@ -2806,6 +2817,18 @@ storage.config.api = "";
 
 storage.fn.init.apiNS = function(key) {};
 
+I18n = (new Storage("I18n")).config({
+  format_regexp: /\{%\s*([A-Z0-9_]+)\s*%\}/ig
+});
+
+API = (new Storage("Web_API")).config({
+  format_regexp: /\:([a-z_]+)/g,
+  value: function(val) {
+    var _ref;
+    return (_ref = api_ver() + val) != null ? _ref : "";
+  }
+});
+
 
 /*
  * 设置初始化函数
@@ -2921,30 +2944,14 @@ _H.mixin({
    * @method  api
    * @return  {String}
    */
-  api: function() {
-    var args, data, key, nsStr, result, _ref;
-    args = arguments;
-    key = args[0];
-    result = null;
+  api: function(key, map) {
+    var result, _ref;
     if (this.isPlainObject(key)) {
-      $.extend(storage.web_api, key);
+      API.set(key);
     } else if (this.isString(key)) {
-      data = args[1];
-      nsStr = initializer("apiNS")(key);
-      result = api_ver() + ((_ref = getStorageData("web_api." + (nsStr != null ? nsStr : key), true)) != null ? _ref : "");
-      if (this.isPlainObject(data)) {
-        result = result.replace(/\:([a-z_]+)/g, (function(_this) {
-          return function(m, k) {
-            if (_this.hasProp(k, data)) {
-              return data[k];
-            } else {
-              return m;
-            }
-          };
-        })(this));
-      }
+      result = API.get((_ref = initializer("apiNS")(key)) != null ? _ref : key, map);
     }
-    return result;
+    return result != null ? result : null;
   }
 });
 

@@ -1,62 +1,58 @@
 Storage = do ( __util ) ->
+  hasProp = __util.hasProp
+  isPlainObj = __util.isPlainObject
+
   storage = {}
 
   isNamespaceStr = ( str ) ->
     return /^[0-9a-z_.]+[^_.]?$/i.test str
-
-  # setStorageData = ( ns_str, data ) ->
-  #   parts = ns_str.split "."
-  #   length = parts.length
-  #   isObj = _H.isPlainObject data
-
-  #   if length is 1
-  #     key = parts[0]
-  #     result = setData storage, key, data, _H.hasProp(key, storage)
-  #   else
-  #     result = storage
-
-  #     _H.each parts, ( n, i ) ->
-  #       if i < length - 1
-  #         result[n] = {} if not _H.hasProp(n, result)
-  #       else
-  #         result[n] = setData result, n, data, _H.isPlainObject result[n]
-  #       result = result[n]
-  #       return true
-
-  #   return result
 
   # Convert a namespace string to a plain object
   str2obj = ( str ) ->
     obj = storage
 
     __util.each str.split("."), ( part ) ->
-      obj[part] = {} if not __util.hasProp part, obj
+      obj[part] = {} if not hasProp part, obj
       obj = obj[part]
 
     return obj
 
   getData = ( host, key, format_map ) ->
     __util.each key.split("."), ( part ) ->
-      r = __util.hasProp part, host
+      r = hasProp part, host
       host = host[part]
 
       return r
 
-    result = host ? ""
+    s = @settings
+    result = s.value host
 
-    if __util.isPlainObject format_map
-      result = result.replace @settings.format_regexp, ( m, k ) =>
-        return if __util.hasProp(k, format_map) then format_map[k] else m
+    if isPlainObj format_map
+      keys = if isPlainObj(s.keys) then s.keys else {}
+      result = result.replace s.format_regexp, ( m, k ) =>
+        # 以传入的值为优先
+        if hasProp k, format_map
+          r = format_map[k]
+        # 预先设置的值
+        else if hasProp k, keys
+          r = keys[k]
+        else
+          r = m
+
+        return r  
 
     return result
 
   class Storage
     constructor: ( namespace ) ->
-      @storage = if isNamespaceStr(namespace) then str2obj("#{namespace}") else storage
       @settings =
         format_regexp: /.*/g
         allow_keys: false
         keys: {}
+        value: ( v ) ->
+          return v ? ""
+
+      @storage = if isNamespaceStr(namespace) then str2obj("#{namespace}") else storage
 
     set: ( data ) ->
       __util.mixin @storage, data

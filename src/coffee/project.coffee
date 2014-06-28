@@ -5,6 +5,14 @@ storage.config.api = ""
 # 获取存在于内部的 Web API 的命名空间字符串（Namespace String）
 storage.fn.init.apiNS = ( key ) ->
 
+I18n = (new Storage "I18n").config
+  format_regexp: /\{%\s*([A-Z0-9_]+)\s*%\}/ig
+
+API = (new Storage "Web_API").config
+  format_regexp: /\:([a-z_]+)/g
+  value: ( val ) ->
+    return api_ver() + val ? ""
+
 ###
 # 设置初始化函数
 # 
@@ -97,23 +105,12 @@ _H.mixin
   # @method  api
   # @return  {String}
   ###
-  api: ->
-    args = arguments
-    key = args[0]
-    result = null
-
+  api: ( key, map ) ->
     # 设置
     if @isPlainObject key
-      $.extend storage.web_api, key
+      API.set key
     # 获取
     else if @isString key
-      data = args[1]
-      nsStr = initializer("apiNS") key
+      result = API.get initializer("apiNS")(key) ? key, map
 
-      result = api_ver() + (getStorageData("web_api.#{nsStr ? key}", true) ? "")
-
-      if @isPlainObject data
-        result = result.replace /\:([a-z_]+)/g, ( m, k ) =>
-          return if @hasProp(k, data) then data[k] else m
-
-    return result
+    return result ? null
