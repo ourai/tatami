@@ -22,27 +22,36 @@ request = ( options, succeed, fail, synch ) ->
 
   return $.ajax $.extend options, async: synch isnt true
 
-_H.mixin
-  ###
-  # Asynchronous JavaScript and XML
-  # 
-  # @method  ajax
-  # @param   options {Object/String}   请求参数列表/请求地址
-  # @param   succeed {Function}        请求成功时的回调函数
-  # @param   fail {Function}           请求失败时的回调函数
-  # @return
-  ###
-  ajax: ( options, succeed, fail ) ->
-    return request options, succeed, fail
-  
-  ###
-  # Synchronous JavaScript and XML
-  # 
-  # @method  sjax
-  # @param   options {Object/String}   请求参数列表/请求地址
-  # @param   succeed {Function}        请求成功时的回调函数
-  # @param   fail {Function}           请求失败时的回调函数
-  # @return
-  ###
-  sjax: ( options, succeed, fail ) ->
-    return request options, succeed, fail, true
+storage.modules.request =
+  handlers: [
+    {
+      ###
+      # Asynchronous JavaScript and XML
+      # 
+      # @method  ajax
+      # @param   options {Object/String}   请求参数列表/请求地址
+      # @param   succeed {Function}        请求成功时的回调函数
+      # @param   fail {Function}           请求失败时的回调函数
+      # @return
+      ###
+      name: "ajax"
+
+      handler: ( options, succeed, fail ) ->
+        return request options, succeed, fail
+    },
+    {
+      ###
+      # Synchronous JavaScript and XML
+      # 
+      # @method  sjax
+      # @param   options {Object/String}   请求参数列表/请求地址
+      # @param   succeed {Function}        请求成功时的回调函数
+      # @param   fail {Function}           请求失败时的回调函数
+      # @return
+      ###
+      name: "sjax"
+
+      handler: ( options, succeed, fail ) ->
+        return request options, succeed, fail, true
+    }
+  ]

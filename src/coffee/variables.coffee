@@ -103,6 +103,15 @@ storage =
         }
     handler: {}
 
+  modules:
+    utils: {}
+    flow: {}
+    project: {}
+    storage: {}
+    request: {}
+    HTML: {}
+    URL: {}
+
   ###
   # 缓冲区，存储临时数据
   #

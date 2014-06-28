@@ -1,19 +1,32 @@
-_H.mixin
-  encodeEntities: ( string ) ->
-    return if @isString(string) then string.replace /([<>&\'\"])/, ( match, chr ) ->
-      switch chr
-        when "<"
-          et = lt
-        when ">"
-          et = gt
-        when "\""
-          et = quot
-        when "'"
-          et = apos
-        when "&"
-          et = amp
+storage.modules.HTML =
+  handlers: [
+    {
+      name: "encodeEntities"
 
-      return "&#{et};"
-    else string
+      handler: ( string ) ->
+        return if @isString(string) then string.replace /([<>&\'\"])/, ( match, chr ) ->
+          switch chr
+            when "<"
+              et = lt
+            when ">"
+              et = gt
+            when "\""
+              et = quot
+            when "'"
+              et = apos
+            when "&"
+              et = amp
 
-  decodeEntities: ( string ) ->
+          return "&#{et};"
+        else string
+
+    },
+    {
+      name: "decodeEntities"
+
+      handler: ( string ) ->
+        
+      expose: false
+    }
+  ]
+

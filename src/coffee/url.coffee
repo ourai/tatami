@@ -3,13 +3,19 @@
 resolvePathname = ( pathname ) ->
   return if pathname.charAt(0) is "\/" then pathname else "\/#{pathname}"
 
-_H.mixin
-  ###
-  # 获取 URL 的 pathname
-  #
-  # @method   pathname
-  # @param    url {String}
-  # @return   {String}
-  ###
-  pathname: ( url ) ->
-    return resolvePathname if @isString(url) then url else location.pathname
+storage.modules.URL =
+  handlers: [
+    {
+      ###
+      # 获取 URL 的 pathname
+      #
+      # @method   pathname
+      # @param    url {String}
+      # @return   {String}
+      ###
+      name: "pathname"
+
+      handler: ( url ) ->
+        return resolvePathname if @isString(url) then url else location.pathname
+    }
+  ]

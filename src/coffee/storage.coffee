@@ -35,91 +35,112 @@ constructDatasetByAttributes = ( attributes ) ->
 
   return dataset
 
-_H.mixin
-  ###
-  # 获取 DOM 的「data-*」属性集或存储数据到内部/从内部获取数据
-  # 
-  # @method  data
-  # @return  {Object}
-  ###
-  data: ->
-    args = arguments
-    length = args.length
+storage.modules.storage =
+  handlers: [
+    {
+      ###
+      # 获取 DOM 的「data-*」属性集或存储数据到内部/从内部获取数据
+      # 
+      # @method  data
+      # @return  {Object}
+      ###
+      name: "data"
 
-    if length > 0
-      target = args[0]
+      handler: ->
+        args = arguments
+        length = args.length
 
-      try
-        # 当 target 是包含有 "@" 的字符串时会抛出异常。
-        # Error: Syntax error, unrecognized expression: @
-        node = $(target).get(0)
-      catch error
-        node = target
-
-      # 获取 DOM 的「data-*」属性集
-      if node and node.nodeType is ELEMENT_NODE
-        result = {}
-
-        if node.dataset
-          result = node.dataset
-        else if node.outerHTML
-          result = constructDatasetByHTML node.outerHTML
-        else if node.attributes and $.isNumeric node.attributes.length
-          result = constructDatasetByAttributes node.attributes
-      # 存储数据到内部/从内部获取数据
-      else
-        if @isString(target) and REG_NAMESPACE.test(target)
-          result = if length is 1 then getStorageData(target) else setStorageData target, args[1]
-
-          # 将访问的 key 锁住，在第一次设置之后无法再读写到内部
-          limit(target.split(".")[0]) if length > 1 and last(args) is true
-        # 有可能覆盖被禁止存取的内部 key，暂时不允许批量添加
-        # else {
-        #   @each(args, function( n ) {
-        #     $.extend(storage, n);
-        #   });
-        # }
-
-    return result ? null
-
-  ###
-  # Save data
-  ###
-  save: ->
-    args = arguments
-    key = args[0]
-    val = args[1]
-
-    # Use localStorage
-    if support.storage
-      if @isString key
-        oldVal = this.access key
-
-        localStorage.setItem key, escape if @isPlainObject(oldVal) then JSON.stringify($.extend oldVal, val) else val
-    # Use cookie
-    # else
-
-  ###
-  # Access data
-  ###
-  access: ->
-    key = arguments[0]
-
-    if @isString key
-      # localStorage
-      if support.storage
-        result = localStorage.getItem key
-
-        if result isnt null
-          result = unescape result
+        if length > 0
+          target = args[0]
 
           try
-            result = JSON.parse result
+            # 当 target 是包含有 "@" 的字符串时会抛出异常。
+            # Error: Syntax error, unrecognized expression: @
+            node = $(target).get(0)
           catch error
-            result = result
-      # Cookie
-      # else
+            node = target
 
-    return result || null
+          # 获取 DOM 的「data-*」属性集
+          if node and node.nodeType is ELEMENT_NODE
+            result = {}
 
-  # clear: ->
+            if node.dataset
+              result = node.dataset
+            else if node.outerHTML
+              result = constructDatasetByHTML node.outerHTML
+            else if node.attributes and $.isNumeric node.attributes.length
+              result = constructDatasetByAttributes node.attributes
+          # 存储数据到内部/从内部获取数据
+          else
+            if @isString(target) and REG_NAMESPACE.test(target)
+              result = if length is 1 then getStorageData(target) else setStorageData target, args[1]
+
+              # 将访问的 key 锁住，在第一次设置之后无法再读写到内部
+              limit(target.split(".")[0]) if length > 1 and last(args) is true
+            # 有可能覆盖被禁止存取的内部 key，暂时不允许批量添加
+            # else {
+            #   @each(args, function( n ) {
+            #     $.extend(storage, n);
+            #   });
+            # }
+
+        return result ? null
+    },
+    {
+      ###
+      # Save data
+      ###
+      name: "save"
+
+      handler: ->
+        args = arguments
+        key = args[0]
+        val = args[1]
+
+        # Use localStorage
+        if support.storage
+          if @isString key
+            oldVal = this.access key
+
+            localStorage.setItem key, escape if @isPlainObject(oldVal) then JSON.stringify($.extend oldVal, val) else val
+        # Use cookie
+        # else
+    },
+    {
+      ###
+      # Access data
+      ###
+      name: "access"
+
+      handler: ->
+        key = arguments[0]
+
+        # localStorage
+        if support.storage
+          result = localStorage.getItem key
+
+          if result isnt null
+            result = unescape result
+
+            try
+              result = JSON.parse result
+            catch error
+              result = result
+        # Cookie
+        # else
+
+        return result || null
+
+      value: null
+
+      validator: ( key ) ->
+        return @isString key
+    },
+    {
+      name: "clear"
+
+      handler: ->
+
+      expose: false
+    }
+  ]

@@ -52,88 +52,101 @@ api_ver = ->
 
   return if _H.isString(ver) && _H.trim(ver) isnt "" then "/#{ver}" else ""
 
-_H.mixin
-  ###
-  # 获取系统信息
-  # 
-  # @method  config
-  # @param   [key] {String}
-  # @return  {Object}
-  ###
-  config: ( key ) ->
-    return if @isString(key) then storage.config[key] else clone storage.config
-  
-  ###
-  # 设置初始化信息
-  # 
-  # @method  init
-  # @return
-  ###
-  init: ->
-    return initialize.apply window, @slice arguments
+storage.modules.project =
+  handlers: [
+    {
+      ###
+      # 获取系统信息
+      # 
+      # @method  config
+      # @param   [key] {String}
+      # @return  {Object}
+      ###
+      name: "config"
 
-  ###
-  # 设置及获取国际化信息
-  # 
-  # @method   i18n
-  # @param    key {String}
-  # @param    [map] {Plain Object}
-  # @return   {String}
-  ###
-  i18n: ( key, map ) ->
-    args = arguments
+      handler: ( key ) ->
+        return if @isString(key) then storage.config[key] else clone storage.config
+    },
+    {
+      ###
+      # 设置初始化信息
+      # 
+      # @method  init
+      # @return
+      ###
+      name: "init"
 
-    # 批量存储
-    # 调用方式：func({})
-    if @isPlainObject key
-      I18n.set key
-    else if REG_NAMESPACE.test key
-      # 单个存储（用 namespace 格式字符串）
-      if args.length is 2 and @isString(map) and not REG_NAMESPACE.test map
-        # to do sth.
-      # 取出并进行格式替换
-      else
-        if @isPlainObject map
-          result = I18n.get key, map
-        # 拼接多个数据
-        else
-          result = ""
+      handler: ->
+        return initialize.apply window, @slice arguments
+    },
+    {
+      ###
+      # 设置及获取国际化信息
+      # 
+      # @method   i18n
+      # @param    key {String}
+      # @param    [map] {Plain Object}
+      # @return   {String}
+      ###
+      name: "i18n"
 
-          @each args, ( txt ) ->
-            result += I18n.get txt if _H.isString(txt) and REG_NAMESPACE.test txt
+      handler: ( key, map ) ->
+        args = arguments
 
-    return result ? null
+        # 批量存储
+        # 调用方式：func({})
+        if @isPlainObject key
+          I18n.set key
+        else if REG_NAMESPACE.test key
+          # 单个存储（用 namespace 格式字符串）
+          if args.length is 2 and @isString(map) and not REG_NAMESPACE.test map
+            # to do sth.
+          # 取出并进行格式替换
+          else
+            if @isPlainObject map
+              result = I18n.get key, map
+            # 拼接多个数据
+            else
+              result = ""
 
-  ###
-  # 设置及获取 Web API
-  # 
-  # @method   api
-  # @param    key {String}
-  # @param    [map] {Plain Object}
-  # @return   {String}
-  ###
-  api: ( key, map ) ->
-    # 设置
-    if @isPlainObject key
-      API.set key
-    # 获取
-    else if @isString key
-      result = API.get initializer("apiNS")(key) ? key, map
+              @each args, ( txt ) ->
+                result += I18n.get txt if _H.isString(txt) and REG_NAMESPACE.test txt
 
-    return result ? null
+        return result ? null
+    },
+    {
+      ###
+      # 设置及获取 Web API
+      # 
+      # @method   api
+      # @param    key {String}
+      # @param    [map] {Plain Object}
+      # @return   {String}
+      ###
+      name: "api"
 
-  route: ( key, map ) ->
-    # 设置
-    if @isPlainObject key
-      route.set key
-    # 获取
-    else if @isString key
-      result = route.get key, map
+      handler: ( key, map ) ->
+        # 设置
+        if @isPlainObject key
+          API.set key
+        # 获取
+        else if @isString key
+          result = API.get initializer("apiNS")(key) ? key, map
 
-    return result ? null
+        return result ? null
+    },
+    {
+      name: "route"
 
-_H.api.formatList = ( map ) ->
-  API.config keys: map if _H.isPlainObject map
+      handler: ( key, map ) ->
+        # 设置
+        if @isPlainObject key
+          route.set key
+        # 获取
+        else if @isString key
+          result = route.get key, map
 
-_H.route.formatList = ( map ) ->
-  route.config keys: map if _H.isPlainObject map
+        return result ? null
+    }
+
+  ]
