@@ -1982,7 +1982,7 @@ Storage = (function(__util) {
     });
     return obj;
   };
-  getData = function(host, key, format_map) {
+  getData = function(host, key, map) {
     var keys, result, s;
     __util.each(key.split("."), function(part) {
       var r;
@@ -1991,23 +1991,23 @@ Storage = (function(__util) {
       return r;
     });
     s = this.settings;
-    result = s.value(host);
-    if (isPlainObj(format_map)) {
-      keys = isPlainObj(s.keys) ? s.keys : {};
-      result = result.replace(s.format_regexp, (function(_this) {
-        return function(m, k) {
-          var r;
-          if (hasProp(k, format_map)) {
-            r = format_map[k];
-          } else if (hasProp(k, keys)) {
-            r = keys[k];
-          } else {
-            r = m;
-          }
-          return r;
-        };
-      })(this));
+    if (!isPlainObj(map)) {
+      map = {};
     }
+    keys = isPlainObj(s.keys) ? s.keys : {};
+    result = s.value(host).replace(s.format_regexp, (function(_this) {
+      return function(m, k) {
+        var r;
+        if (hasProp(k, map)) {
+          r = map[k];
+        } else if (hasProp(k, keys)) {
+          r = keys[k];
+        } else {
+          r = m;
+        }
+        return r;
+      };
+    })(this));
     return result;
   };
   Storage = (function() {
@@ -2027,10 +2027,10 @@ Storage = (function(__util) {
       return __util.mixin(this.storage, data);
     };
 
-    Storage.prototype.get = function(key, format_map) {
+    Storage.prototype.get = function(key, map) {
       var data;
       if (__util.isString(key)) {
-        data = getData.apply(this, [this.storage, key, format_map]);
+        data = getData.apply(this, [this.storage, key, map]);
       } else if (this.settings.allow_keys === true) {
         data = __util.keys(this.storage);
       }
@@ -2834,11 +2834,15 @@ storage.config.api = "";
 
 storage.fn.init.apiNS = function(key) {};
 
-I18n = (new Storage("I18n")).config({
+I18n = new Storage("I18n");
+
+I18n.config({
   format_regexp: /\{%\s*([A-Z0-9_]+)\s*%\}/ig
 });
 
-API = (new Storage("Web_API")).config({
+API = new Storage("Web_API");
+
+API.config({
   format_regexp: /\:([a-z_]+)/g,
   value: function(val) {
     var _ref;
@@ -2971,6 +2975,14 @@ _H.mixin({
     return result != null ? result : null;
   }
 });
+
+_H.api.formatList = function(map) {
+  if (_H.isPlainObject(map)) {
+    return API.config({
+      keys: map
+    });
+  }
+};
 
 
 /*

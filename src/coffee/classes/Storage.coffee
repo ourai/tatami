@@ -17,7 +17,7 @@ Storage = do ( __util ) ->
 
     return obj
 
-  getData = ( host, key, format_map ) ->
+  getData = ( host, key, map ) ->
     __util.each key.split("."), ( part ) ->
       r = hasProp part, host
       host = host[part]
@@ -25,21 +25,19 @@ Storage = do ( __util ) ->
       return r
 
     s = @settings
-    result = s.value host
+    map = {} if not isPlainObj map
+    keys = if isPlainObj(s.keys) then s.keys else {}
+    result = s.value(host).replace s.format_regexp, ( m, k ) =>
+      # 以传入的值为优先
+      if hasProp k, map
+        r = map[k]
+      # 预先设置的值
+      else if hasProp k, keys
+        r = keys[k]
+      else
+        r = m
 
-    if isPlainObj format_map
-      keys = if isPlainObj(s.keys) then s.keys else {}
-      result = result.replace s.format_regexp, ( m, k ) =>
-        # 以传入的值为优先
-        if hasProp k, format_map
-          r = format_map[k]
-        # 预先设置的值
-        else if hasProp k, keys
-          r = keys[k]
-        else
-          r = m
-
-        return r  
+      return r  
 
     return result
 
@@ -57,9 +55,9 @@ Storage = do ( __util ) ->
     set: ( data ) ->
       __util.mixin @storage, data
 
-    get: ( key, format_map ) ->
+    get: ( key, map ) ->
       if __util.isString key
-        data = getData.apply this, [@storage, key, format_map]
+        data = getData.apply this, [@storage, key, map]
       else if @settings.allow_keys is true
         data = __util.keys @storage
 
