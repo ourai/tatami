@@ -55,6 +55,20 @@
     handlers: [
       {
         ###
+        # 扩充对象
+        # 
+        # @method   extend
+        # @param    data {Plain Object/Array}
+        # @param    host {Object}
+        # @return   {Object}
+        ###
+        name: "extend"
+
+        handler: ( data, host ) ->
+          return __proc(data, host)
+      },
+      {
+        ###
         # 别名
         # 
         # @method  alias
