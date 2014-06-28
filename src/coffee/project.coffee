@@ -10,7 +10,7 @@ I18n = new Storage "I18n"
 I18n.config
   format_regexp: /\{%\s*([A-Z0-9_]+)\s*%\}/ig
   value: ( val ) ->
-    return if _isString(val) then val else ""
+    return if _H.isString(val) then val else ""
 
 API = new Storage "Web_API"
 

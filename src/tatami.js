@@ -2822,7 +2822,7 @@ I18n = new Storage("I18n");
 I18n.config({
   format_regexp: /\{%\s*([A-Z0-9_]+)\s*%\}/ig,
   value: function(val) {
-    if (_isString(val)) {
+    if (_H.isString(val)) {
       return val;
     } else {
       return "";
