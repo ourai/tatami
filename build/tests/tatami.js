@@ -16,7 +16,7 @@
 }(typeof window !== "undefined" ? window : this, function( window, noGlobal ) {
 
 "use strict";
-var $, API, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, I18n, LIB_CONFIG, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, Storage, TEXT_NODE, api_ver, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, request, resetConfig, resolvePathname, runHandler, setData, setStorageData, setup, storage, support, systemDialog, systemDialogHandler, _ENV, _H, __proc, __util,
+var $, API, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, I18n, LIB_CONFIG, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, Storage, TEXT_NODE, api_ver, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, request, resetConfig, resolvePathname, route, runHandler, setData, setStorageData, setup, storage, support, systemDialog, systemDialogHandler, _ENV, _H, __proc, __util,
   __slice = [].slice;
 
 LIB_CONFIG = {
@@ -2098,7 +2098,7 @@ limiter = {
    * @type      {Object}
    */
   key: {
-    storage: ["sandboxStarted", "config", "fn", "buffer", "pool", "i18n", "web_api"]
+    storage: ["sandboxStarted", "config", "fn", "buffer", "pool", "i18n"]
   }
 };
 
@@ -2837,7 +2837,14 @@ storage.fn.init.apiNS = function(key) {};
 I18n = new Storage("I18n");
 
 I18n.config({
-  format_regexp: /\{%\s*([A-Z0-9_]+)\s*%\}/ig
+  format_regexp: /\{%\s*([A-Z0-9_]+)\s*%\}/ig,
+  value: function(val) {
+    if (_isString(val)) {
+      return val;
+    } else {
+      return "";
+    }
+  }
 });
 
 API = new Storage("Web_API");
@@ -2848,6 +2855,12 @@ API.config({
     var _ref;
     return (_ref = api_ver() + val) != null ? _ref : "";
   }
+});
+
+route = new Storage("route");
+
+route.config({
+  format_regexp: /\:([a-z_]+)/g
 });
 
 
@@ -2920,50 +2933,42 @@ _H.mixin({
   /*
    * 设置及获取国际化信息
    * 
-   * @method  i18n
-   * @return  {String}
+   * @method   i18n
+   * @param    key {String}
+   * @param    [map] {Plain Object}
+   * @return   {String}
    */
-  i18n: function() {
-    var args, data, key, result;
+  i18n: function(key, map) {
+    var args, result;
     args = arguments;
-    key = args[0];
-    result = null;
     if (this.isPlainObject(key)) {
-      $.extend(storage.i18n, key);
+      I18n.set(key);
     } else if (REG_NAMESPACE.test(key)) {
-      data = args[1];
-      if (args.length === 2 && this.isString(data) && !REG_NAMESPACE.test(data)) {
+      if (args.length === 2 && this.isString(map) && !REG_NAMESPACE.test(map)) {
 
-      } else if (this.isPlainObject(data)) {
-        result = getStorageData("i18n." + key, true);
-        result = (this.isString(result) ? result : "").replace(/\{%\s*([A-Z0-9_]+)\s*%\}/ig, (function(_this) {
-          return function(txt, k) {
-            if (_this.hasProp(k, data)) {
-              return data[k];
-            } else {
-              return "";
-            }
-          };
-        })(this));
       } else {
-        result = "";
-        this.each(args, function(txt) {
-          var r;
-          if (_H.isString(txt) && REG_NAMESPACE.test(txt)) {
-            r = getStorageData("i18n." + txt, true);
-            return result += (_H.isString(r) ? r : "");
-          }
-        });
+        if (this.isPlainObject(map)) {
+          result = I18n.get(key, map);
+        } else {
+          result = "";
+          this.each(args, function(txt) {
+            if (_H.isString(txt) && REG_NAMESPACE.test(txt)) {
+              return result += I18n.get(txt);
+            }
+          });
+        }
       }
     }
-    return result;
+    return result != null ? result : null;
   },
 
   /*
    * 设置及获取 Web API
    * 
-   * @method  api
-   * @return  {String}
+   * @method   api
+   * @param    key {String}
+   * @param    [map] {Plain Object}
+   * @return   {String}
    */
   api: function(key, map) {
     var result, _ref;
@@ -2971,6 +2976,15 @@ _H.mixin({
       API.set(key);
     } else if (this.isString(key)) {
       result = API.get((_ref = initializer("apiNS")(key)) != null ? _ref : key, map);
+    }
+    return result != null ? result : null;
+  },
+  route: function(key, map) {
+    var result;
+    if (this.isPlainObject(key)) {
+      route.set(key);
+    } else if (this.isString(key)) {
+      result = route.get(key, map);
     }
     return result != null ? result : null;
   }
