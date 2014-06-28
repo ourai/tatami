@@ -6,10 +6,14 @@ storage.config.api = ""
 storage.fn.init.apiNS = ( key ) ->
 
 I18n = new Storage "I18n"
+
 I18n.config
   format_regexp: /\{%\s*([A-Z0-9_]+)\s*%\}/ig
+  value: ( val ) ->
+    return if _isString(val) then val else ""
 
 API = new Storage "Web_API"
+
 API.config
   format_regexp: /\:([a-z_]+)/g
   value: ( val ) ->
@@ -67,45 +71,42 @@ _H.mixin
   ###
   # 设置及获取国际化信息
   # 
-  # @method  i18n
-  # @return  {String}
+  # @method   i18n
+  # @param    key {String}
+  # @param    [map] {Plain Object}
+  # @return   {String}
   ###
-  i18n: ->
+  i18n: ( key, map ) ->
     args = arguments
-    key = args[0]
-    result = null
 
     # 批量存储
     # 调用方式：func({})
     if @isPlainObject key
-      $.extend storage.i18n, key
+      I18n.set key
     else if REG_NAMESPACE.test key
-      data = args[1]
-
       # 单个存储（用 namespace 格式字符串）
-      if args.length is 2 and @isString(data) and not REG_NAMESPACE.test data
+      if args.length is 2 and @isString(map) and not REG_NAMESPACE.test map
         # to do sth.
       # 取出并进行格式替换
-      else if @isPlainObject data
-        result = getStorageData "i18n.#{key}", true
-        result = (if @isString(result) then result else "").replace /\{%\s*([A-Z0-9_]+)\s*%\}/ig, ( txt, k ) =>
-          return if @hasProp(k, data) then data[k] else ""
-      # 拼接多个数据
       else
-        result = ""
+        if @isPlainObject map
+          result = I18n.get key, map
+        # 拼接多个数据
+        else
+          result = ""
 
-        @each args, ( txt ) ->
-          if _H.isString(txt) and REG_NAMESPACE.test txt
-            r = getStorageData "i18n.#{txt}", true
-            result += (if _H.isString(r) then r else "")
+          @each args, ( txt ) ->
+            result += I18n.get txt if _H.isString(txt) and REG_NAMESPACE.test txt
 
-    return result
+    return result ? null
 
   ###
   # 设置及获取 Web API
   # 
-  # @method  api
-  # @return  {String}
+  # @method   api
+  # @param    key {String}
+  # @param    [map] {Plain Object}
+  # @return   {String}
   ###
   api: ( key, map ) ->
     # 设置

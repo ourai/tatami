@@ -38,7 +38,7 @@ limiter =
   ###
   key:
     # 限制访问的 storage key 列表
-    storage: ["sandboxStarted", "config", "fn", "buffer", "pool", "i18n", "web_api"]
+    storage: ["sandboxStarted", "config", "fn", "buffer", "pool", "i18n"]
 
 # 内部数据载体
 storage =
