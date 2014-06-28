@@ -19,6 +19,10 @@ API.config
   value: ( val ) ->
     return api_ver() + val ? ""
 
+route = new Storage "route"
+
+route.config format_regexp: /\:([a-z_]+)/g
+
 ###
 # 设置初始化函数
 # 
@@ -115,6 +119,16 @@ _H.mixin
     # 获取
     else if @isString key
       result = API.get initializer("apiNS")(key) ? key, map
+
+    return result ? null
+
+  route: ( key, map ) ->
+    # 设置
+    if @isPlainObject key
+      route.set key
+    # 获取
+    else if @isString key
+      result = route.get key, map
 
     return result ? null
 
