@@ -2972,7 +2972,7 @@ storageHandler = function(type, key, map) {
   if (_H.isPlainObject(key)) {
     obj.set(key);
   } else if (_H.isString(key)) {
-    result = obj.get((getKey != null ? getKey() : key), map);
+    result = obj.get((getKey != null ? getKey(key) : key), map);
   }
   return result != null ? result : null;
 };

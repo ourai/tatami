@@ -66,7 +66,7 @@ storageHandler = ( type, key, map ) ->
     obj.set key
   # 获取
   else if _H.isString key
-    result = obj.get (if getKey? then getKey() else key), map
+    result = obj.get (if getKey? then getKey(key) else key), map
 
   return result ? null
 
