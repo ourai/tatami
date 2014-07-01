@@ -2952,9 +2952,9 @@ storageHandler = function(type, key, map) {
     case "route":
       storage = route;
   }
-  if (this.isPlainObject(key)) {
+  if (_H.isPlainObject(key)) {
     storage.set(key);
-  } else if (this.isString(key)) {
+  } else if (_H.isString(key)) {
     result = storage.get((getKey != null ? getKey() : key), map);
   }
   return result != null ? result : null;

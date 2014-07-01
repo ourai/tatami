@@ -62,10 +62,10 @@ storageHandler = ( type, key, map ) ->
       storage = route
 
   # 设置
-  if @isPlainObject key
+  if _H.isPlainObject key
     storage.set key
   # 获取
-  else if @isString key
+  else if _H.isString key
     result = storage.get (if getKey? then getKey() else key), map
 
   return result ? null
