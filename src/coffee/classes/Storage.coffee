@@ -37,7 +37,7 @@ Storage = do ( __util ) ->
       else
         r = m
 
-      return r  
+      return if __util.isFunction(r) then r() else r
 
     return result
 
