@@ -2964,24 +2964,8 @@ apiHandler = function(key, map) {
   return storageHandler("api", key, map);
 };
 
-apiHandler.formatList = function(map) {
-  if (_H.isPlainObject(map)) {
-    return API.config({
-      keys: map
-    });
-  }
-};
-
 routeHandler = function(key, map) {
   return storageHandler("route", key, map);
-};
-
-routeHandler.formatList = function(map) {
-  if (_H.isPlainObject(map)) {
-    return route.config({
-      keys: map
-    });
-  }
 };
 
 storage.modules.project = {
@@ -3348,5 +3332,21 @@ storage.modules.URL = {
 };
 
 _H.extend(storage.modules, _H);
+
+_H.api.formatList = function(map) {
+  if (_H.isPlainObject(map)) {
+    return API.config({
+      keys: map
+    });
+  }
+};
+
+_H.route.formatList = function(map) {
+  if (_H.isPlainObject(map)) {
+    return route.config({
+      keys: map
+    });
+  }
+};
 
 window[LIB_CONFIG.name] = _H;

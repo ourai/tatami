@@ -73,14 +73,8 @@ storageHandler = ( type, key, map ) ->
 apiHandler = ( key, map ) ->
   return storageHandler "api", key, map
 
-apiHandler.formatList = ( map ) ->
-  API.config keys: map if _H.isPlainObject map
-
 routeHandler = ( key, map ) ->
   return storageHandler "route", key, map
-
-routeHandler.formatList = ( map ) ->
-  route.config keys: map if _H.isPlainObject map
 
 storage.modules.project =
   handlers: [
