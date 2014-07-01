@@ -55,18 +55,18 @@ apiVer = ->
 storageHandler = ( type, key, map ) ->
   switch type
     when "api"
-      storage = API
+      obj = API
       getKey = ( k ) ->
         return initializer("apiNS")(k) ? k
     when "route"
-      storage = route
+      obj = route
 
   # 设置
   if _H.isPlainObject key
-    storage.set key
+    obj.set key
   # 获取
   else if _H.isString key
-    result = storage.get (if getKey? then getKey() else key), map
+    result = obj.get (if getKey? then getKey() else key), map
 
   return result ? null
 

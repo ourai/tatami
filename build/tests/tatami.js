@@ -2957,22 +2957,22 @@ apiVer = function() {
 };
 
 storageHandler = function(type, key, map) {
-  var getKey, result;
+  var getKey, obj, result;
   switch (type) {
     case "api":
-      storage = API;
+      obj = API;
       getKey = function(k) {
         var _ref;
         return (_ref = initializer("apiNS")(k)) != null ? _ref : k;
       };
       break;
     case "route":
-      storage = route;
+      obj = route;
   }
   if (_H.isPlainObject(key)) {
-    storage.set(key);
+    obj.set(key);
   } else if (_H.isString(key)) {
-    result = storage.get((getKey != null ? getKey() : key), map);
+    result = obj.get((getKey != null ? getKey() : key), map);
   }
   return result != null ? result : null;
 };
