@@ -20,6 +20,7 @@ module.exports = ( grunt ) ->
       coffee: "<%= meta.src %>/coffee"
       proc: "<%= meta.coffee %>/preprocessor"
       util: "<%= meta.coffee %>/utils"
+      proj: "<%= meta.coffee %>/project"
       classes: "<%= meta.coffee %>/classes"
       dest: "dest"
       dest_style: "<%= meta.dest %>/stylesheets"
@@ -56,21 +57,28 @@ module.exports = ( grunt ) ->
             "<%= meta.util %>/outro.coffee"
           ]
         dest: "<%= meta.coffee %>/ronin.coffee"
+      coffee_tatami:
+        src: [
+            "<%= meta.proj %>/intro.coffee"
+            "<%= meta.proj %>/variables.coffee"
+            "<%= meta.proj %>/functions.coffee"
+            "<%= meta.proj %>/utils.coffee"
+            "<%= meta.proj %>/flow.coffee"
+            "<%= meta.proj %>/project.coffee"
+            "<%= meta.proj %>/storage.coffee"
+            "<%= meta.proj %>/request.coffee"
+            "<%= meta.proj %>/html.coffee"
+            "<%= meta.proj %>/url.coffee"
+            "<%= meta.proj %>/outro.coffee"
+          ]
+        dest: "<%= meta.coffee %>/tatami.coffee"
       coffee:
         src: [
             "<%= meta.coffee %>/intro.coffee"
             "<%= meta.coffee %>/miso.coffee"
             "<%= meta.coffee %>/ronin.coffee"
             "<%= meta.classes %>/Storage.coffee"
-            "<%= meta.coffee %>/variables.coffee"
-            "<%= meta.coffee %>/functions.coffee"
-            "<%= meta.coffee %>/utils.coffee"
-            "<%= meta.coffee %>/flow.coffee"
-            "<%= meta.coffee %>/project.coffee"
-            "<%= meta.coffee %>/storage.coffee"
-            "<%= meta.coffee %>/request.coffee"
-            "<%= meta.coffee %>/html.coffee"
-            "<%= meta.coffee %>/url.coffee"
+            "<%= meta.coffee %>/tatami.coffee"
             "<%= meta.coffee %>/outro.coffee"
           ]
         dest: "<%= meta.dest_script %>/<%= pkg.name %>.coffee"
@@ -147,7 +155,7 @@ module.exports = ( grunt ) ->
 
   grunt.loadNpmTasks task for task in npmTasks
 
-  grunt.registerTask "concat_coffee", ["concat:coffee_miso", "concat:coffee_ronin", "concat:coffee"]
+  grunt.registerTask "concat_coffee", ["concat:coffee_miso", "concat:coffee_ronin", "concat:coffee_tatami", "concat:coffee"]
   grunt.registerTask "script", ["concat_coffee", "coffee", "concat:js", "uglify"]
   grunt.registerTask "style", ["concat:css", "copy:matcha"]
   grunt.registerTask "default", ["script", "clean", "copy:test"]
