@@ -1,9 +1,4 @@
-_H.extend storage.modules, _H
+__proj.mask LIB_CONFIG.name
+__proj.__meta__ = LIB_CONFIG
 
-_H.api.formatList = ( map ) ->
-  API.config keys: map if _H.isPlainObject map
-
-_H.route.formatList = ( map ) ->
-  route.config keys: map if _H.isPlainObject map
-
-window[LIB_CONFIG.name] = _H
+window[LIB_CONFIG.name] = __proj
