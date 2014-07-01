@@ -17,7 +17,7 @@ API = new Storage "Web_API"
 API.config
   format_regexp: /\:([a-z_]+)/g
   value: ( val ) ->
-    return api_ver() + val ? ""
+    return apiVer() + val ? ""
 
 route = new Storage "route"
 
@@ -44,13 +44,43 @@ initialize = ->
 # 获取 Web API 版本
 # 
 # @private
-# @method   api_ver
+# @method   apiVer
 # @return   {String}
 ###
-api_ver = ->
+apiVer = ->
   ver = _H.config "api"
 
   return if _H.isString(ver) && _H.trim(ver) isnt "" then "/#{ver}" else ""
+
+storageHandler = ( type, key, map ) ->
+  switch type
+    when "api"
+      storage = API
+      getKey = ( k ) ->
+        return initializer("apiNS")(k) ? k
+    when "route"
+      storage = route
+
+  # 设置
+  if @isPlainObject key
+    storage.set key
+  # 获取
+  else if @isString key
+    result = storage.get (if getKey? then getKey() else key), map
+
+  return result ? null
+
+apiHandler = ( key, map ) ->
+  return storageHandler "api", key, map
+
+apiHandler.formatList = ( map ) ->
+  API.config keys: map if _H.isPlainObject map
+
+routeHandler = ( key, map ) ->
+  return storageHandler "route", key, map
+
+routeHandler.formatList = ( map ) ->
+  route.config keys: map if _H.isPlainObject map
 
 storage.modules.project =
   handlers: [
@@ -125,28 +155,11 @@ storage.modules.project =
       ###
       name: "api"
 
-      handler: ( key, map ) ->
-        # 设置
-        if @isPlainObject key
-          API.set key
-        # 获取
-        else if @isString key
-          result = API.get initializer("apiNS")(key) ? key, map
-
-        return result ? null
+      handler: apiHandler
     },
     {
       name: "route"
 
-      handler: ( key, map ) ->
-        # 设置
-        if @isPlainObject key
-          route.set key
-        # 获取
-        else if @isString key
-          result = route.get key, map
-
-        return result ? null
+      handler: routeHandler
     }
-
   ]

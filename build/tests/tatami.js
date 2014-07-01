@@ -16,7 +16,7 @@
 }(typeof window !== "undefined" ? window : this, function( window, noGlobal ) {
 
 "use strict";
-var $, API, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, I18n, LIB_CONFIG, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, Storage, TEXT_NODE, api_ver, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, request, resetConfig, resolvePathname, route, runHandler, setData, setStorageData, setup, storage, support, systemDialog, systemDialogHandler, _ENV, _H, __proc, __util,
+var $, API, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, I18n, LIB_CONFIG, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, Storage, TEXT_NODE, apiHandler, apiVer, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, request, resetConfig, resolvePathname, route, routeHandler, runHandler, setData, setStorageData, setup, storage, storageHandler, support, systemDialog, systemDialogHandler, _ENV, _H, __proc, __util,
   __slice = [].slice;
 
 LIB_CONFIG = {
@@ -2906,7 +2906,7 @@ API.config({
   format_regexp: /\:([a-z_]+)/g,
   value: function(val) {
     var _ref;
-    return (_ref = api_ver() + val) != null ? _ref : "";
+    return (_ref = apiVer() + val) != null ? _ref : "";
   }
 });
 
@@ -2942,17 +2942,62 @@ initialize = function() {
  * 获取 Web API 版本
  * 
  * @private
- * @method   api_ver
+ * @method   apiVer
  * @return   {String}
  */
 
-api_ver = function() {
+apiVer = function() {
   var ver;
   ver = _H.config("api");
   if (_H.isString(ver) && _H.trim(ver) !== "") {
     return "/" + ver;
   } else {
     return "";
+  }
+};
+
+storageHandler = function(type, key, map) {
+  var getKey, result;
+  switch (type) {
+    case "api":
+      storage = API;
+      getKey = function(k) {
+        var _ref;
+        return (_ref = initializer("apiNS")(k)) != null ? _ref : k;
+      };
+      break;
+    case "route":
+      storage = route;
+  }
+  if (this.isPlainObject(key)) {
+    storage.set(key);
+  } else if (this.isString(key)) {
+    result = storage.get((getKey != null ? getKey() : key), map);
+  }
+  return result != null ? result : null;
+};
+
+apiHandler = function(key, map) {
+  return storageHandler("api", key, map);
+};
+
+apiHandler.formatList = function(map) {
+  if (_H.isPlainObject(map)) {
+    return API.config({
+      keys: map
+    });
+  }
+};
+
+routeHandler = function(key, map) {
+  return storageHandler("route", key, map);
+};
+
+routeHandler.formatList = function(map) {
+  if (_H.isPlainObject(map)) {
+    return route.config({
+      keys: map
+    });
   }
 };
 
@@ -3032,26 +3077,10 @@ storage.modules.project = {
        * @return   {String}
        */
       name: "api",
-      handler: function(key, map) {
-        var result, _ref;
-        if (this.isPlainObject(key)) {
-          API.set(key);
-        } else if (this.isString(key)) {
-          result = API.get((_ref = initializer("apiNS")(key)) != null ? _ref : key, map);
-        }
-        return result != null ? result : null;
-      }
+      handler: apiHandler
     }, {
       name: "route",
-      handler: function(key, map) {
-        var result;
-        if (this.isPlainObject(key)) {
-          route.set(key);
-        } else if (this.isString(key)) {
-          result = route.get(key, map);
-        }
-        return result != null ? result : null;
-      }
+      handler: routeHandler
     }
   ]
 };
@@ -3336,22 +3365,6 @@ storage.modules.URL = {
 };
 
 _H.extend(storage.modules, _H);
-
-_H.api.formatList = function(map) {
-  if (_H.isPlainObject(map)) {
-    return API.config({
-      keys: map
-    });
-  }
-};
-
-_H.route.formatList = function(map) {
-  if (_H.isPlainObject(map)) {
-    return route.config({
-      keys: map
-    });
-  }
-};
 
 window[LIB_CONFIG.name] = _H;
 
