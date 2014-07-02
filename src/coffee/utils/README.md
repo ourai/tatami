@@ -4,7 +4,7 @@
 
 !["JavaScript Revolution"](http://www.gravatar.com/avatar/0239a7fa2f65314bdd09e8acf2e95d1e?s=180.png "JavaScript Revolution")
 
-## Rōnin CHANGELOG
+## CHANGELOG
 
 ### 0.3.0 (2014-06-26)
 
