@@ -6,5 +6,7 @@
   __proj.route.formatList = ( map ) ->
     route.config keys: map if __proj.isPlainObject map
 
+  __proj.mixin new Environment
+
   return __proj
   

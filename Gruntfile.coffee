@@ -78,6 +78,7 @@ module.exports = ( grunt ) ->
             "<%= meta.coffee %>/miso.coffee"
             "<%= meta.coffee %>/ronin.coffee"
             "<%= meta.classes %>/Storage.coffee"
+            "<%= meta.classes %>/Environment.coffee"
             "<%= meta.coffee %>/tatami.coffee"
             "<%= meta.coffee %>/outro.coffee"
           ]

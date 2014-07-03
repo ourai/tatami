@@ -1,5 +1,5 @@
 "use strict";
-var LIB_CONFIG, Storage, __proc, __proj, __util,
+var Environment, LIB_CONFIG, Storage, __proc, __proj, __util,
   __slice = [].slice;
 
 LIB_CONFIG = {
@@ -2048,6 +2048,62 @@ Storage = (function(__util) {
   return Storage;
 })(__util);
 
+Environment = (function(__util) {
+  var PDFReader, createAXO, detectBrowser, hasGeneric, hasReader, hasReaderActiveX, nav;
+  nav = navigator;
+  detectBrowser = function() {
+    return {};
+  };
+  createAXO = function(type) {
+    var axo, e;
+    try {
+      axo = new ActiveXObject(type);
+    } catch (_error) {
+      e = _error;
+      axo = null;
+    }
+    return axo;
+  };
+  hasReaderActiveX = function() {
+    var axo;
+    if (__util.hasProp("ActiveXObject")) {
+      axo = createAXO("AcroPDF.PDF");
+      if (!axo) {
+        axo = createAXO("PDF.PdfCtrl");
+      }
+    }
+    return axo != null;
+  };
+  hasReader = function() {
+    var result;
+    result = false;
+    __util.each(nav.plugins, function(plugin) {
+      result = /Adobe Reader|Adobe PDF|Acrobat/gi.test(plugin.name);
+      return !result;
+    });
+    return result;
+  };
+  hasGeneric = function() {
+    var _ref;
+    return ((_ref = nav.mimeTypes["application/pdf"]) != null ? _ref.enabledPlugin : void 0) != null;
+  };
+  PDFReader = function() {
+    return hasReader() || hasReaderActiveX() || hasGeneric();
+  };
+  Environment = (function() {
+    function Environment() {
+      this.browser = detectBrowser();
+      this.plugins = {
+        pdf: PDFReader()
+      };
+    }
+
+    return Environment;
+
+  })();
+  return Environment;
+})(__util);
+
 __proj = (function(window, __util) {
   var $, API, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, I18n, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, TEXT_NODE, apiHandler, apiVer, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, request, resetConfig, resolvePathname, route, routeHandler, runHandler, setData, setStorageData, setup, storage, storageHandler, support, systemDialog, systemDialogHandler, _ENV;
   ELEMENT_NODE = 1;
@@ -3268,6 +3324,7 @@ __proj = (function(window, __util) {
       });
     }
   };
+  __proj.mixin(new Environment);
   return __proj;
 })(window, __util);
 
