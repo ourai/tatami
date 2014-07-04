@@ -27,7 +27,7 @@ Storage = do ( __util ) ->
     s = @settings
     map = {} if not isPlainObj map
     keys = if isPlainObj(s.keys) then s.keys else {}
-    result = s.value(host).replace s.format_regexp, ( m, k ) =>
+    result = s.value(host).replace s.formatRegExp, ( m, k ) =>
       # 以传入的值为优先
       if hasProp k, map
         r = map[k]
@@ -44,8 +44,8 @@ Storage = do ( __util ) ->
   class Storage
     constructor: ( namespace ) ->
       @settings =
-        format_regexp: /.*/g
-        allow_keys: false
+        formatRegExp: /.*/g
+        allowKeys: false
         keys: {}
         value: ( v ) ->
           return v ? ""
@@ -58,7 +58,7 @@ Storage = do ( __util ) ->
     get: ( key, map ) ->
       if __util.isString key
         data = getData.apply this, [@storage, key, map]
-      else if @settings.allow_keys is true
+      else if @settings.allowKeys is true
         data = __util.keys @storage
 
       return data ? null

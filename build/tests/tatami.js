@@ -2009,7 +2009,7 @@ Storage = (function(__util) {
       map = {};
     }
     keys = isPlainObj(s.keys) ? s.keys : {};
-    result = s.value(host).replace(s.format_regexp, (function(_this) {
+    result = s.value(host).replace(s.formatRegExp, (function(_this) {
       return function(m, k) {
         var r;
         if (hasProp(k, map)) {
@@ -2031,8 +2031,8 @@ Storage = (function(__util) {
   Storage = (function() {
     function Storage(namespace) {
       this.settings = {
-        format_regexp: /.*/g,
-        allow_keys: false,
+        formatRegExp: /.*/g,
+        allowKeys: false,
         keys: {},
         value: function(v) {
           return v != null ? v : "";
@@ -2049,7 +2049,7 @@ Storage = (function(__util) {
       var data;
       if (__util.isString(key)) {
         data = getData.apply(this, [this.storage, key, map]);
-      } else if (this.settings.allow_keys === true) {
+      } else if (this.settings.allowKeys === true) {
         data = __util.keys(this.storage);
       }
       return data != null ? data : null;
