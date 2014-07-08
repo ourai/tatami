@@ -2066,10 +2066,40 @@ Storage = (function(__util) {
 })(__util);
 
 Environment = (function(__util) {
-  var PDFReader, createAXO, detectBrowser, hasGeneric, hasReader, hasReaderActiveX, nav;
+  var PDFReader, createAXO, detectBrowser, hasGeneric, hasReader, hasReaderActiveX, jQueryBrowser, nav;
   nav = navigator;
+  jQueryBrowser = function(ua) {
+    var browser, match, result;
+    browser = {};
+    match = /(chrome)[ \/]([\w.]+)/.exec(ua) || /(webkit)[ \/]([\w.]+)/.exec(ua) || /(opera)(?:.*version|)[ \/]([\w.]+)/.exec(ua) || /(msie) ([\w.]+)/.exec(ua) || ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec(ua) || [];
+    result = {
+      browser: match[1] || "",
+      version: match[2] || "0"
+    };
+    if (result.browser) {
+      browser[result.browser] = true;
+      browser.version = result.version;
+    }
+    if (browser.chrome) {
+      browser.webkit = true;
+    } else if (browser.webkit) {
+      browser.safari = true;
+    }
+    return browser;
+  };
   detectBrowser = function() {
-    return {};
+    var browser, match, ua;
+    ua = nav.userAgent.toLowerCase();
+    match = /trident.*? rv:([\w.]+)/.exec(ua);
+    if (match) {
+      browser = {
+        msie: true,
+        version: match[1]
+      };
+    } else {
+      browser = jQueryBrowser(ua);
+    }
+    return browser;
   };
   createAXO = function(type) {
     var axo, e;
