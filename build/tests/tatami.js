@@ -2066,9 +2066,52 @@ Storage = (function(__util) {
 })(__util);
 
 Environment = (function(__util) {
-  var PDFReader, createAXO, detectBrowser, hasGeneric, hasReader, hasReaderActiveX, jQueryBrowser, nav;
+  var PDFReader, createAXO, detectBrowser, detectPlatform, hasGeneric, hasReader, hasReaderActiveX, jQueryBrowser, nav, platformType, platformVersion, suffix, ua;
   nav = navigator;
-  jQueryBrowser = function(ua) {
+  ua = nav.userAgent.toLowerCase();
+  suffix = {
+    windows: {
+      "5.1": "XP",
+      "5.2": "XP x64 Edition",
+      "6.0": "Vista",
+      "6.1": "7",
+      "6.2": "8",
+      "6.3": "8.1"
+    }
+  };
+  platformVersion = function(info) {
+    var _ref;
+    return (_ref = suffix[info.platform]) != null ? _ref[info.version] : void 0;
+  };
+  platformType = function(info) {
+    var type, ver;
+    if (info.platform === "windows") {
+      ver = info.version * 1;
+      if (ver < 8 || isNaN(ver)) {
+        type = "pc";
+      }
+    }
+    return type;
+  };
+  detectPlatform = function() {
+    var match, platform, result, type;
+    platform = {};
+    match = /(windows) nt ([\w.]+)/.exec(ua) || [];
+    result = {
+      platform: match[1] || "",
+      version: match[2] || "0"
+    };
+    if (result.platform) {
+      platform[result.platform] = true;
+      platform.version = platformVersion(result);
+      type = platformType(result);
+      if (type) {
+        platform[type] = true;
+      }
+    }
+    return platform;
+  };
+  jQueryBrowser = function() {
     var browser, match, result;
     browser = {};
     match = /(chrome)[ \/]([\w.]+)/.exec(ua) || /(webkit)[ \/]([\w.]+)/.exec(ua) || /(opera)(?:.*version|)[ \/]([\w.]+)/.exec(ua) || /(msie) ([\w.]+)/.exec(ua) || ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec(ua) || [];
@@ -2088,8 +2131,7 @@ Environment = (function(__util) {
     return browser;
   };
   detectBrowser = function() {
-    var browser, match, ua;
-    ua = nav.userAgent.toLowerCase();
+    var browser, match;
     match = /trident.*? rv:([\w.]+)/.exec(ua);
     if (match) {
       browser = {
@@ -2097,7 +2139,7 @@ Environment = (function(__util) {
         version: match[1]
       };
     } else {
-      browser = jQueryBrowser(ua);
+      browser = jQueryBrowser();
     }
     return browser;
   };
@@ -2139,6 +2181,7 @@ Environment = (function(__util) {
   };
   Environment = (function() {
     function Environment() {
+      this.platform = detectPlatform();
       this.browser = detectBrowser();
       this.plugins = {
         pdf: PDFReader()
