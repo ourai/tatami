@@ -8,20 +8,20 @@
   I18n = new Storage "I18n"
 
   I18n.config
-    format_regexp: /\{%\s*([A-Z0-9_]+)\s*%\}/ig
+    formatRegExp: /\{%\s*([A-Z0-9_]+)\s*%\}/ig
     value: ( val ) ->
       return if __proj.isString(val) then val else ""
 
   API = new Storage "Web_API"
 
   API.config
-    format_regexp: /\:([a-z_]+)/g
+    formatRegExp: /\:([a-z_]+)/g
     value: ( val ) ->
       return apiVer() + val ? ""
 
   route = new Storage "route"
 
-  route.config format_regexp: /\:([a-z_]+)/g
+  route.config formatRegExp: /\:([a-z_]+)/g
 
   ###
   # 设置初始化函数

@@ -2905,7 +2905,7 @@ __proj = (function(window, __util) {
   storage.fn.init.apiNS = function(key) {};
   I18n = new Storage("I18n");
   I18n.config({
-    format_regexp: /\{%\s*([A-Z0-9_]+)\s*%\}/ig,
+    formatRegExp: /\{%\s*([A-Z0-9_]+)\s*%\}/ig,
     value: function(val) {
       if (__proj.isString(val)) {
         return val;
@@ -2916,7 +2916,7 @@ __proj = (function(window, __util) {
   });
   API = new Storage("Web_API");
   API.config({
-    format_regexp: /\:([a-z_]+)/g,
+    formatRegExp: /\:([a-z_]+)/g,
     value: function(val) {
       var _ref;
       return (_ref = apiVer() + val) != null ? _ref : "";
@@ -2924,7 +2924,7 @@ __proj = (function(window, __util) {
   });
   route = new Storage("route");
   route.config({
-    format_regexp: /\:([a-z_]+)/g
+    formatRegExp: /\:([a-z_]+)/g
   });
 
   /*
