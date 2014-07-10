@@ -13,19 +13,30 @@ Environment = do ( __util ) ->
 
   # 平台版本
   platformVersion = ( info ) ->
-    return suffix[info.platform]?[info.version]
+    version = info.version
+
+    switch info.platform
+      when "windows"
+        version = suffix.windows[version]
+
+    return version.replace /_/g, "."
 
   # 平台类型（PC/Mobile/Tablet 等）
   platformType = ( info ) ->
-    if info.platform is "windows"
+    platform = info.platform
+
+    if platform is "windows"
       ver = info.version * 1
       type = "pc" if ver < 8 or isNaN(ver)
+    else if platform is "macintosh"
+      type = "pc"
 
     return type
 
   detectPlatform = ->
     platform = {}
     match = /(windows) nt ([\w.]+)/.exec(ua) or
+            /(macintosh).*? mac os(?: [a-z]*)? ([\w.]+)/.exec(ua) or
             []
     result =
       platform: match[1] or ""
@@ -74,6 +85,11 @@ Environment = do ( __util ) ->
         version: match[1]
     else
       browser = jQueryBrowser()
+
+      if browser.mozilla
+        browser.firefox = true
+        match = /firefox[ \/]([\w.]+)/.exec(ua)
+        browser.version = match[1] if match
 
     return browser
 

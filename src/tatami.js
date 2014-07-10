@@ -2063,23 +2063,31 @@ Environment = (function(__util) {
     }
   };
   platformVersion = function(info) {
-    var _ref;
-    return (_ref = suffix[info.platform]) != null ? _ref[info.version] : void 0;
+    var version;
+    version = info.version;
+    switch (info.platform) {
+      case "windows":
+        version = suffix.windows[version];
+    }
+    return version.replace(/_/g, ".");
   };
   platformType = function(info) {
-    var type, ver;
-    if (info.platform === "windows") {
+    var platform, type, ver;
+    platform = info.platform;
+    if (platform === "windows") {
       ver = info.version * 1;
       if (ver < 8 || isNaN(ver)) {
         type = "pc";
       }
+    } else if (platform === "macintosh") {
+      type = "pc";
     }
     return type;
   };
   detectPlatform = function() {
     var match, platform, result, type;
     platform = {};
-    match = /(windows) nt ([\w.]+)/.exec(ua) || [];
+    match = /(windows) nt ([\w.]+)/.exec(ua) || /(macintosh).*? mac os(?: [a-z]*)? ([\w.]+)/.exec(ua) || [];
     result = {
       platform: match[1] || "",
       version: match[2] || "0"
@@ -2123,6 +2131,13 @@ Environment = (function(__util) {
       };
     } else {
       browser = jQueryBrowser();
+      if (browser.mozilla) {
+        browser.firefox = true;
+        match = /firefox[ \/]([\w.]+)/.exec(ua);
+        if (match) {
+          browser.version = match[1];
+        }
+      }
     }
     return browser;
   };
