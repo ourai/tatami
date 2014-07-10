@@ -1,6 +1,10 @@
 # 关于 Environment 的一些记录
 
-## 用户代理字符串（User-agent string）
+## 用户代理字符串
+
+用户代理字符串看起来有点杂乱无章，但在一定程度上是有规律的。
+
+    Mozilla/[编号] ([平台])
 
 ### Windows
 

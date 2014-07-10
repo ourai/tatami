@@ -11,24 +11,28 @@ Environment = do ( __util ) ->
       "6.2": "8"
       "6.3": "8.1"
 
+  platformName = ->
+    name = /^[\w.\/]+ \(([^;]+?)[;)]/.exec(ua)[1].split(" ").shift()
+    return if name is "compatible" then "windows" else name
+
+  platformVersion = ->
+    return (/windows nt ([\w.]+)/.exec(ua) or
+            /os ([\w]+) like mac/.exec(ua) or
+            /mac os(?: [a-z]*)? ([\w.]+)/.exec(ua) or
+            [])[1]?.replace /_/g, "."
+
   detectPlatform = ->
-    name = /^[\w.\/]+ \(([^;]+)[;)]/i.exec(ua)[1].split(" ").shift()
-    platform = {}
+    platform =
+      touchable: false
+      version: platformVersion()
     
-    if name is "compatible"
-      platform.windows = true
-    else
-      platform[name] = true
+    platform[platformName()] = true
 
     if platform.windows
-      platform.version = suffix.windows[/windows nt ([\w.]+)/.exec(ua)[1]]
-      platform.touchable = /trident[ \/][\w.]+; touch/i.test ua
+      platform.version = suffix.windows[platform.version]
+      platform.touchable = /trident[ \/][\w.]+; touch/.test ua
     else if platform.ipod or platform.iphone or platform.ipad
-      platform.touchable = true
-      platform.version = /os ([\w]+) like mac/.exec(ua)[1].replace /_/g, "."
-    else if platform.macintosh
-      platform.touchable = false
-      platform.version = /macintosh.*? mac os(?: [a-z]*)? ([\w.]+)/.exec(ua)[1].replace /_/g, "."
+      platform.touchable = platform.ios = true
 
     return platform
 

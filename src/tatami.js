@@ -2049,7 +2049,7 @@ Storage = (function(__util) {
 })(__util);
 
 Environment = (function(__util) {
-  var PDFReader, createAXO, detectBrowser, detectPlatform, hasGeneric, hasReader, hasReaderActiveX, jQueryBrowser, nav, suffix, ua;
+  var PDFReader, createAXO, detectBrowser, detectPlatform, hasGeneric, hasReader, hasReaderActiveX, jQueryBrowser, nav, platformName, platformVersion, suffix, ua;
   nav = navigator;
   ua = nav.userAgent.toLowerCase();
   suffix = {
@@ -2062,24 +2062,31 @@ Environment = (function(__util) {
       "6.3": "8.1"
     }
   };
-  detectPlatform = function() {
-    var name, platform;
-    name = /^[\w.\/]+ \(([^;]+)[;)]/i.exec(ua)[1].split(" ").shift();
-    platform = {};
+  platformName = function() {
+    var name;
+    name = /^[\w.\/]+ \(([^;]+?)[;)]/.exec(ua)[1].split(" ").shift();
     if (name === "compatible") {
-      platform.windows = true;
+      return "windows";
     } else {
-      platform[name] = true;
+      return name;
     }
+  };
+  platformVersion = function() {
+    var _ref;
+    return (_ref = (/windows nt ([\w.]+)/.exec(ua) || /os ([\w]+) like mac/.exec(ua) || /mac os(?: [a-z]*)? ([\w.]+)/.exec(ua) || [])[1]) != null ? _ref.replace(/_/g, ".") : void 0;
+  };
+  detectPlatform = function() {
+    var platform;
+    platform = {
+      touchable: false,
+      version: platformVersion()
+    };
+    platform[platformName()] = true;
     if (platform.windows) {
-      platform.version = suffix.windows[/windows nt ([\w.]+)/.exec(ua)[1]];
-      platform.touchable = /trident[ \/][\w.]+; touch/i.test(ua);
+      platform.version = suffix.windows[platform.version];
+      platform.touchable = /trident[ \/][\w.]+; touch/.test(ua);
     } else if (platform.ipod || platform.iphone || platform.ipad) {
-      platform.touchable = true;
-      platform.version = /os ([\w]+) like mac/.exec(ua)[1].replace(/_/g, ".");
-    } else if (platform.macintosh) {
-      platform.touchable = false;
-      platform.version = /macintosh.*? mac os(?: [a-z]*)? ([\w.]+)/.exec(ua)[1].replace(/_/g, ".");
+      platform.touchable = platform.ios = true;
     }
     return platform;
   };
