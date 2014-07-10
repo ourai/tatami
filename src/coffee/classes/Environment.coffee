@@ -21,19 +21,21 @@ Environment = do ( __util ) ->
 
     return version.replace /_/g, "."
 
-  # 平台类型（PC/Mobile/Tablet 等）
-  platformType = ( info ) ->
+  # 是否为触屏
+  touchable = ( info ) ->
     platform = info.platform
 
-    if platform is "windows"
-      ver = info.version * 1
-      type = "pc" if ver < 8 or isNaN(ver)
-    else if platform is "macintosh"
-      type = "pc"
+    # if platform is "windows"
+    #   ver = info.version * 1
+    #   type = "pc" if ver < 8 or isNaN(ver)
+    # else if platform is "macintosh"
+    #   type = "pc"
 
-    return type
+    # return type
+    return if platform is "windows" then /trident[ \/][\w.]+; touch/i.test(ua) else false
 
   detectPlatform = ->
+    # /^[\w.\/]+ \(([^;]+)[;)]/i
     platform = {}
     match = /(windows) nt ([\w.]+)/.exec(ua) or
             /(macintosh).*? mac os(?: [a-z]*)? ([\w.]+)/.exec(ua) or
@@ -45,8 +47,7 @@ Environment = do ( __util ) ->
     if result.platform
       platform[result.platform] = true
       platform.version = platformVersion result
-      type = platformType result
-      platform[type] = true if type
+      platform.touch = touchable result
 
     return platform
 

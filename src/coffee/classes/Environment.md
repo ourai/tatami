@@ -31,4 +31,4 @@ Firefox | Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:24.0) Gecko/20100101 Firefox/
 
 ## 外部链接
 
-- <http://utaukitune.ldblog.jp/archives/65696057.html>
+- [User-Agent (ユーザー エージェント) 一覧](http://utaukitune.ldblog.jp/archives/65696057.html)
