@@ -11,43 +11,24 @@ Environment = do ( __util ) ->
       "6.2": "8"
       "6.3": "8.1"
 
-  # 平台版本
-  platformVersion = ( info ) ->
-    version = info.version
-
-    switch info.platform
-      when "windows"
-        version = suffix.windows[version]
-
-    return version.replace /_/g, "."
-
-  # 是否为触屏
-  touchable = ( info ) ->
-    platform = info.platform
-
-    # if platform is "windows"
-    #   ver = info.version * 1
-    #   type = "pc" if ver < 8 or isNaN(ver)
-    # else if platform is "macintosh"
-    #   type = "pc"
-
-    # return type
-    return if platform is "windows" then /trident[ \/][\w.]+; touch/i.test(ua) else false
-
   detectPlatform = ->
-    # /^[\w.\/]+ \(([^;]+)[;)]/i
+    name = /^[\w.\/]+ \(([^;]+)[;)]/i.exec(ua)[1].split(" ").shift()
     platform = {}
-    match = /(windows) nt ([\w.]+)/.exec(ua) or
-            /(macintosh).*? mac os(?: [a-z]*)? ([\w.]+)/.exec(ua) or
-            []
-    result =
-      platform: match[1] or ""
-      version: match[2] or "0"
+    
+    if name is "compatible"
+      platform.windows = true
+    else
+      platform[name] = true
 
-    if result.platform
-      platform[result.platform] = true
-      platform.version = platformVersion result
-      platform.touch = touchable result
+    if platform.windows
+      platform.version = suffix.windows[/windows nt ([\w.]+)/.exec(ua)[1]]
+      platform.touchable = /trident[ \/][\w.]+; touch/i.test ua
+    else if platform.ipod or platform.iphone or platform.ipad
+      platform.touchable = true
+      platform.version = /os ([\w]+) like mac/.exec(ua)[1].replace /_/g, "."
+    else if platform.macintosh
+      platform.touchable = false
+      platform.version = /macintosh.*? mac os(?: [a-z]*)? ([\w.]+)/.exec(ua)[1].replace /_/g, "."
 
     return platform
 

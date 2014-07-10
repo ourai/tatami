@@ -2066,7 +2066,7 @@ Storage = (function(__util) {
 })(__util);
 
 Environment = (function(__util) {
-  var PDFReader, createAXO, detectBrowser, detectPlatform, hasGeneric, hasReader, hasReaderActiveX, jQueryBrowser, nav, platformType, platformVersion, suffix, ua;
+  var PDFReader, createAXO, detectBrowser, detectPlatform, hasGeneric, hasReader, hasReaderActiveX, jQueryBrowser, nav, suffix, ua;
   nav = navigator;
   ua = nav.userAgent.toLowerCase();
   suffix = {
@@ -2079,43 +2079,24 @@ Environment = (function(__util) {
       "6.3": "8.1"
     }
   };
-  platformVersion = function(info) {
-    var version;
-    version = info.version;
-    switch (info.platform) {
-      case "windows":
-        version = suffix.windows[version];
-    }
-    return version.replace(/_/g, ".");
-  };
-  platformType = function(info) {
-    var platform, type, ver;
-    platform = info.platform;
-    if (platform === "windows") {
-      ver = info.version * 1;
-      if (ver < 8 || isNaN(ver)) {
-        type = "pc";
-      }
-    } else if (platform === "macintosh") {
-      type = "pc";
-    }
-    return type;
-  };
   detectPlatform = function() {
-    var match, platform, result, type;
+    var name, platform;
+    name = /^[\w.\/]+ \(([^;]+)[;)]/i.exec(ua)[1].split(" ").shift();
     platform = {};
-    match = /(windows) nt ([\w.]+)/.exec(ua) || /(macintosh).*? mac os(?: [a-z]*)? ([\w.]+)/.exec(ua) || [];
-    result = {
-      platform: match[1] || "",
-      version: match[2] || "0"
-    };
-    if (result.platform) {
-      platform[result.platform] = true;
-      platform.version = platformVersion(result);
-      type = platformType(result);
-      if (type) {
-        platform[type] = true;
-      }
+    if (name === "compatible") {
+      platform.windows = true;
+    } else {
+      platform[name] = true;
+    }
+    if (platform.windows) {
+      platform.version = suffix.windows[/windows nt ([\w.]+)/.exec(ua)[1]];
+      platform.touchable = /trident[ \/][\w.]+; touch/i.test(ua);
+    } else if (platform.ipod || platform.iphone || platform.ipad) {
+      platform.touchable = true;
+      platform.version = /os ([\w]+) like mac/.exec(ua)[1].replace(/_/g, ".");
+    } else if (platform.macintosh) {
+      platform.touchable = false;
+      platform.version = /macintosh.*? mac os(?: [a-z]*)? ([\w.]+)/.exec(ua)[1].replace(/_/g, ".");
     }
     return platform;
   };
