@@ -786,6 +786,8 @@ __proj = do ( window, __util ) ->
 
   route.config formatRegExp: /\:([a-z_]+)/g
 
+  asset = new Storage "asset"
+
   ###
   # 设置初始化函数
   # 
@@ -823,6 +825,8 @@ __proj = do ( window, __util ) ->
           return initializer("apiNS")(k) ? k
       when "route"
         obj = route
+      when "asset"
+        obj = asset
 
     # 设置
     if __proj.isPlainObject key
@@ -838,6 +842,9 @@ __proj = do ( window, __util ) ->
 
   routeHandler = ( key, map ) ->
     return storageHandler "route", key, map
+
+  assetHandler = ( key ) ->
+    return storageHandler "asset", key
 
   storage.modules.project =
     handlers: [
@@ -915,9 +922,29 @@ __proj = do ( window, __util ) ->
         handler: apiHandler
       },
       {
+        ###
+        # 设置及获取页面 URL
+        # 
+        # @method   route
+        # @param    key {String}
+        # @param    [map] {Plain Object}
+        # @return   {String}
+        ###
         name: "route"
 
         handler: routeHandler
+      },
+      {
+        ###
+        # 设置及获取资源 URL
+        # 
+        # @method   asset
+        # @param    key {String}
+        # @return   {String}
+        ###
+        name: "asset"
+
+        handler: assetHandler
       }
     ]
 
