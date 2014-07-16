@@ -1997,7 +1997,7 @@ Storage = (function(__util) {
     return obj;
   };
   getData = function(host, key, map) {
-    var keys, result, s;
+    var keys, regexp, result, s;
     __util.each(key.split("."), function(part) {
       var r;
       r = hasProp(part, host);
@@ -2009,29 +2009,33 @@ Storage = (function(__util) {
       map = {};
     }
     keys = isPlainObj(s.keys) ? s.keys : {};
-    result = s.value(host).replace(s.formatRegExp, (function(_this) {
-      return function(m, k) {
-        var r;
-        if (hasProp(k, map)) {
-          r = map[k];
-        } else if (hasProp(k, keys)) {
-          r = keys[k];
-        } else {
-          r = m;
-        }
-        if (__util.isFunction(r)) {
-          return r();
-        } else {
-          return r;
-        }
-      };
-    })(this));
+    regexp = s.formatRegExp;
+    result = s.value(host);
+    if (__util.isRegExp(regexp)) {
+      result = result.replace(regexp, (function(_this) {
+        return function(m, k) {
+          var r;
+          if (hasProp(k, map)) {
+            r = map[k];
+          } else if (hasProp(k, keys)) {
+            r = keys[k];
+          } else {
+            r = m;
+          }
+          if (__util.isFunction(r)) {
+            return r();
+          } else {
+            return r;
+          }
+        };
+      })(this));
+    }
     return result;
   };
   Storage = (function() {
     function Storage(namespace) {
       this.settings = {
-        formatRegExp: /.*/g,
+        formatRegExp: null,
         allowKeys: false,
         keys: {},
         value: function(v) {

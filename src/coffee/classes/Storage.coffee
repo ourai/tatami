@@ -27,24 +27,28 @@ Storage = do ( __util ) ->
     s = @settings
     map = {} if not isPlainObj map
     keys = if isPlainObj(s.keys) then s.keys else {}
-    result = s.value(host).replace s.formatRegExp, ( m, k ) =>
-      # 以传入的值为优先
-      if hasProp k, map
-        r = map[k]
-      # 预先设置的值
-      else if hasProp k, keys
-        r = keys[k]
-      else
-        r = m
+    regexp = s.formatRegExp
+    result = s.value(host)
 
-      return if __util.isFunction(r) then r() else r
+    if __util.isRegExp regexp
+      result = result.replace regexp, ( m, k ) =>
+        # 以传入的值为优先
+        if hasProp k, map
+          r = map[k]
+        # 预先设置的值
+        else if hasProp k, keys
+          r = keys[k]
+        else
+          r = m
+
+        return if __util.isFunction(r) then r() else r
 
     return result
 
   class Storage
     constructor: ( namespace ) ->
       @settings =
-        formatRegExp: /.*/g
+        formatRegExp: null
         allowKeys: false
         keys: {}
         value: ( v ) ->
