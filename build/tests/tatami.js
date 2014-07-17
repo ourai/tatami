@@ -47,11 +47,22 @@ __proc = (function(window) {
     var type, types, _fn, _i, _len;
     types = "Boolean Number String Function Array Date RegExp Object".split(" ");
     _fn = function(type) {
-      var lc;
+      var handler, lc;
       storage.types["[object " + type + "]"] = lc = type.toLowerCase();
-      return storage.methods["is" + type] = function(target) {
-        return this.type(target) === lc;
-      };
+      if (type === "Number") {
+        handler = function(target) {
+          if (isNaN(target)) {
+            return false;
+          } else {
+            return this.type(target) === lc;
+          }
+        };
+      } else {
+        handler = function(target) {
+          return this.type(target) === lc;
+        };
+      }
+      return storage.methods["is" + type] = handler;
     };
     for (_i = 0, _len = types.length; _i < _len; _i++) {
       type = types[_i];

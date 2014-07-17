@@ -12,9 +12,16 @@
       do ( type ) ->
         # populate the storage.types map
         storage.types["[object #{type}]"] = lc = type.toLowerCase()
+
+        if type is "Number"
+          handler = ( target ) ->
+            return if isNaN(target) then false else @type(target) is lc
+        else
+          handler = ( target ) ->
+            return @type(target) is lc
+
         # add methods such as isNumber/isBoolean/...
-        storage.methods["is#{type}"] = ( target ) ->
-          return @type(target) is lc
+        storage.methods["is#{type}"] = handler
 
     return storage.types
 
