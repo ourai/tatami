@@ -64,7 +64,12 @@
     # @return  {String}
     ###
     type: ( object ) ->
-      return if not object? then String(object) else storage.types[toString.call(object)] || "object"
+      if arguments.length is 0
+        result = null
+      else
+        result = if not object? then String(object) else storage.types[toString.call(object)] || "object"
+        
+      return result
 
     ###
     # 切割 Array-Like Object 片段

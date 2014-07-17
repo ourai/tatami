@@ -241,11 +241,13 @@ __proc = (function(window) {
      * @return  {String}
      */
     type: function(object) {
-      if (object == null) {
-        return String(object);
+      var result;
+      if (arguments.length === 0) {
+        result = null;
       } else {
-        return storage.types[toString.call(object)] || "object";
+        result = object == null ? String(object) : storage.types[toString.call(object)] || "object";
       }
+      return result;
     },
 
     /*
