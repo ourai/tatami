@@ -209,12 +209,23 @@ __proc = do ( window ) ->
     # 切割 Array-Like Object 片段
     #
     # @method   slice
-    # @param    args {Array-Like}
-    # @param    index {Integer}
+    # @param    target {Array-Like}
+    # @param    begin {Integer}
+    # @param    end {Integer}
     # @return
     ###
-    slice: ( args, index ) ->
-      return if not args? then [] else [].slice.call args, (Number(index) || 0)
+    slice: ( target, begin, end ) ->
+      if not target?
+        result = []
+      else
+        end = Number end
+        args = [(Number(begin) || 0)]
+
+        args.push(end) if arguments.length > 2 and not isNaN(end)
+
+        result = [].slice.apply target, args
+        
+      return  result
 
     ###
     # 判断某个对象是否有自己的指定属性

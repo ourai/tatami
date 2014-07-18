@@ -551,6 +551,24 @@ __proj = do ( window, __util ) ->
   limit = ( key ) ->
     limiter.key.storage.push key
 
+  ###
+  # 将内部 class 曝露到外部
+  #
+  # @private
+  # @method  exposeClasses
+  # @return
+  ###
+  exposeClasses = ->
+    classes =
+      Storage: Storage
+
+    try
+      Object.defineProperty __proj, "__class__",
+        __proto__: null
+        value: classes
+    catch error
+      __proj.mixin __class__: classes
+
   storage.modules.utils =
     handlers: [
       {
@@ -1217,6 +1235,8 @@ __proj = do ( window, __util ) ->
     route.config keys: map if __proj.isPlainObject map
 
   __proj.mixin new Environment
+
+  exposeClasses()
 
   return __proj
   

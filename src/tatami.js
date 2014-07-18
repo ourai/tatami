@@ -248,16 +248,24 @@ __proc = (function(window) {
      * 切割 Array-Like Object 片段
      *
      * @method   slice
-     * @param    args {Array-Like}
-     * @param    index {Integer}
+     * @param    target {Array-Like}
+     * @param    begin {Integer}
+     * @param    end {Integer}
      * @return
      */
-    slice: function(args, index) {
-      if (args == null) {
-        return [];
+    slice: function(target, begin, end) {
+      var args, result;
+      if (target == null) {
+        result = [];
       } else {
-        return [].slice.call(args, Number(index) || 0);
+        end = Number(end);
+        args = [Number(begin) || 0];
+        if (arguments.length > 2 && !isNaN(end)) {
+          args.push(end);
+        }
+        result = [].slice.apply(target, args);
       }
+      return result;
     },
 
     /*
@@ -1953,7 +1961,6 @@ __util = (function(window, __proc) {
   try {
     Object.defineProperty(__util, "__meta__", {
       __proto__: null,
-      writable: true,
       value: {
         name: "__util",
         version: ""
@@ -2196,7 +2203,7 @@ Environment = (function(__util) {
 })(__util);
 
 __proj = (function(window, __util) {
-  var $, API, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, I18n, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, TEXT_NODE, apiHandler, apiVer, asset, assetHandler, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, request, resetConfig, resolvePathname, route, routeHandler, runHandler, setData, setStorageData, setup, storage, storageHandler, support, systemDialog, systemDialogHandler, _ENV;
+  var $, API, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, I18n, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, TEXT_NODE, apiHandler, apiVer, asset, assetHandler, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, exposeClasses, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, request, resetConfig, resolvePathname, route, routeHandler, runHandler, setData, setStorageData, setup, storage, storageHandler, support, systemDialog, systemDialogHandler, _ENV;
   ELEMENT_NODE = 1;
   ATTRIBUTE_NODE = 2;
   TEXT_NODE = 3;
@@ -2756,6 +2763,31 @@ __proj = (function(window, __util) {
    */
   limit = function(key) {
     return limiter.key.storage.push(key);
+  };
+
+  /*
+   * 将内部 class 曝露到外部
+   *
+   * @private
+   * @method  exposeClasses
+   * @return
+   */
+  exposeClasses = function() {
+    var classes, error;
+    classes = {
+      Storage: Storage
+    };
+    try {
+      return Object.defineProperty(__proj, "__class__", {
+        __proto__: null,
+        value: classes
+      });
+    } catch (_error) {
+      error = _error;
+      return __proj.mixin({
+        __class__: classes
+      });
+    }
   };
   storage.modules.utils = {
     handlers: [
@@ -3443,11 +3475,12 @@ __proj = (function(window, __util) {
     }
   };
   __proj.mixin(new Environment);
+  exposeClasses();
   return __proj;
 })(window, __util);
 
 __proj.mask(LIB_CONFIG.name);
 
-__proj.__meta__ = LIB_CONFIG;
+__proj.mixin(__proj.__meta__, LIB_CONFIG);
 
 window[LIB_CONFIG.name] = __proj;

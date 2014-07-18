@@ -398,6 +398,13 @@
   limit = ( key ) ->
     limiter.key.storage.push key
 
+  ###
+  # 将内部 class 曝露到外部
+  #
+  # @private
+  # @method  exposeClasses
+  # @return
+  ###
   exposeClasses = ->
     classes =
       Storage: Storage

@@ -1523,7 +1523,6 @@ __util = do ( window, __proc ) ->
   try
     Object.defineProperty __util, "__meta__",
       __proto__: null
-      writable: true
       value:
         name: "__util"
         version: ""
