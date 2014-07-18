@@ -397,3 +397,14 @@
   ###
   limit = ( key ) ->
     limiter.key.storage.push key
+
+  exposeClasses = ->
+    classes =
+      Storage: Storage
+
+    try
+      Object.defineProperty __proj, "__class__",
+        __proto__: null
+        value: classes
+    catch error
+      __proj.mixin __class__: classes

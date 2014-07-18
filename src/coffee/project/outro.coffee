@@ -8,5 +8,7 @@
 
   __proj.mixin new Environment
 
+  exposeClasses()
+
   return __proj
   
