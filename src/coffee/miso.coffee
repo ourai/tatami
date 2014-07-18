@@ -350,14 +350,13 @@ __proc = do ( window ) ->
     isArrayLike: ( object ) ->
       result = false
 
-      if @isObject(object) and object isnt null
-        if not @isWindow object
-          length = object.length
+      if @isObject(object) and not @isWindow object
+        length = object.length
 
-          result = true if object.nodeType is 1 and length or
-            not @isArray(object) and
-            not @isFunction(object) and
-            (length is 0 or @isNumber(length) and length > 0 and (length - 1) of object)
+        result = true if object.nodeType is 1 and length or
+          not @isArray(object) and
+          not @isFunction(object) and
+          (length is 0 or @isNumber(length) and length > 0 and (length - 1) of object)
 
       return result
 

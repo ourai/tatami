@@ -21,7 +21,7 @@ var Environment, LIB_CONFIG, Storage, __proc, __proj, __util,
 
 LIB_CONFIG = {
   name: "Tatami",
-  version: "0.3.0"
+  version: "0.1.0"
 };
 
 __proc = (function(window) {
@@ -408,12 +408,10 @@ __proc = (function(window) {
     isArrayLike: function(object) {
       var length, result;
       result = false;
-      if (this.isObject(object) && object !== null) {
-        if (!this.isWindow(object)) {
-          length = object.length;
-          if (object.nodeType === 1 && length || !this.isArray(object) && !this.isFunction(object) && (length === 0 || this.isNumber(length) && length > 0 && (length - 1) in object)) {
-            result = true;
-          }
+      if (this.isObject(object) && !this.isWindow(object)) {
+        length = object.length;
+        if (object.nodeType === 1 && length || !this.isArray(object) && !this.isFunction(object) && (length === 0 || this.isNumber(length) && length > 0 && (length - 1) in object)) {
+          result = true;
         }
       }
       return result;
