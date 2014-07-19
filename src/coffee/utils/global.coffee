@@ -174,24 +174,26 @@
 
         handler: ( base, target, strict ) ->
           result = false
-          lib = this
-          type_b = lib.type( base )
 
-          if lib.type(target) is type_b
-            plain_b = lib.isPlainObject base
+          if arguments.length < 2
+            lib = this
+            type_b = lib.type( base )
 
-            if plain_b and lib.isPlainObject(target) or type_b isnt "object"
-              # 是否为“天然”的数组（以别于后来将字符串等转换成的数组）
-              connate = lib.isArray base
+            if lib.type(target) is type_b
+              plain_b = lib.isPlainObject base
 
-              if not plain_b and not connate
-                base = [base]
-                target = [target]
+              if plain_b and lib.isPlainObject(target) or type_b isnt "object"
+                # 是否为“天然”的数组（以别于后来将字符串等转换成的数组）
+                connate = lib.isArray base
 
-              # If 'strict' is true, then compare the objects' references, else only compare their values.
-              strict = false if not lib.isBoolean strict
+                if not plain_b and not connate
+                  base = [base]
+                  target = [target]
 
-              result = compareObjects.apply(lib, [base, target, strict, connate])
+                # If 'strict' is true, then compare the objects' references, else only compare their values.
+                strict = false if not lib.isBoolean strict
+
+                result = compareObjects.apply(lib, [base, target, strict, connate])
 
           return result
       },
