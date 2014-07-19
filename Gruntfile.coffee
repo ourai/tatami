@@ -72,13 +72,18 @@ module.exports = ( grunt ) ->
             "<%= meta.proj %>/outro.coffee"
           ]
         dest: "<%= meta.coffee %>/tatami.coffee"
+      coffee_constructors:
+        src: [
+            "<%= meta.classes %>/Storage.coffee"
+            "<%= meta.classes %>/Environment.coffee"
+          ]
+        dest: "<%= meta.coffee %>/constructors.coffee"
       coffee:
         src: [
             "<%= meta.coffee %>/intro.coffee"
             "<%= meta.coffee %>/miso.coffee"
             "<%= meta.coffee %>/ronin.coffee"
-            "<%= meta.classes %>/Storage.coffee"
-            "<%= meta.classes %>/Environment.coffee"
+            "<%= meta.coffee %>/constructors.coffee"
             "<%= meta.coffee %>/tatami.coffee"
             "<%= meta.coffee %>/outro.coffee"
           ]
@@ -156,7 +161,7 @@ module.exports = ( grunt ) ->
 
   grunt.loadNpmTasks task for task in npmTasks
 
-  grunt.registerTask "concat_coffee", ["concat:coffee_miso", "concat:coffee_ronin", "concat:coffee_tatami", "concat:coffee"]
+  grunt.registerTask "concat_coffee", ["concat:coffee_miso", "concat:coffee_ronin", "concat:coffee_tatami", "concat:coffee_constructors", "concat:coffee"]
   grunt.registerTask "script", ["concat_coffee", "coffee", "concat:js", "uglify"]
   grunt.registerTask "style", ["concat:css", "copy:matcha"]
   grunt.registerTask "default", ["script", "clean", "copy:test"]
