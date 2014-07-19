@@ -250,46 +250,45 @@
                   result = ""
               
           return result
-      },
-      {
-        name: "parse"
-
-        handler: ( target ) ->
-          target = @trim target
-          result = target
-
-          @each storage.regexps.object, ( r, o ) =>
-            re_t = new RegExp "^#{r.source}$"
-
-            if re_t.test target
-              switch o
-                when "array"
-                  re_g = new RegExp "#{r.source}", "g"
-                  re_c = /(\[.*\])/
-                  r = re_g.exec target
-                  result = []
-
-                  while r?
-                    @each r[1].split(","), ( unit, idx ) =>
-                      result.push @parse unit
-
-                    break;
-                when "number"
-                  result *= 1
-
-              return false
-            else
-              return true
-
-          return result
-
-        validator: ( target ) ->
-          return @isString target
-
-        value: ""
-
-        expose: false
       }
+      # ,
+      # {
+      #   name: "parse"
+
+      #   handler: ( target ) ->
+      #     target = @trim target
+      #     result = target
+
+      #     @each storage.regexps.object, ( r, o ) =>
+      #       re_t = new RegExp "^#{r.source}$"
+
+      #       if re_t.test target
+      #         switch o
+      #           when "array"
+      #             re_g = new RegExp "#{r.source}", "g"
+      #             re_c = /(\[.*\])/
+      #             r = re_g.exec target
+      #             result = []
+
+      #             while r?
+      #               @each r[1].split(","), ( unit, idx ) =>
+      #                 result.push @parse unit
+
+      #               break;
+      #           when "number"
+      #             result *= 1
+
+      #         return false
+      #       else
+      #         return true
+
+      #     return result
+
+      #   validator: ( target ) ->
+      #     return @isString target
+
+      #   value: ""
+      # }
     ]
 
       # /**

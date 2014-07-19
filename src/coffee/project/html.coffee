@@ -20,13 +20,12 @@
             return "&#{et};"
           else string
 
-      },
-      {
-        name: "decodeEntities"
-
-        handler: ( string ) ->
-          
-        expose: false
       }
+      # ,
+      # {
+      #   name: "decodeEntities"
+
+      #   handler: ( string ) ->
+      # }
     ]
 

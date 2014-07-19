@@ -135,12 +135,11 @@
 
         validator: ( key ) ->
           return @isString key
-      },
-      {
-        name: "clear"
-
-        handler: ->
-
-        expose: false
       }
+      # ,
+      # {
+      #   name: "clear"
+
+      #   handler: ->
+      # }
     ]
