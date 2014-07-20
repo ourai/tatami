@@ -667,7 +667,11 @@ __util = (function(window, __proc) {
             }
           }
           return result;
-        }
+        },
+        validator: function() {
+          return arguments.length > 1;
+        },
+        value: false
       }, {
 
         /*
@@ -698,83 +702,32 @@ __util = (function(window, __proc) {
          */
         name: "stringify",
         handler: function(target) {
-          var e, result, t;
-          t = this.type(target);
-          if (t === "object") {
-            if (this.isPlainObject(target)) {
+          var e, result;
+          switch (this.type(target)) {
+            case "object":
+              result = this.isPlainObject(target) ? "{" + (stringifyCollection.call(this, target)) + "}" : result = "";
+              break;
+            case "array":
+              result = "[" + (stringifyCollection.call(this, target)) + "]";
+              break;
+            case "function":
+            case "date":
+            case "regexp":
+              result = target.toString();
+              break;
+            case "string":
+              result = "\"" + target + "\"";
+              break;
+            default:
               try {
-                result = JSON.stringify(target);
+                result = String(target);
               } catch (_error) {
                 e = _error;
-                result = "{" + (stringifyCollection.call(this, target)) + "}";
+                result = "";
               }
-            } else {
-              result = "";
-            }
-          } else {
-            switch (t) {
-              case "array":
-                result = "[" + (stringifyCollection.call(this, target)) + "]";
-                break;
-              case "function":
-              case "date":
-              case "regexp":
-                result = target.toString();
-                break;
-              case "string":
-                result = "\"" + target + "\"";
-                break;
-              default:
-                try {
-                  result = String(target);
-                } catch (_error) {
-                  e = _error;
-                  result = "";
-                }
-            }
           }
           return result;
         }
-      }, {
-        name: "parse",
-        handler: function(target) {
-          var result;
-          target = this.trim(target);
-          result = target;
-          this.each(storage.regexps.object, (function(_this) {
-            return function(r, o) {
-              var re_c, re_g, re_t;
-              re_t = new RegExp("^" + r.source + "$");
-              if (re_t.test(target)) {
-                switch (o) {
-                  case "array":
-                    re_g = new RegExp("" + r.source, "g");
-                    re_c = /(\[.*\])/;
-                    r = re_g.exec(target);
-                    result = [];
-                    while (r != null) {
-                      _this.each(r[1].split(","), function(unit, idx) {
-                        return result.push(_this.parse(unit));
-                      });
-                      break;
-                    }
-                    break;
-                  case "number":
-                    result *= 1;
-                }
-                return false;
-              } else {
-                return true;
-              }
-            };
-          })(this));
-          return result;
-        },
-        validator: function(target) {
-          return this.isString(target);
-        },
-        value: "",
-        expose: false
       }
     ]
   };
@@ -3322,10 +3275,6 @@ __proj = (function(window, __util) {
         validator: function(key) {
           return this.isString(key);
         }
-      }, {
-        name: "clear",
-        handler: function() {},
-        expose: false
       }
     ]
   };
@@ -3427,10 +3376,6 @@ __proj = (function(window, __util) {
             return string;
           }
         }
-      }, {
-        name: "decodeEntities",
-        handler: function(string) {},
-        expose: false
       }
     ]
   };

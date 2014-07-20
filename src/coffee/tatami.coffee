@@ -1103,14 +1103,13 @@ __proj = do ( window, __util ) ->
 
         validator: ( key ) ->
           return @isString key
-      },
-      {
-        name: "clear"
-
-        handler: ->
-
-        expose: false
       }
+      # ,
+      # {
+      #   name: "clear"
+
+      #   handler: ->
+      # }
     ]
 
   ###
@@ -1193,14 +1192,13 @@ __proj = do ( window, __util ) ->
             return "&#{et};"
           else string
 
-      },
-      {
-        name: "decodeEntities"
-
-        handler: ( string ) ->
-          
-        expose: false
       }
+      # ,
+      # {
+      #   name: "decodeEntities"
+
+      #   handler: ( string ) ->
+      # }
     ]
 
 

@@ -228,6 +228,11 @@ __util = do ( window, __proc ) ->
               result = compareObjects.apply(lib, [base, target, strict, connate])
 
           return result
+
+        validator: ->
+          return arguments.length > 1
+
+        value: false
       },
       {
         ###
@@ -259,71 +264,61 @@ __util = do ( window, __proc ) ->
         name: "stringify"
 
         handler: ( target ) ->
-          t = @type target
-
-          if t is "object"
-            if @isPlainObject target
-              try
-                result = JSON.stringify target
-              catch e
-                result = "{#{stringifyCollection.call this, target}}"
+          switch @type target
+            when "object"
+              result = if @isPlainObject(target) then "{#{stringifyCollection.call this, target}}" else result = ""
+            when "array"
+              result = "[#{stringifyCollection.call this, target}]"
+            when "function", "date", "regexp"
+              result = target.toString()
+            when "string"
+              result = "\"#{target}\""
             else
-              result = ""
-          else
-            switch t
-              when "array"
-                result = "[#{stringifyCollection.call this, target}]"
-              when "function", "date", "regexp"
-                result = target.toString()
-              when "string"
-                result = "\"#{target}\""
-              else
-                try
-                  result = String target
-                catch e
-                  result = ""
+              try
+                result = String target
+              catch e
+                result = ""
               
           return result
-      },
-      {
-        name: "parse"
-
-        handler: ( target ) ->
-          target = @trim target
-          result = target
-
-          @each storage.regexps.object, ( r, o ) =>
-            re_t = new RegExp "^#{r.source}$"
-
-            if re_t.test target
-              switch o
-                when "array"
-                  re_g = new RegExp "#{r.source}", "g"
-                  re_c = /(\[.*\])/
-                  r = re_g.exec target
-                  result = []
-
-                  while r?
-                    @each r[1].split(","), ( unit, idx ) =>
-                      result.push @parse unit
-
-                    break;
-                when "number"
-                  result *= 1
-
-              return false
-            else
-              return true
-
-          return result
-
-        validator: ( target ) ->
-          return @isString target
-
-        value: ""
-
-        expose: false
       }
+      # ,
+      # {
+      #   name: "parse"
+
+      #   handler: ( target ) ->
+      #     target = @trim target
+      #     result = target
+
+      #     @each storage.regexps.object, ( r, o ) =>
+      #       re_t = new RegExp "^#{r.source}$"
+
+      #       if re_t.test target
+      #         switch o
+      #           when "array"
+      #             re_g = new RegExp "#{r.source}", "g"
+      #             re_c = /(\[.*\])/
+      #             r = re_g.exec target
+      #             result = []
+
+      #             while r?
+      #               @each r[1].split(","), ( unit, idx ) =>
+      #                 result.push @parse unit
+
+      #               break;
+      #           when "number"
+      #             result *= 1
+
+      #         return false
+      #       else
+      #         return true
+
+      #     return result
+
+      #   validator: ( target ) ->
+      #     return @isString target
+
+      #   value: ""
+      # }
     ]
 
       # /**
