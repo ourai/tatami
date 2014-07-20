@@ -21,7 +21,7 @@ var Environment, LIB_CONFIG, Storage, __proc, __proj, __util,
 
 LIB_CONFIG = {
   name: "Tatami",
-  version: "0.1.1"
+  version: "0.1.2"
 };
 
 __proc = (function(window) {
