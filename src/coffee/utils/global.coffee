@@ -174,28 +174,31 @@
 
         handler: ( base, target, strict ) ->
           result = false
+          lib = this
+          type_b = lib.type( base )
 
-          if arguments.length < 2
-            lib = this
-            type_b = lib.type( base )
+          if lib.type(target) is type_b
+            plain_b = lib.isPlainObject base
 
-            if lib.type(target) is type_b
-              plain_b = lib.isPlainObject base
+            if plain_b and lib.isPlainObject(target) or type_b isnt "object"
+              # 是否为“天然”的数组（以别于后来将字符串等转换成的数组）
+              connate = lib.isArray base
 
-              if plain_b and lib.isPlainObject(target) or type_b isnt "object"
-                # 是否为“天然”的数组（以别于后来将字符串等转换成的数组）
-                connate = lib.isArray base
+              if not plain_b and not connate
+                base = [base]
+                target = [target]
 
-                if not plain_b and not connate
-                  base = [base]
-                  target = [target]
+              # If 'strict' is true, then compare the objects' references, else only compare their values.
+              strict = false if not lib.isBoolean strict
 
-                # If 'strict' is true, then compare the objects' references, else only compare their values.
-                strict = false if not lib.isBoolean strict
-
-                result = compareObjects.apply(lib, [base, target, strict, connate])
+              result = compareObjects.apply(lib, [base, target, strict, connate])
 
           return result
+
+        validator: ->
+          return arguments.length > 1
+
+        value: false
       },
       {
         ###
@@ -227,29 +230,20 @@
         name: "stringify"
 
         handler: ( target ) ->
-          t = @type target
-
-          if t is "object"
-            if @isPlainObject target
-              try
-                result = JSON.stringify target
-              catch e
-                result = "{#{stringifyCollection.call this, target}}"
+          switch @type target
+            when "object"
+              result = if @isPlainObject(target) then "{#{stringifyCollection.call this, target}}" else result = ""
+            when "array"
+              result = "[#{stringifyCollection.call this, target}]"
+            when "function", "date", "regexp"
+              result = target.toString()
+            when "string"
+              result = "\"#{target}\""
             else
-              result = ""
-          else
-            switch t
-              when "array"
-                result = "[#{stringifyCollection.call this, target}]"
-              when "function", "date", "regexp"
-                result = target.toString()
-              when "string"
-                result = "\"#{target}\""
-              else
-                try
-                  result = String target
-                catch e
-                  result = ""
+              try
+                result = String target
+              catch e
+                result = ""
               
           return result
       }
