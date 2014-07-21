@@ -1563,64 +1563,6 @@ __util = (function(window, __proc) {
           }
           return string;
         }
-      }, {
-
-        /*
-         * Return information about characters used in a string.
-         *
-         * Depending on mode will return one of the following:
-         *  - 0: an array with the byte-value as key and the frequency of every byte as value
-         *  - 1: same as 0 but only byte-values with a frequency greater than zero are listed
-         *  - 2: same as 0 but only byte-values with a frequency equal to zero are listed
-         *  - 3: a string containing all unique characters is returned
-         *  - 4: a string containing all not used characters is returned
-         * 
-         * @method  countChars
-         * @param   string {String}
-         * @param   [mode] {Integer}
-         * @return  {JSON}
-         *
-         * refer: http://www.php.net/manual/en/function.count-chars.php
-         */
-        name: "countChars",
-        handler: function(string, mode) {
-          var bytes, chars, lib, result;
-          result = null;
-          lib = this;
-          if (!lib.isInteger(mode) || mode < 0) {
-            mode = 0;
-          }
-          bytes = {};
-          chars = [];
-          lib.each(string, function(chr, idx) {
-            var code;
-            code = chr.charCodeAt(0);
-            if (lib.isNumber(bytes[code])) {
-              return bytes[code]++;
-            } else {
-              bytes[code] = 1;
-              if (lib.inArray(chr, chars) < 0) {
-                return chars.push(chr);
-              }
-            }
-          });
-          switch (mode) {
-            case 0:
-              break;
-            case 1:
-              result = bytes;
-              break;
-            case 2:
-              break;
-            case 3:
-              result = chars.join("");
-              break;
-            case 4:
-              break;
-          }
-          return result;
-        },
-        value: null
       }
     ]
   };
