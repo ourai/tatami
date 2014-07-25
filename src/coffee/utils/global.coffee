@@ -11,27 +11,39 @@
   ###
   compareObjects = ( base, target, strict, connate ) ->
     result = false
-    lib = this
-    plain = lib.isPlainObject base
+    plain = @isPlainObject base
 
     if (plain or connate) and strict
       result = target is base
     else
       if plain
-        isRun = compareObjects.apply lib, [lib.keys(base), lib.keys(target), false, true]
+        isRun = compareObjects.apply this, [@keys(base), @keys(target), false, true]
       else
         isRun = target.length is base.length
       
       if isRun
-        lib.each base, ( n, i ) ->
-          type = lib.type n
+        @each base, ( n, i ) =>
+          type = @type n
+          t = target[i]
 
-          if lib.inArray(type, ["string", "number", "boolean", "null", "undefined"]) > -1
-            return result = target[i] is n
-          else if lib.inArray(type, ["date", "regexp", "function"]) > -1
-            return result = if strict then target[i] is n else target[i].toString() is n.toString()
-          else if lib.inArray(type, ["array", "object"]) > -1
-            return result = compareObjects.apply lib, [n, target[i], strict, connate]
+          # 有包装对象的原始类型
+          if @inArray type, ["string", "number", "boolean"] > -1
+            n_str = n + ""
+            t_str = t + ""
+            t_type = @type t
+            illegalNums = ["NaN", "Infinity", "-Infinity"]
+
+            if type is "number" and (@inArray(n_str, illegalNums) > -1 or @inArray(t_str, illegalNums) > -1)
+              return result = false
+            else
+              return result = if strict is true then t is n else t_str is n_str
+          # 无包装对象的原始类型
+          else if @inArray(type, ["null", "undefined"]) > -1
+            return result = t is n
+          else if @inArray(type, ["date", "regexp", "function"]) > -1
+            return result = if strict then t is n else t.toString() is n.toString()
+          else if @inArray(type, ["array", "object"]) > -1
+            return result = compareObjects.apply this, [n, t, strict, connate]
 
     return result
 
@@ -174,24 +186,23 @@
 
         handler: ( base, target, strict ) ->
           result = false
-          lib = this
-          type_b = lib.type( base )
+          baseType = @type base
 
-          if lib.type(target) is type_b
-            plain_b = lib.isPlainObject base
+          if @type(target) is baseType
+            plain_b = @isPlainObject base
 
-            if plain_b and lib.isPlainObject(target) or type_b isnt "object"
+            if plain_b and @isPlainObject(target) or baseType isnt "object"
               # 是否为“天然”的数组（以别于后来将字符串等转换成的数组）
-              connate = lib.isArray base
+              connate = @isArray base
 
               if not plain_b and not connate
                 base = [base]
                 target = [target]
 
               # If 'strict' is true, then compare the objects' references, else only compare their values.
-              strict = false if not lib.isBoolean strict
+              strict = false if not @isBoolean strict
 
-              result = compareObjects.apply(lib, [base, target, strict, connate])
+              result = compareObjects.apply(this, [base, target, strict, connate])
 
           return result
 
