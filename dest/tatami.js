@@ -480,30 +480,42 @@ __util = (function(window, __proc) {
    * @return  {Boolean}
    */
   compareObjects = function(base, target, strict, connate) {
-    var isRun, lib, plain, result;
+    var isRun, plain, result;
     result = false;
-    lib = this;
-    plain = lib.isPlainObject(base);
+    plain = this.isPlainObject(base);
     if ((plain || connate) && strict) {
       result = target === base;
     } else {
       if (plain) {
-        isRun = compareObjects.apply(lib, [lib.keys(base), lib.keys(target), false, true]);
+        isRun = compareObjects.apply(this, [this.keys(base), this.keys(target), false, true]);
       } else {
         isRun = target.length === base.length;
       }
       if (isRun) {
-        lib.each(base, function(n, i) {
-          var type;
-          type = lib.type(n);
-          if (lib.inArray(type, ["string", "number", "boolean", "null", "undefined"]) > -1) {
-            return result = target[i] === n;
-          } else if (lib.inArray(type, ["date", "regexp", "function"]) > -1) {
-            return result = strict ? target[i] === n : target[i].toString() === n.toString();
-          } else if (lib.inArray(type, ["array", "object"]) > -1) {
-            return result = compareObjects.apply(lib, [n, target[i], strict, connate]);
-          }
-        });
+        this.each(base, (function(_this) {
+          return function(n, i) {
+            var illegalNums, n_str, t, t_str, t_type, type;
+            type = _this.type(n);
+            t = target[i];
+            if (_this.inArray(type, ["string", "number", "boolean"] > -1)) {
+              n_str = n + "";
+              t_str = t + "";
+              t_type = _this.type(t);
+              illegalNums = ["NaN", "Infinity", "-Infinity"];
+              if (type === "number" && (_this.inArray(n_str, illegalNums) > -1 || _this.inArray(t_str, illegalNums) > -1)) {
+                return result = false;
+              } else {
+                return result = strict === true ? t === n : t_str === n_str;
+              }
+            } else if (_this.inArray(type, ["null", "undefined"]) > -1) {
+              return result = t === n;
+            } else if (_this.inArray(type, ["date", "regexp", "function"]) > -1) {
+              return result = strict ? t === n : t.toString() === n.toString();
+            } else if (_this.inArray(type, ["array", "object"]) > -1) {
+              return result = compareObjects.apply(_this, [n, t, strict, connate]);
+            }
+          };
+        })(this));
       }
     }
     return result;
@@ -665,22 +677,21 @@ __util = (function(window, __proc) {
          */
         name: "equal",
         handler: function(base, target, strict) {
-          var connate, lib, plain_b, result, type_b;
+          var baseType, connate, plain_b, result;
           result = false;
-          lib = this;
-          type_b = lib.type(base);
-          if (lib.type(target) === type_b) {
-            plain_b = lib.isPlainObject(base);
-            if (plain_b && lib.isPlainObject(target) || type_b !== "object") {
-              connate = lib.isArray(base);
+          baseType = this.type(base);
+          if (this.type(target) === baseType) {
+            plain_b = this.isPlainObject(base);
+            if (plain_b && this.isPlainObject(target) || baseType !== "object") {
+              connate = this.isArray(base);
               if (!plain_b && !connate) {
                 base = [base];
                 target = [target];
               }
-              if (!lib.isBoolean(strict)) {
+              if (!this.isBoolean(strict)) {
                 strict = false;
               }
-              result = compareObjects.apply(lib, [base, target, strict, connate]);
+              result = compareObjects.apply(this, [base, target, strict, connate]);
             }
           }
           return result;
