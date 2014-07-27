@@ -2072,6 +2072,7 @@ Environment = (function(__util) {
         }
       }
     }
+    browser.language = navigator.language || navigator.browserLanguage;
     return browser;
   };
   createAXO = function(type) {
