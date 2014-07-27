@@ -77,6 +77,8 @@ Environment = do ( __util ) ->
         match = /firefox[ \/]([\w.]+)/.exec(ua)
         browser.version = match[1] if match
 
+    browser.language = navigator.language or navigator.browserLanguage
+
     return browser
 
   # Create an ActiveXObject (IE specified)
