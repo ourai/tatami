@@ -147,8 +147,19 @@ __proc = do ( window ) ->
     mixin: ->
       args = arguments
       length = args.length
-      target = args[0] ? {}
+      target = args[0] or {}
       i = 1
+      deep = false
+
+      # Handle a deep copy situation
+      if @type(target) is "boolean"
+        deep = target
+        target = args[1] or {}
+        # skip the boolean and the target
+        i = 2
+
+      # Handle case when target is a string or something (possible in deep copy)
+      target = {} if typeof target isnt "object" and not @isFunction target
 
       # 只传一个参数时，扩展自身
       if length is 1
@@ -158,13 +169,27 @@ __proc = do ( window ) ->
       while i < length
         opts = args[i]
 
-        if typeof opts is "object"
+        # Only deal with non-null/undefined values
+        if opts?
           for name, copy of opts
+            src = target[name]
+
             # 阻止无限循环
             if copy is target
               continue
 
-            if copy isnt undefined
+            # Recurse if we're merging plain objects or arrays
+            if deep and copy and (@isPlainObject(copy) or (copyIsArray = @isArray(copy)))
+              if copyIsArray
+                copyIsArray = false
+                clone = if src and @isArray(src) then src else []
+              else
+                clone = if src and @isPlainObject(src) then src else {}
+
+              # Never move original objects, clone them
+              target[name] = @mixin deep, clone, copy
+            # Don't bring in undefined values
+            else if copy isnt undefined
               target[name] = copy
 
         i++
