@@ -327,7 +327,7 @@ __proc = (function(window) {
      * @return  {Boolean}
      */
     isNumeric: function(object) {
-      return !isNaN(parseFloat(object)) && isFinite(object);
+      return !this.isArray(object) && !isNaN(parseFloat(object)) && isFinite(object);
     },
 
     /*
@@ -2072,6 +2072,7 @@ Environment = (function(__util) {
         }
       }
     }
+    browser.language = navigator.language || navigator.browserLanguage;
     return browser;
   };
   createAXO = function(type) {
@@ -2846,6 +2847,12 @@ __proj = (function(window, __util) {
       }
     ]
   };
+  storage.fn.init.runSandbox = function(prFns, rdFns) {
+    runHandler(prFns);
+    return $(document).ready(function() {
+      return runHandler(rdFns);
+    });
+  };
 
   /*
    * 重新配置系统参数
@@ -2875,10 +2882,7 @@ __proj = (function(window, __util) {
         handler: function(setting) {
           var result;
           result = resetConfig(setting);
-          runHandler(storage.fn.prepare);
-          $(document).ready(function() {
-            return runHandler(storage.fn.ready);
-          });
+          initializer("runSandbox")(storage.fn.prepare, storage.fn.ready);
           storage.sandboxStarted = true;
           return result || false;
         },
@@ -3312,39 +3316,6 @@ __proj = (function(window, __util) {
         name: "sjax",
         handler: function(options, succeed, fail) {
           return request(options, succeed, fail, true);
-        }
-      }
-    ]
-  };
-  storage.modules.HTML = {
-    handlers: [
-      {
-        name: "encodeEntities",
-        handler: function(string) {
-          if (this.isString(string)) {
-            return string.replace(/([<>&\'\"])/, function(match, chr) {
-              var et;
-              switch (chr) {
-                case "<":
-                  et = lt;
-                  break;
-                case ">":
-                  et = gt;
-                  break;
-                case "\"":
-                  et = quot;
-                  break;
-                case "'":
-                  et = apos;
-                  break;
-                case "&":
-                  et = amp;
-              }
-              return "&" + et + ";";
-            });
-          } else {
-            return string;
-          }
         }
       }
     ]

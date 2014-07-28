@@ -270,7 +270,7 @@ __proc = do ( window ) ->
     # @return  {Boolean}
     ###
     isNumeric: ( object ) ->
-      return not isNaN(parseFloat(object)) and isFinite(object)
+      return not @isArray(object) and not isNaN(parseFloat(object)) and isFinite(object)
 
     ###
     # Determine whether a number is an integer.

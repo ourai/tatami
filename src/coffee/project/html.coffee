@@ -4,18 +4,18 @@
         name: "encodeEntities"
 
         handler: ( string ) ->
-          return if @isString(string) then string.replace /([<>&\'\"])/, ( match, chr ) ->
+          return if @isString(string) then string.replace /([<>&\'\"])/g, ( match, chr ) ->
             switch chr
               when "<"
-                et = lt
+                et = "lt"
               when ">"
-                et = gt
+                et = "gt"
               when "\""
-                et = quot
+                et = "quot"
               when "'"
-                et = apos
+                et = "apos"
               when "&"
-                et = amp
+                et = "amp"
 
             return "&#{et};"
           else string
