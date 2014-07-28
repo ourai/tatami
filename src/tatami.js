@@ -2865,7 +2865,7 @@ __proj = (function(window, __util) {
         handler: function(setting) {
           var result;
           result = resetConfig(setting);
-          initializer("runSandbox")(storage.fn.prepare, storage.fn.ready);
+          initializer("runSandbox").apply(this, [storage.fn.prepare, storage.fn.ready]);
           storage.sandboxStarted = true;
           return result || false;
         },

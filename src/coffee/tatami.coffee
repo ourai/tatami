@@ -742,7 +742,7 @@ __proj = do ( window, __util ) ->
           # 返回值为修改后的系统环境配置
           result = resetConfig setting
 
-          initializer("runSandbox") storage.fn.prepare, storage.fn.ready
+          initializer("runSandbox").apply this, [storage.fn.prepare, storage.fn.ready]
           
           storage.sandboxStarted = true
           
