@@ -67,7 +67,7 @@ module.exports = ( grunt ) ->
             "<%= meta.proj %>/project.coffee"
             "<%= meta.proj %>/storage.coffee"
             "<%= meta.proj %>/request.coffee"
-            "<%= meta.proj %>/html.coffee"
+            # "<%= meta.proj %>/html.coffee"
             "<%= meta.proj %>/url.coffee"
             "<%= meta.proj %>/outro.coffee"
           ]
