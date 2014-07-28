@@ -622,29 +622,30 @@ __util = (function(window, __proc) {
          */
         name: "namespace",
         handler: function() {
-          var args, hostObj, lib, ns;
+          var args, hostObj, ns;
           args = arguments;
-          lib = this;
           ns = {};
           hostObj = args[0];
-          if (!lib.isPlainObject(hostObj)) {
+          if (!this.isPlainObject(hostObj)) {
             hostObj = args[args.length - 1] === true ? window : this;
           }
-          lib.each(args, function(arg) {
-            var obj;
-            if (lib.isString(arg) && /^[0-9A-Z_.]+[^_.]$/i.test(arg)) {
-              obj = hostObj;
-              lib.each(arg.split("."), function(part, idx, parts) {
-                if (obj[part] === void 0) {
-                  obj[part] = idx === parts.length - 1 ? null : {};
-                }
-                obj = obj[part];
-                return true;
-              });
-              ns = obj;
-            }
-            return true;
-          });
+          this.each(args, (function(_this) {
+            return function(arg) {
+              var obj;
+              if (_this.isString(arg) && /^[0-9A-Z_.]+[^_.]?$/i.test(arg)) {
+                obj = hostObj;
+                _this.each(arg.split("."), function(part, idx, parts) {
+                  if (obj[part] === void 0) {
+                    obj[part] = idx === parts.length - 1 ? null : {};
+                  }
+                  obj = obj[part];
+                  return true;
+                });
+                ns = obj;
+              }
+              return true;
+            };
+          })(this));
           return ns;
         }
       }, {
@@ -2830,10 +2831,10 @@ __proj = (function(window, __util) {
       }
     ]
   };
-  storage.fn.init.runSandbox = function(prFns, rdFns) {
-    runHandler(prFns);
+  storage.fn.init.runSandbox = function(prepareHandlers, readyHandlers) {
+    runHandler(prepareHandlers);
     return $(document).ready(function() {
-      return runHandler(rdFns);
+      return runHandler(readyHandlers);
     });
   };
 
