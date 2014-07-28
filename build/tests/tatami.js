@@ -188,24 +188,42 @@ __proc = (function(window) {
      * @return  {Object}
      */
     mixin: function() {
-      var args, copy, i, length, name, opts, target, _ref;
+      var args, clone, copy, copyIsArray, deep, i, length, name, opts, src, target;
       args = arguments;
       length = args.length;
-      target = (_ref = args[0]) != null ? _ref : {};
+      target = args[0] || {};
       i = 1;
+      deep = false;
+      if (this.type(target) === "boolean") {
+        deep = target;
+        target = args[1] || {};
+        i = 2;
+      }
+      if (typeof target !== "object" && !this.isFunction(target)) {
+        target = {};
+      }
       if (length === 1) {
         target = this;
         i--;
       }
       while (i < length) {
         opts = args[i];
-        if (typeof opts === "object") {
+        if (opts != null) {
           for (name in opts) {
             copy = opts[name];
+            src = target[name];
             if (copy === target) {
               continue;
             }
-            if (copy !== void 0) {
+            if (deep && copy && (this.isPlainObject(copy) || (copyIsArray = this.isArray(copy)))) {
+              if (copyIsArray) {
+                copyIsArray = false;
+                clone = src && this.isArray(src) ? src : [];
+              } else {
+                clone = src && this.isPlainObject(src) ? src : {};
+              }
+              target[name] = this.mixin(deep, clone, copy);
+            } else if (copy !== void 0) {
               target[name] = copy;
             }
           }
@@ -1971,7 +1989,7 @@ Storage = (function(__util) {
     }
 
     Storage.prototype.set = function(data) {
-      return __util.mixin(this.storage, data);
+      return __util.mixin(true, this.storage, data);
     };
 
     Storage.prototype.get = function(key, map) {
