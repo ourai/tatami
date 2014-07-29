@@ -569,7 +569,7 @@ __util = (function(window, __proc) {
          */
         name: "extend",
         handler: function(data, host) {
-          return __proc(data, host);
+          return __proc(data, host != null ? host : this);
         }
       }, {
 

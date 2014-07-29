@@ -77,7 +77,7 @@
         name: "extend"
 
         handler: ( data, host ) ->
-          return __proc(data, host)
+          return __proc data, host ? this
       },
       {
         ###
