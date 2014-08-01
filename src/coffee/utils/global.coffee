@@ -161,13 +161,14 @@
               obj = hostObj
 
               @each arg.split("."), ( part, idx, parts ) =>
-                if not @hasProp part, obj
-                  obj[part] = if idx is parts.length - 1 then null else {}
-                else if not obj?
+                if not obj?
                   return false
 
+                if not @hasProp part, obj
+                  obj[part] = if idx is parts.length - 1 then null else {}
+
                 obj = obj[part]
-                
+
                 return true
 
               ns = obj
