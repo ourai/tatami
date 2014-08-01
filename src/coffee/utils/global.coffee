@@ -160,9 +160,14 @@
             if @isString(arg) and /^[0-9A-Z_.]+[^_.]?$/i.test(arg)
               obj = hostObj
 
-              @each arg.split("."), ( part, idx, parts ) ->
-                (obj[ part ] = if idx is parts.length - 1 then null else {}) if obj[part] is undefined
+              @each arg.split("."), ( part, idx, parts ) =>
+                if not @hasProp part, obj
+                  obj[part] = if idx is parts.length - 1 then null else {}
+                else if not obj?
+                  return false
+
                 obj = obj[part]
+                
                 return true
 
               ns = obj

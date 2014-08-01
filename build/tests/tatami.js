@@ -670,8 +670,10 @@ __util = (function(window, __proc) {
               if (_this.isString(arg) && /^[0-9A-Z_.]+[^_.]?$/i.test(arg)) {
                 obj = hostObj;
                 _this.each(arg.split("."), function(part, idx, parts) {
-                  if (obj[part] === void 0) {
+                  if (!_this.hasProp(part, obj)) {
                     obj[part] = idx === parts.length - 1 ? null : {};
+                  } else if (obj == null) {
+                    return false;
                   }
                   obj = obj[part];
                   return true;
