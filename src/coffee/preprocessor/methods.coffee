@@ -127,7 +127,7 @@
     # @return   {Boolean}
     ###
     hasProp: ( prop, obj ) ->
-      return hasOwnProp.apply this, [(if arguments.length < 2 then window else obj), prop]
+      return hasOwnProp.apply this, [(if arguments.length < 2 then this else obj), prop]
 
     # ====================
     # Extension of detecting type of variables

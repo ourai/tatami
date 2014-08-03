@@ -110,7 +110,7 @@
         name: "mask"
 
         handler: ( guise ) ->
-          if @hasProp guise
+          if @hasProp guise, window
             console.error "'#{guise}' has existed as a property of Window object." if window.console
           else
             lib_name = @__meta__.name

@@ -295,7 +295,7 @@ __proc = (function(window) {
      * @return   {Boolean}
      */
     hasProp: function(prop, obj) {
-      return hasOwnProp.apply(this, [(arguments.length < 2 ? window : obj), prop]);
+      return hasOwnProp.apply(this, [(arguments.length < 2 ? this : obj), prop]);
     },
 
     /*
@@ -601,7 +601,7 @@ __util = (function(window, __proc) {
         name: "mask",
         handler: function(guise) {
           var error, lib_name, result;
-          if (this.hasProp(guise)) {
+          if (this.hasProp(guise, window)) {
             if (window.console) {
               console.error("'" + guise + "' has existed as a property of Window object.");
             }
@@ -2092,7 +2092,7 @@ Environment = (function(__util) {
   };
   hasReaderActiveX = function() {
     var axo;
-    if (__util.hasProp("ActiveXObject")) {
+    if (__util.hasProp("ActiveXObject", window)) {
       axo = createAXO("AcroPDF.PDF");
       if (!axo) {
         axo = createAXO("PDF.PdfCtrl");

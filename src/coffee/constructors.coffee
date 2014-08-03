@@ -165,7 +165,7 @@ Environment = do ( __util ) ->
     return axo
 
   hasReaderActiveX = ->
-    if __util.hasProp "ActiveXObject"
+    if __util.hasProp "ActiveXObject", window
       axo = createAXO "AcroPDF.PDF"
       axo = createAXO "PDF.PdfCtrl" if not axo
 
