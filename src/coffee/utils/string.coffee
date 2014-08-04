@@ -199,34 +199,35 @@
           func = "".trim
 
           return if func and not func.call("\uFEFF\xA0") then func.call(string) else string.replace(rtrim, "")
-      },
-      {
-        ###
-        # Returns the characters in a string beginning at the specified location through the specified number of characters.
-        #
-        # @method  substr
-        # @param   string {String}         The input string. Must be one character or longer.
-        # @param   start {Integer}         Location at which to begin extracting characters.
-        # @param   length {Integer}        The number of characters to extract.
-        # @param   ignore {String/RegExp}  Characters to be ignored (will not include in the length).
-        # @return  {String}
-        # 
-        # refer: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/substr
-        ###
-        name: "substr"
-
-        handler: ( string, start, length, ignore ) ->
-          args = arguments
-          lib = this
-
-          if args.length is 3 and lib.isNumeric(start) and start > 0 and (lib.isString(length) or lib.isRegExp(length))
-            string = ignoreSubStr.apply lib, [string, start, length]
-          else if lib.isNumeric(start) and start >= 0
-            length = string.length if not lib.isNumeric(length) or length <= 0
-            string = if lib.isString(ignore) or lib.isRegExp(ignore) then ignoreSubStr.apply(lib, [string.substring(start), length, ignore]) else string.substring(start, length)
-
-          return string
       }
+      # ,
+      # {
+      #   ###
+      #   # Returns the characters in a string beginning at the specified location through the specified number of characters.
+      #   #
+      #   # @method  substr
+      #   # @param   string {String}         The input string. Must be one character or longer.
+      #   # @param   start {Integer}         Location at which to begin extracting characters.
+      #   # @param   length {Integer}        The number of characters to extract.
+      #   # @param   ignore {String/RegExp}  Characters to be ignored (will not include in the length).
+      #   # @return  {String}
+      #   # 
+      #   # refer: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/substr
+      #   ###
+      #   name: "substr"
+
+      #   handler: ( string, start, length, ignore ) ->
+      #     args = arguments
+      #     lib = this
+
+      #     if args.length is 3 and lib.isNumeric(start) and start > 0 and (lib.isString(length) or lib.isRegExp(length))
+      #       string = ignoreSubStr.apply lib, [string, start, length]
+      #     else if lib.isNumeric(start) and start >= 0
+      #       length = string.length if not lib.isNumeric(length) or length <= 0
+      #       string = if lib.isString(ignore) or lib.isRegExp(ignore) then ignoreSubStr.apply(lib, [string.substring(start), length, ignore]) else string.substring(start, length)
+
+      #     return string
+      # }
       # ,
       # {
       #   ###
