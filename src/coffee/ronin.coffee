@@ -111,7 +111,7 @@ __util = do ( window, __proc ) ->
         name: "extend"
 
         handler: ( data, host ) ->
-          return __proc(data, host)
+          return __proc data, host ? this
       },
       {
         ###
@@ -144,7 +144,7 @@ __util = do ( window, __proc ) ->
         name: "mask"
 
         handler: ( guise ) ->
-          if @hasProp guise
+          if @hasProp guise, window
             console.error "'#{guise}' has existed as a property of Window object." if window.console
           else
             lib_name = @__meta__.name
@@ -184,20 +184,25 @@ __util = do ( window, __proc ) ->
 
         handler: ->
           args = arguments
-          lib = this
           ns = {}
           hostObj = args[0]
           
           # Determine the host object.
-          (hostObj = if args[args.length - 1] is true then window else this) if not lib.isPlainObject hostObj
+          (hostObj = if args[args.length - 1] is true then window else this) if not @isPlainObject hostObj
 
-          lib.each args, ( arg ) ->
-            if lib.isString(arg) and /^[0-9A-Z_.]+[^_.]$/i.test(arg)
+          @each args, ( arg ) =>
+            if @isString(arg) and /^[0-9A-Z_.]+[^_.]?$/i.test(arg)
               obj = hostObj
 
-              lib.each arg.split("."), ( part, idx, parts ) ->
-                (obj[ part ] = if idx is parts.length - 1 then null else {}) if obj[part] is undefined
+              @each arg.split("."), ( part, idx, parts ) =>
+                if not obj?
+                  return false
+
+                if not @hasProp part, obj
+                  obj[part] = if idx is parts.length - 1 then null else {}
+
                 obj = obj[part]
+
                 return true
 
               ns = obj
@@ -1143,34 +1148,35 @@ __util = do ( window, __proc ) ->
           func = "".trim
 
           return if func and not func.call("\uFEFF\xA0") then func.call(string) else string.replace(rtrim, "")
-      },
-      {
-        ###
-        # Returns the characters in a string beginning at the specified location through the specified number of characters.
-        #
-        # @method  substr
-        # @param   string {String}         The input string. Must be one character or longer.
-        # @param   start {Integer}         Location at which to begin extracting characters.
-        # @param   length {Integer}        The number of characters to extract.
-        # @param   ignore {String/RegExp}  Characters to be ignored (will not include in the length).
-        # @return  {String}
-        # 
-        # refer: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/substr
-        ###
-        name: "substr"
-
-        handler: ( string, start, length, ignore ) ->
-          args = arguments
-          lib = this
-
-          if args.length is 3 and lib.isNumeric(start) and start > 0 and (lib.isString(length) or lib.isRegExp(length))
-            string = ignoreSubStr.apply lib, [string, start, length]
-          else if lib.isNumeric(start) and start >= 0
-            length = string.length if not lib.isNumeric(length) or length <= 0
-            string = if lib.isString(ignore) or lib.isRegExp(ignore) then ignoreSubStr.apply(lib, [string.substring(start), length, ignore]) else string.substring(start, length)
-
-          return string
       }
+      # ,
+      # {
+      #   ###
+      #   # Returns the characters in a string beginning at the specified location through the specified number of characters.
+      #   #
+      #   # @method  substr
+      #   # @param   string {String}         The input string. Must be one character or longer.
+      #   # @param   start {Integer}         Location at which to begin extracting characters.
+      #   # @param   length {Integer}        The number of characters to extract.
+      #   # @param   ignore {String/RegExp}  Characters to be ignored (will not include in the length).
+      #   # @return  {String}
+      #   # 
+      #   # refer: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/substr
+      #   ###
+      #   name: "substr"
+
+      #   handler: ( string, start, length, ignore ) ->
+      #     args = arguments
+      #     lib = this
+
+      #     if args.length is 3 and lib.isNumeric(start) and start > 0 and (lib.isString(length) or lib.isRegExp(length))
+      #       string = ignoreSubStr.apply lib, [string, start, length]
+      #     else if lib.isNumeric(start) and start >= 0
+      #       length = string.length if not lib.isNumeric(length) or length <= 0
+      #       string = if lib.isString(ignore) or lib.isRegExp(ignore) then ignoreSubStr.apply(lib, [string.substring(start), length, ignore]) else string.substring(start, length)
+
+      #     return string
+      # }
       # ,
       # {
       #   ###

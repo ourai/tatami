@@ -188,24 +188,42 @@ __proc = (function(window) {
      * @return  {Object}
      */
     mixin: function() {
-      var args, copy, i, length, name, opts, target, _ref;
+      var args, clone, copy, copyIsArray, deep, i, length, name, opts, src, target;
       args = arguments;
       length = args.length;
-      target = (_ref = args[0]) != null ? _ref : {};
+      target = args[0] || {};
       i = 1;
+      deep = false;
+      if (this.type(target) === "boolean") {
+        deep = target;
+        target = args[1] || {};
+        i = 2;
+      }
+      if (typeof target !== "object" && !this.isFunction(target)) {
+        target = {};
+      }
       if (length === 1) {
         target = this;
         i--;
       }
       while (i < length) {
         opts = args[i];
-        if (typeof opts === "object") {
+        if (opts != null) {
           for (name in opts) {
             copy = opts[name];
+            src = target[name];
             if (copy === target) {
               continue;
             }
-            if (copy !== void 0) {
+            if (deep && copy && (this.isPlainObject(copy) || (copyIsArray = this.isArray(copy)))) {
+              if (copyIsArray) {
+                copyIsArray = false;
+                clone = src && this.isArray(src) ? src : [];
+              } else {
+                clone = src && this.isPlainObject(src) ? src : {};
+              }
+              target[name] = this.mixin(deep, clone, copy);
+            } else if (copy !== void 0) {
               target[name] = copy;
             }
           }
@@ -294,7 +312,7 @@ __proc = (function(window) {
      * @return   {Boolean}
      */
     hasProp: function(prop, obj) {
-      return hasOwnProp.apply(this, [(arguments.length < 2 ? window : obj), prop]);
+      return hasOwnProp.apply(this, [(arguments.length < 2 ? this : obj), prop]);
     },
 
     /*
@@ -568,7 +586,7 @@ __util = (function(window, __proc) {
          */
         name: "extend",
         handler: function(data, host) {
-          return __proc(data, host);
+          return __proc(data, host != null ? host : this);
         }
       }, {
 
@@ -600,7 +618,7 @@ __util = (function(window, __proc) {
         name: "mask",
         handler: function(guise) {
           var error, lib_name, result;
-          if (this.hasProp(guise)) {
+          if (this.hasProp(guise, window)) {
             if (window.console) {
               console.error("'" + guise + "' has existed as a property of Window object.");
             }
@@ -639,29 +657,33 @@ __util = (function(window, __proc) {
          */
         name: "namespace",
         handler: function() {
-          var args, hostObj, lib, ns;
+          var args, hostObj, ns;
           args = arguments;
-          lib = this;
           ns = {};
           hostObj = args[0];
-          if (!lib.isPlainObject(hostObj)) {
+          if (!this.isPlainObject(hostObj)) {
             hostObj = args[args.length - 1] === true ? window : this;
           }
-          lib.each(args, function(arg) {
-            var obj;
-            if (lib.isString(arg) && /^[0-9A-Z_.]+[^_.]$/i.test(arg)) {
-              obj = hostObj;
-              lib.each(arg.split("."), function(part, idx, parts) {
-                if (obj[part] === void 0) {
-                  obj[part] = idx === parts.length - 1 ? null : {};
-                }
-                obj = obj[part];
-                return true;
-              });
-              ns = obj;
-            }
-            return true;
-          });
+          this.each(args, (function(_this) {
+            return function(arg) {
+              var obj;
+              if (_this.isString(arg) && /^[0-9A-Z_.]+[^_.]?$/i.test(arg)) {
+                obj = hostObj;
+                _this.each(arg.split("."), function(part, idx, parts) {
+                  if (obj == null) {
+                    return false;
+                  }
+                  if (!_this.hasProp(part, obj)) {
+                    obj[part] = idx === parts.length - 1 ? null : {};
+                  }
+                  obj = obj[part];
+                  return true;
+                });
+                ns = obj;
+              }
+              return true;
+            };
+          })(this));
           return ns;
         }
       }, {
@@ -1562,35 +1584,6 @@ __util = (function(window, __proc) {
             return string.replace(rtrim, "");
           }
         }
-      }, {
-
-        /*
-         * Returns the characters in a string beginning at the specified location through the specified number of characters.
-         *
-         * @method  substr
-         * @param   string {String}         The input string. Must be one character or longer.
-         * @param   start {Integer}         Location at which to begin extracting characters.
-         * @param   length {Integer}        The number of characters to extract.
-         * @param   ignore {String/RegExp}  Characters to be ignored (will not include in the length).
-         * @return  {String}
-         * 
-         * refer: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/substr
-         */
-        name: "substr",
-        handler: function(string, start, length, ignore) {
-          var args, lib;
-          args = arguments;
-          lib = this;
-          if (args.length === 3 && lib.isNumeric(start) && start > 0 && (lib.isString(length) || lib.isRegExp(length))) {
-            string = ignoreSubStr.apply(lib, [string, start, length]);
-          } else if (lib.isNumeric(start) && start >= 0) {
-            if (!lib.isNumeric(length) || length <= 0) {
-              length = string.length;
-            }
-            string = lib.isString(ignore) || lib.isRegExp(ignore) ? ignoreSubStr.apply(lib, [string.substring(start), length, ignore]) : string.substring(start, length);
-          }
-          return string;
-        }
       }
     ]
   };
@@ -1970,7 +1963,7 @@ Storage = (function(__util) {
     }
 
     Storage.prototype.set = function(data) {
-      return __util.mixin(this.storage, data);
+      return __util.mixin(true, this.storage, data);
     };
 
     Storage.prototype.get = function(key, map) {
@@ -2087,7 +2080,7 @@ Environment = (function(__util) {
   };
   hasReaderActiveX = function() {
     var axo;
-    if (__util.hasProp("ActiveXObject")) {
+    if (__util.hasProp("ActiveXObject", window)) {
       axo = createAXO("AcroPDF.PDF");
       if (!axo) {
         axo = createAXO("PDF.PdfCtrl");
@@ -2847,10 +2840,10 @@ __proj = (function(window, __util) {
       }
     ]
   };
-  storage.fn.init.runSandbox = function(prFns, rdFns) {
-    runHandler(prFns);
+  storage.fn.init.runSandbox = function(prepareHandlers, readyHandlers) {
+    runHandler(prepareHandlers);
     return $(document).ready(function() {
-      return runHandler(rdFns);
+      return runHandler(readyHandlers);
     });
   };
 
@@ -2882,7 +2875,7 @@ __proj = (function(window, __util) {
         handler: function(setting) {
           var result;
           result = resetConfig(setting);
-          initializer("runSandbox")(storage.fn.prepare, storage.fn.ready);
+          initializer("runSandbox").apply(this, [storage.fn.prepare, storage.fn.ready]);
           storage.sandboxStarted = true;
           return result || false;
         },

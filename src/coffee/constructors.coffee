@@ -57,7 +57,7 @@ Storage = do ( __util ) ->
       @storage = if isNamespaceStr(namespace) then str2obj("#{namespace}") else storage
 
     set: ( data ) ->
-      __util.mixin @storage, data
+      __util.mixin true, @storage, data
 
     get: ( key, map ) ->
       if __util.isString key
@@ -165,7 +165,7 @@ Environment = do ( __util ) ->
     return axo
 
   hasReaderActiveX = ->
-    if __util.hasProp "ActiveXObject"
+    if __util.hasProp "ActiveXObject", window
       axo = createAXO "AcroPDF.PDF"
       axo = createAXO "PDF.PdfCtrl" if not axo
 

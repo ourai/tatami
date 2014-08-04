@@ -77,7 +77,7 @@
         name: "extend"
 
         handler: ( data, host ) ->
-          return __proc(data, host)
+          return __proc data, host ? this
       },
       {
         ###
@@ -110,7 +110,7 @@
         name: "mask"
 
         handler: ( guise ) ->
-          if @hasProp guise
+          if @hasProp guise, window
             console.error "'#{guise}' has existed as a property of Window object." if window.console
           else
             lib_name = @__meta__.name
@@ -150,20 +150,25 @@
 
         handler: ->
           args = arguments
-          lib = this
           ns = {}
           hostObj = args[0]
           
           # Determine the host object.
-          (hostObj = if args[args.length - 1] is true then window else this) if not lib.isPlainObject hostObj
+          (hostObj = if args[args.length - 1] is true then window else this) if not @isPlainObject hostObj
 
-          lib.each args, ( arg ) ->
-            if lib.isString(arg) and /^[0-9A-Z_.]+[^_.]$/i.test(arg)
+          @each args, ( arg ) =>
+            if @isString(arg) and /^[0-9A-Z_.]+[^_.]?$/i.test(arg)
               obj = hostObj
 
-              lib.each arg.split("."), ( part, idx, parts ) ->
-                (obj[ part ] = if idx is parts.length - 1 then null else {}) if obj[part] is undefined
+              @each arg.split("."), ( part, idx, parts ) =>
+                if not obj?
+                  return false
+
+                if not @hasProp part, obj
+                  obj[part] = if idx is parts.length - 1 then null else {}
+
                 obj = obj[part]
+
                 return true
 
               ns = obj

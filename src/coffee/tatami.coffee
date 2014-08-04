@@ -703,15 +703,15 @@ __proj = do ( window, __util ) ->
       }
     ]
 
-  storage.fn.init.runSandbox = ( prFns, rdFns ) ->
+  storage.fn.init.runSandbox = ( prepareHandlers, readyHandlers ) ->
     # 全局配置
     # setup();
     # DOM tree 构建前的函数队列
-    runHandler prFns
+    runHandler prepareHandlers
     
     # DOM tree 构建后的函数队列
     $(document).ready ->
-      runHandler rdFns
+      runHandler readyHandlers
 
   ###
   # 重新配置系统参数
@@ -742,7 +742,7 @@ __proj = do ( window, __util ) ->
           # 返回值为修改后的系统环境配置
           result = resetConfig setting
 
-          initializer("runSandbox") storage.fn.prepare, storage.fn.ready
+          initializer("runSandbox").apply this, [storage.fn.prepare, storage.fn.ready]
           
           storage.sandboxStarted = true
           
