@@ -1567,35 +1567,6 @@ __util = (function(window, __proc) {
             return string.replace(rtrim, "");
           }
         }
-      }, {
-
-        /*
-         * Returns the characters in a string beginning at the specified location through the specified number of characters.
-         *
-         * @method  substr
-         * @param   string {String}         The input string. Must be one character or longer.
-         * @param   start {Integer}         Location at which to begin extracting characters.
-         * @param   length {Integer}        The number of characters to extract.
-         * @param   ignore {String/RegExp}  Characters to be ignored (will not include in the length).
-         * @return  {String}
-         * 
-         * refer: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/substr
-         */
-        name: "substr",
-        handler: function(string, start, length, ignore) {
-          var args, lib;
-          args = arguments;
-          lib = this;
-          if (args.length === 3 && lib.isNumeric(start) && start > 0 && (lib.isString(length) || lib.isRegExp(length))) {
-            string = ignoreSubStr.apply(lib, [string, start, length]);
-          } else if (lib.isNumeric(start) && start >= 0) {
-            if (!lib.isNumeric(length) || length <= 0) {
-              length = string.length;
-            }
-            string = lib.isString(ignore) || lib.isRegExp(ignore) ? ignoreSubStr.apply(lib, [string.substring(start), length, ignore]) : string.substring(start, length);
-          }
-          return string;
-        }
       }
     ]
   };
