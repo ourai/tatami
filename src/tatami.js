@@ -2463,7 +2463,7 @@ __proj = (function(window, __util) {
    * @return
    */
   bindHandler = function() {
-    var args, fnList, func, funcName, handler, name;
+    var args, fnList, handler, name;
     args = arguments;
     name = args[0];
     handler = args[1];
@@ -2477,12 +2477,12 @@ __proj = (function(window, __util) {
         handler = fnList[name];
       }
     } else if (__proj.isPlainObject(name)) {
-      for (funcName in name) {
-        func = name[funcName];
+      handler = {};
+      __proj.each(name, function(func, funcName) {
         if (__proj.isFunction(func)) {
-          fnList[funcName] = func;
+          return handler[funcName] = fnList[funcName] = func;
         }
-      }
+      });
     }
     return handler;
   };
@@ -2498,7 +2498,7 @@ __proj = (function(window, __util) {
    */
   runHandler = function(name) {
     var func, result, _i, _len;
-    result = null;
+    result = void 0;
     if (__proj.isArray(name)) {
       for (_i = 0, _len = name.length; _i < _len; _i++) {
         func = name[_i];
