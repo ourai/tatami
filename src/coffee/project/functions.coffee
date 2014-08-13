@@ -250,7 +250,7 @@
   # @return  {Variant}
   ###
   runHandler = ( name ) ->
-    result = null
+    result = undefined
     
     # 指定函数列表（数组）时
     if __proj.isArray name
