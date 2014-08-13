@@ -236,7 +236,10 @@
         handler = fnList[name]
     # 传入函数列表
     else if __proj.isPlainObject name
-      fnList[funcName] = func for funcName, func of name when __proj.isFunction func
+      handler = {}
+
+      __proj.each name, ( func, funcName ) ->
+        handler[funcName] = fnList[funcName] = func if __proj.isFunction func
       
     return handler
 
