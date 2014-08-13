@@ -236,7 +236,10 @@
         handler = fnList[name]
     # 传入函数列表
     else if __proj.isPlainObject name
-      fnList[funcName] = func for funcName, func of name when __proj.isFunction func
+      handler = {}
+
+      __proj.each name, ( func, funcName ) ->
+        handler[funcName] = fnList[funcName] = func if __proj.isFunction func
       
     return handler
 
@@ -250,7 +253,7 @@
   # @return  {Variant}
   ###
   runHandler = ( name ) ->
-    result = null
+    result = undefined
     
     # 指定函数列表（数组）时
     if __proj.isArray name

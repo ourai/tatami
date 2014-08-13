@@ -177,8 +177,8 @@ describe("whether an empty object", function() {
 
 describe("whether has properties", function() {
   it("Do a target object has specified property?", function() {
-    expect($.hasProp("console")).toBe(true);
-    expect($.hasProp("Function")).toBe(true);
+    expect($.hasProp("console")).toBe(false);
+    expect($.hasProp("hasProp")).toBe(true);
     expect($.hasProp("Function", window)).toBe(true);
     expect($.hasProp("Functions", window)).toBe(false);
 
