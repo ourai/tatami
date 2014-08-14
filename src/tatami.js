@@ -1353,6 +1353,38 @@ __util = (function(window, __proc) {
         validator: function() {
           return true;
         }
+      }, {
+
+        /*
+         * 获取第一个单元
+         *
+         * @method   first
+         * @param    target {String/Array/Array-like Object}
+         * @return   {Anything}
+         */
+        name: "first",
+        handler: function(target) {
+          return this.slice(target, 0, 1)[0];
+        },
+        validator: function() {
+          return true;
+        }
+      }, {
+
+        /*
+         * 获取最后一个单元
+         *
+         * @method   last
+         * @param    target {String/Array/Array-like Object}
+         * @return   {Anything}
+         */
+        name: "last",
+        handler: function(target) {
+          return this.slice(target, -1)[0];
+        },
+        validator: function() {
+          return true;
+        }
       }
     ]
   };
