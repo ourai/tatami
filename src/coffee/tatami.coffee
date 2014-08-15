@@ -1076,9 +1076,14 @@ __proj = do ( window, __util ) ->
             if @isString key
               oldVal = this.access key
 
-              localStorage.setItem key, escape if @isPlainObject(oldVal) then JSON.stringify($.extend oldVal, val) else val
+              localStorage.setItem key, escape @stringify if @isPlainObject(oldVal) and @isPlainObject(val) then @mixin(true, oldVal, val) else val
           # Use cookie
           # else
+
+          return
+
+        validator: ->
+          return arguments.length > 1
       },
       {
         ###
@@ -1103,7 +1108,7 @@ __proj = do ( window, __util ) ->
           # Cookie
           # else
 
-          return result || null
+          return result
 
         value: null
 

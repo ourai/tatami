@@ -3226,9 +3226,12 @@ __proj = (function(window, __util) {
           if (support.storage) {
             if (this.isString(key)) {
               oldVal = this.access(key);
-              return localStorage.setItem(key, escape(this.isPlainObject(oldVal) ? JSON.stringify($.extend(oldVal, val)) : val));
+              localStorage.setItem(key, escape(this.stringify(this.isPlainObject(oldVal) && this.isPlainObject(val) ? this.mixin(true, oldVal, val) : val)));
             }
           }
+        },
+        validator: function() {
+          return arguments.length > 1;
         }
       }, {
 
@@ -3251,7 +3254,7 @@ __proj = (function(window, __util) {
               }
             }
           }
-          return result || null;
+          return result;
         },
         value: null,
         validator: function(key) {
