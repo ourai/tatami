@@ -64,4 +64,58 @@ describe("Run functions from sandbox's internal queue.", function() {
   });
 });
 
+describe("Saving and accessing local data.", function() {
+  it("Saving and accessing.", function() {
+    var obj_1 = {bar: "bar"};
+    var obj_2 = {foo: "foo"};
+    var obj_3 = {foo: "foobar"};
+
+    $.save("foo", obj_1);
+    expect($.stringify($.access("foo"))).toBe($.stringify(obj_1));
+
+    $.save("foo", obj_2);
+    expect($.stringify($.access("foo"))).toBe($.stringify($.mixin(true, {}, obj_1, obj_2)));
+
+    $.save("foo", obj_3);
+    expect($.stringify($.access("foo"))).toBe($.stringify($.mixin(true, {}, obj_1, obj_2, obj_3)));
+
+    $.save("bar", true);
+    expect($.access("bar")).toBe(true);
+
+    $.save("bar", "true");
+    expect($.access("bar")).toBe("true");
+
+    $.save("bar", false);
+    expect($.access("bar")).toBe(false);
+
+    $.save("bar", "false");
+    expect($.access("bar")).toBe("false");
+
+    $.save("bar", 1);
+    expect($.access("bar")).toBe(1);
+
+    $.save("bar", "1");
+    expect($.access("bar")).toBe("1");
+
+    $.save("bar", undefined);
+    expect($.access("bar")).toBeUndefined();
+
+    $.save("bar", "undefined");
+    expect($.access("bar")).toBe("undefined");
+
+    $.save("bar", null);
+    expect($.access("bar")).toBeNull();
+
+    $.save("bar", "null");
+    expect($.access("bar")).toBe("null");
+
+    $.save("doo");
+    expect($.access("doo")).toBeUndefined();
+
+    expect($.access("what")).toBeUndefined();
+
+    expect($.access(11)).toBeUndefined();
+  });
+});
+
 })(window, Tatami);
