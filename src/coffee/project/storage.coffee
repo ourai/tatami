@@ -124,19 +124,26 @@
           if support.storage
             result = localStorage.getItem key
 
-            if result isnt null
-              result = unescape result
+            if result?
+              if result is "undefined"
+                result = undefined
+              else if result is "null"
+                result = null
+              else
+                result = unescape result
 
-              try
-                result = JSON.parse result
-              catch error
-                result = result
+                try
+                  result = JSON.parse result
+                catch error
+                  result = result
+            else
+              result = undefined
           # Cookie
           # else
 
           return result
 
-        value: null
+        value: undefined
 
         validator: ( key ) ->
           return @isString key

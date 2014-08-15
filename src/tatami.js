@@ -3244,19 +3244,27 @@ __proj = (function(window, __util) {
           key = arguments[0];
           if (support.storage) {
             result = localStorage.getItem(key);
-            if (result !== null) {
-              result = unescape(result);
-              try {
-                result = JSON.parse(result);
-              } catch (_error) {
-                error = _error;
-                result = result;
+            if (result != null) {
+              if (result === "undefined") {
+                result = void 0;
+              } else if (result === "null") {
+                result = null;
+              } else {
+                result = unescape(result);
+                try {
+                  result = JSON.parse(result);
+                } catch (_error) {
+                  error = _error;
+                  result = result;
+                }
               }
+            } else {
+              result = void 0;
             }
           }
           return result;
         },
-        value: null,
+        value: void 0,
         validator: function(key) {
           return this.isString(key);
         }
