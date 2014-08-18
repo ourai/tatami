@@ -389,7 +389,10 @@ __proj = do ( window, __util ) ->
         handler = fnList[name]
     # 传入函数列表
     else if __proj.isPlainObject name
-      fnList[funcName] = func for funcName, func of name when __proj.isFunction func
+      handler = {}
+
+      __proj.each name, ( func, funcName ) ->
+        handler[funcName] = fnList[funcName] = func if __proj.isFunction func
       
     return handler
 
@@ -403,7 +406,7 @@ __proj = do ( window, __util ) ->
   # @return  {Variant}
   ###
   runHandler = ( name ) ->
-    result = null
+    result = undefined
     
     # 指定函数列表（数组）时
     if __proj.isArray name
@@ -559,8 +562,7 @@ __proj = do ( window, __util ) ->
   # @return
   ###
   exposeClasses = ->
-    classes =
-      Storage: Storage
+    classes = {Storage}
 
     try
       Object.defineProperty __proj, "__class__",
@@ -700,6 +702,28 @@ __proj = do ( window, __util ) ->
 
         handler: ( funcName, isWindow ) ->
           return isExisted (if isWindow is true then window else storage.fn.handler), funcName, "function"
+      },
+      {
+        ###
+        # 销毁系统对话框
+        #
+        # @method   destroySystemDialogs
+        # @return   {Boolean}
+        ###
+        name: "destroySystemDialogs"
+
+        handler: ->
+          dlgs = storage.pool.systemDialog
+
+          if @isFunction($.fn.dialog) and @isPlainObject(dlgs)
+            @each dlgs, ( dlg ) ->
+              dlg
+                .dialog "destroy"
+                .remove()
+
+            dlgs = storage.pool.systemDialog = {}
+
+          return @isEmpty dlgs
       }
     ]
 
@@ -1073,9 +1097,14 @@ __proj = do ( window, __util ) ->
             if @isString key
               oldVal = this.access key
 
-              localStorage.setItem key, escape if @isPlainObject(oldVal) then JSON.stringify($.extend oldVal, val) else val
+              localStorage.setItem key, escape @stringify if @isPlainObject(oldVal) and @isPlainObject(val) then @mixin(true, oldVal, val) else val
           # Use cookie
           # else
+
+          return
+
+        validator: ->
+          return arguments.length > 1
       },
       {
         ###
@@ -1090,19 +1119,26 @@ __proj = do ( window, __util ) ->
           if support.storage
             result = localStorage.getItem key
 
-            if result isnt null
-              result = unescape result
+            if result?
+              if result is "undefined"
+                result = undefined
+              else if result is "null"
+                result = null
+              else
+                result = unescape result
 
-              try
-                result = JSON.parse result
-              catch error
-                result = result
+                try
+                  result = JSON.parse result
+                catch error
+                  result = result
+            else
+              result = undefined
           # Cookie
           # else
 
-          return result || null
+          return result
 
-        value: null
+        value: undefined
 
         validator: ( key ) ->
           return @isString key

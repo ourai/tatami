@@ -29,4 +29,28 @@ describe("determine variable types", function() {
 //   });
 // });
 
+describe("Get elements from an indexed collection.", function() {
+  var str = "123456";
+  var arr = [5, 4, 3, 2, 1];
+  var args = [true, 12, 13, 14];
+
+  it("Get the first element.", function() {
+    expect($.first(str)).toBe("1");
+    expect($.first(arr)).toBe(5);
+
+    (function() {
+      expect($.first(arguments)).toBe(true);
+    }).apply(window, args);
+  });
+
+  it("Get the last element.", function() {
+    expect($.last(str)).toBe("6");
+    expect($.last(arr)).toBe(1);
+
+    (function() {
+      expect($.last(arguments)).toBe(14);
+    }).apply(window, args);
+  });
+});
+
 })(window, Tatami);

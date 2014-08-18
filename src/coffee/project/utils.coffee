@@ -129,5 +129,27 @@
 
         handler: ( funcName, isWindow ) ->
           return isExisted (if isWindow is true then window else storage.fn.handler), funcName, "function"
+      },
+      {
+        ###
+        # 销毁系统对话框
+        #
+        # @method   destroySystemDialogs
+        # @return   {Boolean}
+        ###
+        name: "destroySystemDialogs"
+
+        handler: ->
+          dlgs = storage.pool.systemDialog
+
+          if @isFunction($.fn.dialog) and @isPlainObject(dlgs)
+            @each dlgs, ( dlg ) ->
+              dlg
+                .dialog "destroy"
+                .remove()
+
+            dlgs = storage.pool.systemDialog = {}
+
+          return @isEmpty dlgs
       }
     ]

@@ -102,9 +102,14 @@
             if @isString key
               oldVal = this.access key
 
-              localStorage.setItem key, escape if @isPlainObject(oldVal) then JSON.stringify($.extend oldVal, val) else val
+              localStorage.setItem key, escape @stringify if @isPlainObject(oldVal) and @isPlainObject(val) then @mixin(true, oldVal, val) else val
           # Use cookie
           # else
+
+          return
+
+        validator: ->
+          return arguments.length > 1
       },
       {
         ###
@@ -119,19 +124,26 @@
           if support.storage
             result = localStorage.getItem key
 
-            if result isnt null
-              result = unescape result
+            if result?
+              if result is "undefined"
+                result = undefined
+              else if result is "null"
+                result = null
+              else
+                result = unescape result
 
-              try
-                result = JSON.parse result
-              catch error
-                result = result
+                try
+                  result = JSON.parse result
+                catch error
+                  result = result
+            else
+              result = undefined
           # Cookie
           # else
 
-          return result || null
+          return result
 
-        value: null
+        value: undefined
 
         validator: ( key ) ->
           return @isString key

@@ -944,6 +944,38 @@ __util = do ( window, __proc ) ->
 
         validator: ->
           return true
+      },
+      {
+        ###
+        # 获取第一个单元
+        #
+        # @method   first
+        # @param    target {String/Array/Array-like Object}
+        # @return   {Anything}
+        ###
+        name: "first"
+
+        handler: ( target ) ->
+          return @slice(target, 0, 1)[0]
+
+        validator: ->
+          return true
+      },
+      {
+        ###
+        # 获取最后一个单元
+        #
+        # @method   last
+        # @param    target {String/Array/Array-like Object}
+        # @return   {Anything}
+        ###
+        name: "last"
+
+        handler: ( target ) ->
+          return @slice(target, -1)[0]
+
+        validator: ->
+          return true
       }
     ]
 
