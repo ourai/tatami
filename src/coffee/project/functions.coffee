@@ -409,8 +409,7 @@
   # @return
   ###
   exposeClasses = ->
-    classes =
-      Storage: Storage
+    classes = {Storage}
 
     try
       Object.defineProperty __proj, "__class__",

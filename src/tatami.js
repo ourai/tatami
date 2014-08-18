@@ -2852,6 +2852,25 @@ __proj = (function(window, __util) {
         handler: function(funcName, isWindow) {
           return isExisted((isWindow === true ? window : storage.fn.handler), funcName, "function");
         }
+      }, {
+
+        /*
+         * 销毁系统对话框
+         *
+         * @method   destroySystemDialogs
+         * @return
+         */
+        name: "destroySystemDialogs",
+        handler: function() {
+          var dlgs;
+          dlgs = typeof storage.pool === "function" ? storage.pool(systemDialog) : void 0;
+          if (this.isFunction($.fn.dialog) && this.isPlainObject(dlgs)) {
+            this.each(dlgs, function(dlg) {
+              return dlg.dialog("destroy").remove();
+            });
+            storage.pool.systemDialog = {};
+          }
+        }
       }
     ]
   };
