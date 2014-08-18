@@ -135,12 +135,12 @@
         # 销毁系统对话框
         #
         # @method   destroySystemDialogs
-        # @return
+        # @return   {Boolean}
         ###
         name: "destroySystemDialogs"
 
         handler: ->
-          dlgs = storage.pool?systemDialog
+          dlgs = storage.pool.systemDialog
 
           if @isFunction($.fn.dialog) and @isPlainObject(dlgs)
             @each dlgs, ( dlg ) ->
@@ -148,8 +148,8 @@
                 .dialog "destroy"
                 .remove()
 
-            storage.pool.systemDialog = {}
+            dlgs = storage.pool.systemDialog = {}
 
-          return
+          return @isEmpty dlgs
       }
     ]

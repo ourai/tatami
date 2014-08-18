@@ -2858,18 +2858,19 @@ __proj = (function(window, __util) {
          * 销毁系统对话框
          *
          * @method   destroySystemDialogs
-         * @return
+         * @return   {Boolean}
          */
         name: "destroySystemDialogs",
         handler: function() {
           var dlgs;
-          dlgs = typeof storage.pool === "function" ? storage.pool(systemDialog) : void 0;
+          dlgs = storage.pool.systemDialog;
           if (this.isFunction($.fn.dialog) && this.isPlainObject(dlgs)) {
             this.each(dlgs, function(dlg) {
               return dlg.dialog("destroy").remove();
             });
-            storage.pool.systemDialog = {};
+            dlgs = storage.pool.systemDialog = {};
           }
+          return this.isEmpty(dlgs);
         }
       }
     ]

@@ -708,12 +708,12 @@ __proj = do ( window, __util ) ->
         # 销毁系统对话框
         #
         # @method   destroySystemDialogs
-        # @return
+        # @return   {Boolean}
         ###
         name: "destroySystemDialogs"
 
         handler: ->
-          dlgs = storage.pool?systemDialog
+          dlgs = storage.pool.systemDialog
 
           if @isFunction($.fn.dialog) and @isPlainObject(dlgs)
             @each dlgs, ( dlg ) ->
@@ -721,9 +721,9 @@ __proj = do ( window, __util ) ->
                 .dialog "destroy"
                 .remove()
 
-            storage.pool.systemDialog = {}
+            dlgs = storage.pool.systemDialog = {}
 
-          return
+          return @isEmpty dlgs
       }
     ]
 
