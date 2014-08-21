@@ -397,6 +397,33 @@ __proj = do ( window, __util ) ->
     return handler
 
   ###
+  # 将处理函数从内部命名空间删除
+  # 
+  # @private
+  # @method  removeHandler
+  # @return
+  ###
+  removeHandler = ( name ) ->
+    fnList = storage.fn.handler
+
+    # 函数名
+    if __proj.isString name
+      if __proj.hasProp name, fnList
+        try
+          result = delete fnList[name]
+        catch e
+          fnList[name] = undefined
+          result = true
+      else
+        result = false
+    # 函数名列表
+    else
+      __proj.each name, ( n, i ) ->
+        result = removeHandler n
+
+    return result        
+
+  ###
   # 执行指定函数
   # 
   # @private
@@ -562,8 +589,7 @@ __proj = do ( window, __util ) ->
   # @return
   ###
   exposeClasses = ->
-    classes =
-      Storage: Storage
+    classes = {Storage}
 
     try
       Object.defineProperty __proj, "__class__",
@@ -629,6 +655,22 @@ __proj = do ( window, __util ) ->
 
         handler: ->
           return bindHandler.apply window, @slice arguments
+      },
+      {
+        ###
+        # 将指定处理函数从沙盒中删除
+        # 
+        # @method  dequeue
+        # @return
+        ###
+        name: "dequeue"
+
+        handler: removeHandler
+
+        validator: ( name ) ->
+          return @isString(name) or @isArray(name)
+
+        value: false
       },
       {
         ###
@@ -703,6 +745,28 @@ __proj = do ( window, __util ) ->
 
         handler: ( funcName, isWindow ) ->
           return isExisted (if isWindow is true then window else storage.fn.handler), funcName, "function"
+      },
+      {
+        ###
+        # 销毁系统对话框
+        #
+        # @method   destroySystemDialogs
+        # @return   {Boolean}
+        ###
+        name: "destroySystemDialogs"
+
+        handler: ->
+          dlgs = storage.pool.systemDialog
+
+          if @isFunction($.fn.dialog) and @isPlainObject(dlgs)
+            @each dlgs, ( dlg ) ->
+              dlg
+                .dialog "destroy"
+                .remove()
+
+            dlgs = storage.pool.systemDialog = {}
+
+          return @isEmpty dlgs
       }
     ]
 
@@ -1076,9 +1140,14 @@ __proj = do ( window, __util ) ->
             if @isString key
               oldVal = this.access key
 
-              localStorage.setItem key, escape if @isPlainObject(oldVal) then JSON.stringify($.extend oldVal, val) else val
+              localStorage.setItem key, escape @stringify if @isPlainObject(oldVal) and @isPlainObject(val) then @mixin(true, oldVal, val) else val
           # Use cookie
           # else
+
+          return
+
+        validator: ->
+          return arguments.length > 1
       },
       {
         ###
@@ -1093,19 +1162,26 @@ __proj = do ( window, __util ) ->
           if support.storage
             result = localStorage.getItem key
 
-            if result isnt null
-              result = unescape result
+            if result?
+              if result is "undefined"
+                result = undefined
+              else if result is "null"
+                result = null
+              else
+                result = unescape result
 
-              try
-                result = JSON.parse result
-              catch error
-                result = result
+                try
+                  result = JSON.parse result
+                catch error
+                  result = result
+            else
+              result = undefined
           # Cookie
           # else
 
-          return result || null
+          return result
 
-        value: null
+        value: undefined
 
         validator: ( key ) ->
           return @isString key

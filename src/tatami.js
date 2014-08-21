@@ -1353,6 +1353,38 @@ __util = (function(window, __proc) {
         validator: function() {
           return true;
         }
+      }, {
+
+        /*
+         * 获取第一个单元
+         *
+         * @method   first
+         * @param    target {String/Array/Array-like Object}
+         * @return   {Anything}
+         */
+        name: "first",
+        handler: function(target) {
+          return this.slice(target, 0, 1)[0];
+        },
+        validator: function() {
+          return true;
+        }
+      }, {
+
+        /*
+         * 获取最后一个单元
+         *
+         * @method   last
+         * @param    target {String/Array/Array-like Object}
+         * @return   {Anything}
+         */
+        name: "last",
+        handler: function(target) {
+          return this.slice(target, -1)[0];
+        },
+        validator: function() {
+          return true;
+        }
       }
     ]
   };
@@ -2103,7 +2135,7 @@ Environment = (function(__util) {
 })(__util);
 
 __proj = (function(window, __util) {
-  var $, API, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, I18n, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, TEXT_NODE, apiHandler, apiVer, asset, assetHandler, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, exposeClasses, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, request, resetConfig, resolvePathname, route, routeHandler, runHandler, setData, setStorageData, setup, storage, storageHandler, support, systemDialog, systemDialogHandler, _ENV;
+  var $, API, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, I18n, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, TEXT_NODE, apiHandler, apiVer, asset, assetHandler, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, exposeClasses, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, removeHandler, request, resetConfig, resolvePathname, route, routeHandler, runHandler, setData, setStorageData, setup, storage, storageHandler, support, systemDialog, systemDialogHandler, _ENV;
   ELEMENT_NODE = 1;
   ATTRIBUTE_NODE = 2;
   TEXT_NODE = 3;
@@ -2488,6 +2520,36 @@ __proj = (function(window, __util) {
   };
 
   /*
+   * 将处理函数从内部命名空间删除
+   * 
+   * @private
+   * @method  removeHandler
+   * @return
+   */
+  removeHandler = function(name) {
+    var e, fnList, result;
+    fnList = storage.fn.handler;
+    if (__proj.isString(name)) {
+      if (__proj.hasProp(name, fnList)) {
+        try {
+          result = delete fnList[name];
+        } catch (_error) {
+          e = _error;
+          fnList[name] = void 0;
+          result = true;
+        }
+      } else {
+        result = false;
+      }
+    } else {
+      __proj.each(name, function(n, i) {
+        return result = removeHandler(n);
+      });
+    }
+    return result;
+  };
+
+  /*
    * 执行指定函数
    * 
    * @private
@@ -2750,6 +2812,20 @@ __proj = (function(window, __util) {
       }, {
 
         /*
+         * 将指定处理函数从沙盒中删除
+         * 
+         * @method  dequeue
+         * @return
+         */
+        name: "dequeue",
+        handler: removeHandler,
+        validator: function(name) {
+          return this.isString(name) || this.isArray(name);
+        },
+        value: false
+      }, {
+
+        /*
          * 执行指定函数
          * 
          * @method  run
@@ -2819,6 +2895,26 @@ __proj = (function(window, __util) {
         name: "functionExists",
         handler: function(funcName, isWindow) {
           return isExisted((isWindow === true ? window : storage.fn.handler), funcName, "function");
+        }
+      }, {
+
+        /*
+         * 销毁系统对话框
+         *
+         * @method   destroySystemDialogs
+         * @return   {Boolean}
+         */
+        name: "destroySystemDialogs",
+        handler: function() {
+          var dlgs;
+          dlgs = storage.pool.systemDialog;
+          if (this.isFunction($.fn.dialog) && this.isPlainObject(dlgs)) {
+            this.each(dlgs, function(dlg) {
+              return dlg.dialog("destroy").remove();
+            });
+            dlgs = storage.pool.systemDialog = {};
+          }
+          return this.isEmpty(dlgs);
         }
       }
     ]
@@ -3194,9 +3290,12 @@ __proj = (function(window, __util) {
           if (support.storage) {
             if (this.isString(key)) {
               oldVal = this.access(key);
-              return localStorage.setItem(key, escape(this.isPlainObject(oldVal) ? JSON.stringify($.extend(oldVal, val)) : val));
+              localStorage.setItem(key, escape(this.stringify(this.isPlainObject(oldVal) && this.isPlainObject(val) ? this.mixin(true, oldVal, val) : val)));
             }
           }
+        },
+        validator: function() {
+          return arguments.length > 1;
         }
       }, {
 
@@ -3209,19 +3308,27 @@ __proj = (function(window, __util) {
           key = arguments[0];
           if (support.storage) {
             result = localStorage.getItem(key);
-            if (result !== null) {
-              result = unescape(result);
-              try {
-                result = JSON.parse(result);
-              } catch (_error) {
-                error = _error;
-                result = result;
+            if (result != null) {
+              if (result === "undefined") {
+                result = void 0;
+              } else if (result === "null") {
+                result = null;
+              } else {
+                result = unescape(result);
+                try {
+                  result = JSON.parse(result);
+                } catch (_error) {
+                  error = _error;
+                  result = result;
+                }
               }
+            } else {
+              result = void 0;
             }
           }
-          return result || null;
+          return result;
         },
-        value: null,
+        value: void 0,
         validator: function(key) {
           return this.isString(key);
         }
