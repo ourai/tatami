@@ -2135,7 +2135,7 @@ Environment = (function(__util) {
 })(__util);
 
 __proj = (function(window, __util) {
-  var $, API, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, I18n, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, TEXT_NODE, apiHandler, apiVer, asset, assetHandler, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, exposeClasses, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, request, resetConfig, resolvePathname, route, routeHandler, runHandler, setData, setStorageData, setup, storage, storageHandler, support, systemDialog, systemDialogHandler, _ENV;
+  var $, API, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, I18n, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, TEXT_NODE, apiHandler, apiVer, asset, assetHandler, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, exposeClasses, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, removeHandler, request, resetConfig, resolvePathname, route, routeHandler, runHandler, setData, setStorageData, setup, storage, storageHandler, support, systemDialog, systemDialogHandler, _ENV;
   ELEMENT_NODE = 1;
   ATTRIBUTE_NODE = 2;
   TEXT_NODE = 3;
@@ -2520,6 +2520,36 @@ __proj = (function(window, __util) {
   };
 
   /*
+   * 将处理函数从内部命名空间删除
+   * 
+   * @private
+   * @method  removeHandler
+   * @return
+   */
+  removeHandler = function(name) {
+    var e, fnList, result;
+    fnList = storage.fn.handler;
+    if (__proj.isString(name)) {
+      if (__proj.hasProp(name, fnList)) {
+        try {
+          result = delete fnList[name];
+        } catch (_error) {
+          e = _error;
+          fnList[name] = void 0;
+          result = true;
+        }
+      } else {
+        result = false;
+      }
+    } else {
+      __proj.each(name, function(n, i) {
+        return result = removeHandler(n);
+      });
+    }
+    return result;
+  };
+
+  /*
    * 执行指定函数
    * 
    * @private
@@ -2779,6 +2809,20 @@ __proj = (function(window, __util) {
         handler: function() {
           return bindHandler.apply(window, this.slice(arguments));
         }
+      }, {
+
+        /*
+         * 将指定处理函数从沙盒中删除
+         * 
+         * @method  dequeue
+         * @return
+         */
+        name: "dequeue",
+        handler: removeHandler,
+        validator: function(name) {
+          return this.isString(name) || this.isArray(name);
+        },
+        value: false
       }, {
 
         /*

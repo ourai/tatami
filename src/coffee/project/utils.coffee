@@ -58,6 +58,22 @@
       },
       {
         ###
+        # 将指定处理函数从沙盒中删除
+        # 
+        # @method  dequeue
+        # @return
+        ###
+        name: "dequeue"
+
+        handler: removeHandler
+
+        validator: ( name ) ->
+          return @isString(name) or @isArray(name)
+
+        value: false
+      },
+      {
+        ###
         # 执行指定函数
         # 
         # @method  run

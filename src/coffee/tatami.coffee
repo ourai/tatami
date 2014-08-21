@@ -397,6 +397,33 @@ __proj = do ( window, __util ) ->
     return handler
 
   ###
+  # 将处理函数从内部命名空间删除
+  # 
+  # @private
+  # @method  removeHandler
+  # @return
+  ###
+  removeHandler = ( name ) ->
+    fnList = storage.fn.handler
+
+    # 函数名
+    if __proj.isString name
+      if __proj.hasProp name, fnList
+        try
+          result = delete fnList[name]
+        catch e
+          fnList[name] = undefined
+          result = true
+      else
+        result = false
+    # 函数名列表
+    else
+      __proj.each name, ( n, i ) ->
+        result = removeHandler n
+
+    return result        
+
+  ###
   # 执行指定函数
   # 
   # @private
@@ -628,6 +655,22 @@ __proj = do ( window, __util ) ->
 
         handler: ->
           return bindHandler.apply window, @slice arguments
+      },
+      {
+        ###
+        # 将指定处理函数从沙盒中删除
+        # 
+        # @method  dequeue
+        # @return
+        ###
+        name: "dequeue"
+
+        handler: removeHandler
+
+        validator: ( name ) ->
+          return @isString(name) or @isArray(name)
+
+        value: false
       },
       {
         ###

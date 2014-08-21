@@ -39,6 +39,34 @@ describe("Push functions into sandbox's internal queue.", function() {
   });
 });
 
+describe("Delete functions from sandbox's internal queue.", function() {
+  $.queue({
+    foo_dd: function() {
+      return "foo";
+    },
+    bar_dd: function() {
+      return "bar";
+    },
+    foobar_dd: function() {
+      return "foobar";
+    }
+  });
+
+  it("Delete a function.", function() {
+    expect($.run("foo_dd")).toBe("foo");
+    expect($.dequeue("foo_dd")).toBe(true);
+    expect($.queue("foo_dd")).toBeUndefined();
+  });
+
+  it("Delete a function list.", function() {
+    expect($.run("bar_dd")).toBe("bar");
+    expect($.run("foobar_dd")).toBe("foobar");
+    expect($.dequeue(["bar_dd", "foobar_dd"])).toBe(true);
+    expect($.queue("bar_dd")).toBeUndefined();
+    expect($.queue("foobar_dd")).toBeUndefined();
+  });
+});
+
 describe("Run functions from sandbox's internal queue.", function() {
   it("Run a function.", function() {
     expect($.run("foo")).toBe("foo");
