@@ -19,7 +19,7 @@
   resetConfig = ( setting ) ->
     return clone if __proj.isPlainObject(setting) then $.extend(storage.config, setting) else storage.config
 
-  storage.modules.flow =
+  storage.modules.execution =
     handlers: [
       {
         ###
