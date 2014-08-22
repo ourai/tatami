@@ -21,7 +21,7 @@ var Environment, LIB_CONFIG, Storage, __proc, __proj, __util,
 
 LIB_CONFIG = {
   name: "Tatami",
-  version: "0.2.1"
+  version: "0.2.2"
 };
 
 __proc = (function(window) {
@@ -2768,7 +2768,7 @@ __proj = (function(window, __util) {
       });
     }
   };
-  storage.modules.utils = {
+  storage.modules.dialog = {
     handlers: [
       {
 
@@ -2817,6 +2817,31 @@ __proj = (function(window, __util) {
       }, {
 
         /*
+         * 销毁系统对话框
+         *
+         * @method   destroySystemDialogs
+         * @return   {Boolean}
+         */
+        name: "destroySystemDialogs",
+        handler: function() {
+          var dlgs;
+          dlgs = storage.pool.systemDialog;
+          if (this.isFunction($.fn.dialog) && this.isPlainObject(dlgs)) {
+            this.each(dlgs, function(dlg) {
+              return dlg.dialog("destroy").remove();
+            });
+            dlgs = storage.pool.systemDialog = {};
+          }
+          return this.isEmpty(dlgs);
+        }
+      }
+    ]
+  };
+  storage.modules.handler = {
+    handlers: [
+      {
+
+        /*
          * 将外部处理函数引入到沙盒中
          * 
          * @method  queue
@@ -2853,53 +2878,6 @@ __proj = (function(window, __util) {
           return runHandler.apply(window, this.slice(arguments));
         }
       }, {
-        name: "url",
-        handler: function() {
-          var loc, url;
-          loc = window.location;
-          url = {
-            search: loc.search.substring(1),
-            hash: loc.hash.substring(1),
-            query: {}
-          };
-          this.each(url.search.split("&"), function(str) {
-            str = str.split("=");
-            if (__proj.trim(str[0]) !== "") {
-              return url.query[str[0]] = str[1];
-            }
-          });
-          return url;
-        }
-      }, {
-
-        /*
-         * Save web resource to local disk
-         *
-         * @method  download
-         * @param   fileURL {String}
-         * @param   fileName {String}
-         * @return
-         */
-        name: "download",
-        handler: function(fileURL, fileName) {
-          var event, save, _window;
-          if (!window.ActiveXObject) {
-            save = document.createElement("a");
-            save.href = fileURL;
-            save.target = "_blank";
-            save.download = fileName || "unknown";
-            event = document.createEvent("Event");
-            event.initEvent("click", true, true);
-            save.dispatchEvent(event);
-            return (window.URL || window.webkitURL).revokeObjectURL(save.href);
-          } else if (!!window.ActiveXObject && document.execCommand) {
-            _window = window.open(fileURL, "_blank");
-            _window.document.close();
-            _window.document.execCommand("SaveAs", true, fileName || fileURL);
-            return _window.close();
-          }
-        }
-      }, {
 
         /*
          * Determines whether a function has been defined
@@ -2912,26 +2890,6 @@ __proj = (function(window, __util) {
         name: "functionExists",
         handler: function(funcName, isWindow) {
           return isExisted((isWindow === true ? window : storage.fn.handler), funcName, "function");
-        }
-      }, {
-
-        /*
-         * 销毁系统对话框
-         *
-         * @method   destroySystemDialogs
-         * @return   {Boolean}
-         */
-        name: "destroySystemDialogs",
-        handler: function() {
-          var dlgs;
-          dlgs = storage.pool.systemDialog;
-          if (this.isFunction($.fn.dialog) && this.isPlainObject(dlgs)) {
-            this.each(dlgs, function(dlg) {
-              return dlg.dialog("destroy").remove();
-            });
-            dlgs = storage.pool.systemDialog = {};
-          }
-          return this.isEmpty(dlgs);
         }
       }
     ]
@@ -2954,7 +2912,7 @@ __proj = (function(window, __util) {
   resetConfig = function(setting) {
     return clone(__proj.isPlainObject(setting) ? $.extend(storage.config, setting) : storage.config);
   };
-  storage.modules.flow = {
+  storage.modules.execution = {
     handlers: [
       {
 
@@ -3104,7 +3062,7 @@ __proj = (function(window, __util) {
   assetHandler = function(key) {
     return storageHandler("asset", key);
   };
-  storage.modules.project = {
+  storage.modules.configuration = {
     handlers: [
       {
 
@@ -3441,6 +3399,53 @@ __proj = (function(window, __util) {
         name: "pathname",
         handler: function(url) {
           return resolvePathname(this.isString(url) ? url : location.pathname);
+        }
+      }, {
+        name: "url",
+        handler: function() {
+          var loc, url;
+          loc = window.location;
+          url = {
+            search: loc.search.substring(1),
+            hash: loc.hash.substring(1),
+            query: {}
+          };
+          this.each(url.search.split("&"), function(str) {
+            str = str.split("=");
+            if (__proj.trim(str[0]) !== "") {
+              return url.query[str[0]] = str[1];
+            }
+          });
+          return url;
+        }
+      }, {
+
+        /*
+         * Save web resource to local disk
+         *
+         * @method  download
+         * @param   fileURL {String}
+         * @param   fileName {String}
+         * @return
+         */
+        name: "download",
+        handler: function(fileURL, fileName) {
+          var event, save, _window;
+          if (!window.ActiveXObject) {
+            save = document.createElement("a");
+            save.href = fileURL;
+            save.target = "_blank";
+            save.download = fileName || "unknown";
+            event = document.createEvent("Event");
+            event.initEvent("click", true, true);
+            save.dispatchEvent(event);
+            return (window.URL || window.webkitURL).revokeObjectURL(save.href);
+          } else if (!!window.ActiveXObject && document.execCommand) {
+            _window = window.open(fileURL, "_blank");
+            _window.document.close();
+            _window.document.execCommand("SaveAs", true, fileName || fileURL);
+            return _window.close();
+          }
         }
       }
     ]
