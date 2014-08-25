@@ -3,6 +3,16 @@
   resolvePathname = ( pathname ) ->
     return if pathname.charAt(0) is "\/" then pathname else "\/#{pathname}"
 
+  # key/value 字符串转换为对象
+  str2obj = ( kvStr ) ->
+    obj = {}
+
+    __proj.each kvStr.split("&"), ( str ) ->
+      str = str.split("=")
+      obj[str[0]] = str[1] if __proj.trim(str[0]) isnt ""
+
+    return obj
+
   storage.modules.URL =
     handlers: [
       {
@@ -23,16 +33,10 @@
 
         handler: ->
           loc = window.location
-          url =
-            search: loc.search.substring(1)
-            hash: loc.hash.substring(1)
-            query: {}
+          search = loc.search[1..]
+          hash = loc.hash[1..]
 
-          @each url.search.split("&"), ( str ) ->
-            str = str.split("=")
-            url.query[str[0]] = str[1] if __proj.trim(str[0]) isnt ""
-
-          return url
+          return {search, hash, query: str2obj(search), hashMap: str2obj(hash)}
       },
       {
         ###

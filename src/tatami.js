@@ -2135,7 +2135,7 @@ Environment = (function(__util) {
 })(__util);
 
 __proj = (function(window, __util) {
-  var $, API, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, I18n, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, TEXT_NODE, apiHandler, apiVer, asset, assetHandler, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, exposeClasses, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, removeHandler, request, resetConfig, resolvePathname, route, routeHandler, runHandler, setData, setStorageData, setup, storage, storageHandler, support, systemDialog, systemDialogHandler, _ENV;
+  var $, API, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, I18n, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, TEXT_NODE, apiHandler, apiVer, asset, assetHandler, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, exposeClasses, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, removeHandler, request, resetConfig, resolvePathname, route, routeHandler, runHandler, setData, setStorageData, setup, storage, storageHandler, str2obj, support, systemDialog, systemDialogHandler, _ENV;
   ELEMENT_NODE = 1;
   ATTRIBUTE_NODE = 2;
   TEXT_NODE = 3;
@@ -3368,6 +3368,17 @@ __proj = (function(window, __util) {
       return "\/" + pathname;
     }
   };
+  str2obj = function(kvStr) {
+    var obj;
+    obj = {};
+    __proj.each(kvStr.split("&"), function(str) {
+      str = str.split("=");
+      if (__proj.trim(str[0]) !== "") {
+        return obj[str[0]] = str[1];
+      }
+    });
+    return obj;
+  };
   storage.modules.URL = {
     handlers: [
       {
@@ -3386,20 +3397,16 @@ __proj = (function(window, __util) {
       }, {
         name: "url",
         handler: function() {
-          var loc, url;
+          var hash, loc, search;
           loc = window.location;
-          url = {
-            search: loc.search.substring(1),
-            hash: loc.hash.substring(1),
-            query: {}
+          search = loc.search.slice(1);
+          hash = loc.hash.slice(1);
+          return {
+            search: search,
+            hash: hash,
+            query: str2obj(search),
+            hashMap: str2obj(hash)
           };
-          this.each(url.search.split("&"), function(str) {
-            str = str.split("=");
-            if (__proj.trim(str[0]) !== "") {
-              return url.query[str[0]] = str[1];
-            }
-          });
-          return url;
         }
       }, {
 
