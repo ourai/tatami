@@ -30,9 +30,7 @@ module.exports = ( grunt ) ->
       ronin: "<%= meta.vendors %>/ronin/dest"
       matcha: "<%= meta.vendors %>/matcha/dest"
       jquery: "<%= meta.vendors %>/jquery"
-      build: "build"
-      tests: "<%= meta.build %>/tests"
-      tasks: "<%= meta.build %>/tasks"
+      tests: "test"
     concat:
       coffee_miso:
         src: [
@@ -62,9 +60,10 @@ module.exports = ( grunt ) ->
             "<%= meta.proj %>/intro.coffee"
             "<%= meta.proj %>/variables.coffee"
             "<%= meta.proj %>/functions.coffee"
-            "<%= meta.proj %>/utils.coffee"
-            "<%= meta.proj %>/flow.coffee"
-            "<%= meta.proj %>/project.coffee"
+            "<%= meta.proj %>/dialog.coffee"
+            "<%= meta.proj %>/handler.coffee"
+            "<%= meta.proj %>/execution.coffee"
+            "<%= meta.proj %>/configuration.coffee"
             "<%= meta.proj %>/storage.coffee"
             "<%= meta.proj %>/request.coffee"
             # "<%= meta.proj %>/html.coffee"

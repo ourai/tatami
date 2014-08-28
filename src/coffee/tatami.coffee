@@ -598,7 +598,7 @@ __proj = do ( window, __util ) ->
     catch error
       __proj.mixin __class__: classes
 
-  storage.modules.utils =
+  storage.modules.dialog =
     handlers: [
       {
         ###
@@ -646,6 +646,32 @@ __proj = do ( window, __util ) ->
       },
       {
         ###
+        # 销毁系统对话框
+        #
+        # @method   destroySystemDialogs
+        # @return   {Boolean}
+        ###
+        name: "destroySystemDialogs"
+
+        handler: ->
+          dlgs = storage.pool.systemDialog
+
+          if @isFunction($.fn.dialog) and @isPlainObject(dlgs)
+            @each dlgs, ( dlg ) ->
+              dlg
+                .dialog "destroy"
+                .remove()
+
+            dlgs = storage.pool.systemDialog = {}
+
+          return @isEmpty dlgs
+      }
+    ]
+
+  storage.modules.handler =
+    handlers: [
+      {
+        ###
         # 将外部处理函数引入到沙盒中
         # 
         # @method  queue
@@ -685,54 +711,6 @@ __proj = do ( window, __util ) ->
           return runHandler.apply window, @slice arguments
       },
       {
-        name: "url"
-
-        handler: ->
-          loc = window.location
-          url =
-            search: loc.search.substring(1)
-            hash: loc.hash.substring(1)
-            query: {}
-
-          @each url.search.split("&"), ( str ) ->
-            str = str.split("=")
-            url.query[str[0]] = str[1] if __proj.trim(str[0]) isnt ""
-
-          return url
-      },
-      {
-        ###
-        # Save web resource to local disk
-        #
-        # @method  download
-        # @param   fileURL {String}
-        # @param   fileName {String}
-        # @return
-        ###
-        name: "download"
-
-        handler: ( fileURL, fileName ) ->
-          # for non-IE
-          if not window.ActiveXObject
-            save = document.createElement "a"
-
-            save.href = fileURL
-            save.target = "_blank"
-            save.download = fileName || "unknown"
-
-            event = document.createEvent "Event"
-            event.initEvent "click", true, true
-            save.dispatchEvent event
-            (window.URL || window.webkitURL).revokeObjectURL save.href
-          # for IE
-          else if !! window.ActiveXObject && document.execCommand
-            _window = window.open fileURL, "_blank"
-            
-            _window.document.close()
-            _window.document.execCommand "SaveAs", true, fileName || fileURL
-            _window.close()
-      },
-      {
         ###
         # Determines whether a function has been defined
         #
@@ -745,28 +723,6 @@ __proj = do ( window, __util ) ->
 
         handler: ( funcName, isWindow ) ->
           return isExisted (if isWindow is true then window else storage.fn.handler), funcName, "function"
-      },
-      {
-        ###
-        # 销毁系统对话框
-        #
-        # @method   destroySystemDialogs
-        # @return   {Boolean}
-        ###
-        name: "destroySystemDialogs"
-
-        handler: ->
-          dlgs = storage.pool.systemDialog
-
-          if @isFunction($.fn.dialog) and @isPlainObject(dlgs)
-            @each dlgs, ( dlg ) ->
-              dlg
-                .dialog "destroy"
-                .remove()
-
-            dlgs = storage.pool.systemDialog = {}
-
-          return @isEmpty dlgs
       }
     ]
 
@@ -791,7 +747,7 @@ __proj = do ( window, __util ) ->
   resetConfig = ( setting ) ->
     return clone if __proj.isPlainObject(setting) then $.extend(storage.config, setting) else storage.config
 
-  storage.modules.flow =
+  storage.modules.execution =
     handlers: [
       {
         ###
@@ -934,7 +890,7 @@ __proj = do ( window, __util ) ->
   assetHandler = ( key ) ->
     return storageHandler "asset", key
 
-  storage.modules.project =
+  storage.modules.configuration =
     handlers: [
       {
         ###
@@ -1257,6 +1213,16 @@ __proj = do ( window, __util ) ->
   resolvePathname = ( pathname ) ->
     return if pathname.charAt(0) is "\/" then pathname else "\/#{pathname}"
 
+  # key/value 字符串转换为对象
+  str2obj = ( kvStr ) ->
+    obj = {}
+
+    __proj.each kvStr.split("&"), ( str ) ->
+      str = str.split("=")
+      obj[str[0]] = str[1] if __proj.trim(str[0]) isnt ""
+
+    return obj
+
   storage.modules.URL =
     handlers: [
       {
@@ -1271,6 +1237,48 @@ __proj = do ( window, __util ) ->
 
         handler: ( url ) ->
           return resolvePathname if @isString(url) then url else location.pathname
+      },
+      {
+        name: "url"
+
+        handler: ->
+          loc = window.location
+          search = loc.search[1..]
+          hash = loc.hash[1..]
+
+          return {search, hash, query: str2obj(search), hashMap: str2obj(hash)}
+      },
+      {
+        ###
+        # Save web resource to local disk
+        #
+        # @method  download
+        # @param   fileURL {String}
+        # @param   fileName {String}
+        # @return
+        ###
+        name: "download"
+
+        handler: ( fileURL, fileName ) ->
+          # for non-IE
+          if not window.ActiveXObject
+            save = document.createElement "a"
+
+            save.href = fileURL
+            save.target = "_blank"
+            save.download = fileName || "unknown"
+
+            event = document.createEvent "Event"
+            event.initEvent "click", true, true
+            save.dispatchEvent event
+            (window.URL || window.webkitURL).revokeObjectURL save.href
+          # for IE
+          else if !! window.ActiveXObject && document.execCommand
+            _window = window.open fileURL, "_blank"
+            
+            _window.document.close()
+            _window.document.execCommand "SaveAs", true, fileName || fileURL
+            _window.close()
       }
     ]
 

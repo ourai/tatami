@@ -83,7 +83,7 @@
   assetHandler = ( key ) ->
     return storageHandler "asset", key
 
-  storage.modules.project =
+  storage.modules.configuration =
     handlers: [
       {
         ###
