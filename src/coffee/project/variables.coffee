@@ -72,8 +72,6 @@
       ready: []
       # 初始化函数
       init:
-        # 系统对话框创建后
-        systemDialog: $.noop
         # Ajax 请求
         ajaxHandler: ( succeed, fail ) ->
           return {
@@ -92,9 +90,6 @@
               else
                 if __proj.isFunction fail
                   fail.apply $, args
-                # 默认弹出警告对话框
-                else
-                  systemDialog "alert", data.message
             # 状态码为非 200
             error: $.noop
           }

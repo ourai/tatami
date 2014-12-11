@@ -2152,7 +2152,7 @@ Environment = (function(__util) {
 })(__util);
 
 __proj = (function(window, __util) {
-  var $, API, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, I18n, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, TEXT_NODE, apiHandler, apiVer, asset, assetHandler, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, exposeClasses, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, removeHandler, request, resetConfig, resolvePathname, route, routeHandler, runHandler, setData, setStorageData, setup, storage, storageHandler, str2obj, support, systemDialog, systemDialogHandler, _ENV;
+  var $, API, ATTRIBUTE_NODE, CDATA_SECTION_NODE, COMMENT_NODE, DOCUMENT_FRAGMENT_NODE, DOCUMENT_NODE, DOCUMENT_TYPE_NODE, ELEMENT_NODE, ENTITY_NODE, ENTITY_REFERENCE_NODE, I18n, NOTATION_NODE, PROCESSING_INSTRUCTION_NODE, REG_NAMESPACE, TEXT_NODE, apiHandler, apiVer, asset, assetHandler, bindHandler, clone, constructDatasetByAttributes, constructDatasetByHTML, exposeClasses, getStorageData, initialize, initializer, isExisted, isLimited, last, limit, limiter, pushHandler, removeHandler, request, resetConfig, resolvePathname, route, routeHandler, runHandler, setData, setStorageData, setup, storage, storageHandler, str2obj, support, _ENV;
   ELEMENT_NODE = 1;
   ATTRIBUTE_NODE = 2;
   TEXT_NODE = 3;
@@ -2219,7 +2219,6 @@ __proj = (function(window, __util) {
       prepare: [],
       ready: [],
       init: {
-        systemDialog: $.noop,
         ajaxHandler: function(succeed, fail) {
           return {
             success: function(data, textStatus, jqXHR) {
@@ -2240,8 +2239,6 @@ __proj = (function(window, __util) {
               } else {
                 if (__proj.isFunction(fail)) {
                   return fail.apply($, args);
-                } else {
-                  return systemDialog("alert", data.message);
                 }
               }
             },
@@ -2334,174 +2331,6 @@ __proj = (function(window, __util) {
       response = jqXHR.responseText;
       return false;
     });
-  };
-
-  /*
-   * 生成自定义系统对话框
-   * 
-   * @private
-   * @method  systemDialog
-   * @param   type {String}
-   * @param   message {String}
-   * @param   okHandler {Function}
-   * @param   cancelHandler {Function}
-   * @return  {Boolean}
-   */
-  systemDialog = function(type, message, okHandler, cancelHandler) {
-    var dlg, i18nText, poolName, result;
-    result = false;
-    if (__proj.isString(type)) {
-      type = type.toLowerCase();
-      if (__proj.isFunction($.fn.dialog)) {
-        poolName = "systemDialog";
-        i18nText = storage.i18n._SYS.dialog[__proj.config("lang")];
-        if (!__proj.hasProp(poolName, storage.pool)) {
-          storage.pool[poolName] = {};
-        }
-        dlg = storage.pool[poolName][type];
-        if (!dlg) {
-          dlg = $("<div data-role=\"dialog\" data-type=\"system\" />").appendTo($("body")).on({
-            dialogcreate: initializer("systemDialog"),
-            dialogopen: function(e, ui) {
-              return $(".ui-dialog-buttonset .ui-button", $(this).closest(".ui-dialog")).each(function() {
-                var btn;
-                btn = $(this);
-                switch (__proj.trim(btn.text())) {
-                  case i18nText.ok:
-                    type = "ok";
-                    break;
-                  case i18nText.cancel:
-                    type = "cancel";
-                    break;
-                  case i18nText.yes:
-                    type = "yes";
-                    break;
-                  case i18nText.no:
-                    type = "no";
-                }
-                return btn.addClass("ui-button-" + type);
-              });
-            }
-          }).dialog({
-            title: i18nText.title,
-            width: 400,
-            minHeight: 100,
-            closeText: i18nText.close,
-            modal: true,
-            autoOpen: false,
-            resizable: false,
-            closeOnEscape: false
-          });
-          storage.pool[poolName][type] = dlg;
-          dlg.closest(".ui-dialog").find(".ui-dialog-titlebar-close").remove();
-        }
-        result = systemDialogHandler(type, message, okHandler, cancelHandler);
-      } else {
-        result = true;
-        if (type === "alert") {
-          window.alert(message);
-        } else {
-          if (window.confirm(message)) {
-            if (__proj.isFunction(okHandler)) {
-              okHandler();
-            }
-          } else {
-            if (__proj.isFunction(cancelHandler)) {
-              cancelHandler();
-            }
-          }
-        }
-      }
-    }
-    return result;
-  };
-
-  /*
-   * 系统对话框的提示信息以及按钮处理
-   * 
-   * @private
-   * @method  systemDialogHandler
-   * @param   type {String}             对话框类型
-   * @param   message {String}          提示信息内容
-   * @param   okHandler {Function}      确定按钮
-   * @param   cancelHandler {Function}  取消按钮
-   * @return
-   */
-  systemDialogHandler = function(type, message, okHandler, cancelHandler) {
-    var btnText, btns, dlg, dlgContent, handler, i18nText;
-    i18nText = storage.i18n._SYS.dialog[__proj.config("lang")];
-    handler = function(cb, rv) {
-      $(this).dialog("close");
-      if (__proj.isFunction(cb)) {
-        cb();
-      }
-      return rv;
-    };
-    btns = [];
-    btnText = {
-      ok: i18nText.ok,
-      cancel: i18nText.cancel,
-      yes: i18nText.yes,
-      no: i18nText.no
-    };
-    dlg = storage.pool.systemDialog[type];
-    dlgContent = $("[data-role='dialog-content']", dlg);
-    if (dlgContent.size() === 0) {
-      dlgContent = dlg;
-    }
-    if (type === "confirm") {
-      btns.push({
-        text: btnText.ok,
-        click: function() {
-          handler.apply(this, [okHandler, true]);
-          return true;
-        }
-      });
-      btns.push({
-        text: btnText.cancel,
-        click: function() {
-          handler.apply(this, [cancelHandler, false]);
-          return true;
-        }
-      });
-    } else if (type === "confirmex") {
-      btns.push({
-        text: btnText.yes,
-        click: function() {
-          handler.apply(this, [okHandler, true]);
-          return true;
-        }
-      });
-      btns.push({
-        text: btnText.no,
-        click: function() {
-          handler.apply(this, [cancelHandler, false]);
-          return true;
-        }
-      });
-      btns.push({
-        text: btnText.cancel,
-        click: function() {
-          handler.apply(this, [null, false]);
-          return true;
-        }
-      });
-    } else {
-      type = "alert";
-      if (okHandler !== null) {
-        btns.push({
-          text: btnText.ok,
-          click: function() {
-            handler.apply(this, [okHandler, true]);
-            return true;
-          }
-        });
-      } else {
-        btns = null;
-      }
-    }
-    dlgContent.html(message || "");
-    return dlg.dialog("option", "buttons", btns).dialog("open");
   };
 
   /*
@@ -2767,75 +2596,6 @@ __proj = (function(window, __util) {
         __class__: classes
       });
     }
-  };
-  storage.modules.dialog = {
-    handlers: [
-      {
-
-        /*
-         * 自定义警告提示框
-         *
-         * @method  alert
-         * @param   message {String}
-         * @param   [callback] {Function}
-         * @return  {Boolean}
-         */
-        name: "alert",
-        handler: function(message, callback) {
-          return systemDialog("alert", message, callback);
-        }
-      }, {
-
-        /*
-         * 自定义确认提示框（两个按钮）
-         *
-         * @method  confirm
-         * @param   message {String}
-         * @param   [ok] {Function}       Callback for 'OK' button
-         * @param   [cancel] {Function}   Callback for 'CANCEL' button
-         * @return  {Boolean}
-         */
-        name: "confirm",
-        handler: function(message, ok, cancel) {
-          return systemDialog("confirm", message, ok, cancel);
-        }
-      }, {
-
-        /*
-         * 自定义确认提示框（两个按钮）
-         *
-         * @method  confirm
-         * @param   message {String}
-         * @param   [ok] {Function}       Callback for 'OK' button
-         * @param   [cancel] {Function}   Callback for 'CANCEL' button
-         * @return  {Boolean}
-         */
-        name: "confirmEX",
-        handler: function(message, ok, cancel) {
-          return systemDialog("confirmEX", message, ok, cancel);
-        }
-      }, {
-
-        /*
-         * 销毁系统对话框
-         *
-         * @method   destroySystemDialogs
-         * @return   {Boolean}
-         */
-        name: "destroySystemDialogs",
-        handler: function() {
-          var dlgs;
-          dlgs = storage.pool.systemDialog;
-          if (this.isFunction($.fn.dialog) && this.isPlainObject(dlgs)) {
-            this.each(dlgs, function(dlg) {
-              return dlg.dialog("destroy").remove();
-            });
-            dlgs = storage.pool.systemDialog = {};
-          }
-          return this.isEmpty(dlgs);
-        }
-      }
-    ]
   };
   storage.modules.handler = {
     handlers: [
