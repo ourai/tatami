@@ -2166,7 +2166,7 @@ __proj = (function(window, __util) {
      * @type      {Object}
      */
     key: {
-      storage: ["sandboxStarted", "config", "fn", "buffer", "pool", "i18n"]
+      storage: ["sandboxStarted", "config", "fn", "buffer", "pool"]
     }
   };
   storage = {
@@ -2255,36 +2255,7 @@ __proj = (function(window, __util) {
      * @property  pool
      * @type      {Object}
      */
-    pool: {},
-
-    /*
-     * 国际化
-     *
-     * @property  i18n
-     * @type      {Object}
-     */
-    i18n: {
-      _SYS: {
-        dialog: {
-          zh: {
-            title: "系统提示",
-            close: "关闭",
-            ok: "确定",
-            cancel: "取消",
-            yes: "是",
-            no: "否"
-          },
-          en: {
-            title: "System",
-            close: "Close",
-            ok: "Ok",
-            cancel: "Cancel",
-            yes: "Yes",
-            no: "No"
-          }
-        }
-      }
-    }
+    pool: {}
   };
 
   /*

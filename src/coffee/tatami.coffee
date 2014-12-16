@@ -37,7 +37,7 @@ __proj = do ( window, __util ) ->
     ###
     key:
       # 限制访问的 storage key 列表
-      storage: ["sandboxStarted", "config", "fn", "buffer", "pool", "i18n"]
+      storage: ["sandboxStarted", "config", "fn", "buffer", "pool"]
 
   # 内部数据载体
   storage =
@@ -121,30 +121,6 @@ __proj = do ( window, __util ) ->
     # @type      {Object}
     ###
     pool: {}
-
-    ###
-    # 国际化
-    #
-    # @property  i18n
-    # @type      {Object}
-    ###
-    i18n:
-      _SYS:
-        dialog:
-          zh:
-            title: "系统提示"
-            close: "关闭"
-            ok: "确定"
-            cancel: "取消"
-            yes: "是"
-            no: "否"
-          en:
-            title: "System"
-            close: "Close"
-            ok: "Ok"
-            cancel: "Cancel"
-            yes: "Yes"
-            no: "No"
 
   ###
   # 取得数组或类数组对象中最后一个元素
