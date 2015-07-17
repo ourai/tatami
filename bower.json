@@ -5,9 +5,10 @@
   "license": "MIT",
   "ignore": ["**/*", "!dest/**/*"],
   "dependencies": {
-    "jquery": "https://github.com/jquery/jquery.git#1.8.3"
+    "ronin": "https://github.com/ourai/ronin.git#0.3.1"
   },
   "devDependencies": {
+    "jquery": "https://github.com/jquery/jquery.git#1.8.3",
     "store": "https://github.com/marcuswestin/store.js.git"
   },
   "keywords": [
