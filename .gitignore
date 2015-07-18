@@ -1,7 +1,4 @@
-# Directories
-/_site
 /vendors
 /node_modules
-/dest/*.*/
-
-# Files
+/_site
+/.tatami-cache

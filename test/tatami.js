@@ -1,460 +1,442 @@
-(function( global, factory ) {
-
-  if ( typeof module === "object" && typeof module.exports === "object" ) {
-    module.exports = global.document ?
-      factory(global, true) :
-      function( w ) {
-        if ( !w.document ) {
-          throw new Error("Requires a window with a document");
-        }
-        return factory(w);
-      };
-  } else {
-    factory(global);
-  }
-
-}(typeof window !== "undefined" ? window : this, function( window, noGlobal ) {
-
 "use strict";
-var Environment, LIB_CONFIG, Storage, __proc, __proj, __util,
+var Environment, Storage, __proj, __util,
   __slice = [].slice;
 
-LIB_CONFIG = {
-  name: "Tatami",
-  version: "0.2.2"
-};
-
-__proc = (function(window) {
-  var attach, batch, defineProp, hasOwnProp, objectTypes, settings, storage, toString;
-  toString = {}.toString;
-  settings = {
-    validator: function() {
-      return true;
-    }
+__util = (function() {
+  "use strict";
+  var DateTimeFormats, DateTimeNames, ISOstr2date, LIB_CONFIG, NAMESPACE_EXP, UTCstr2date, compareObjects, dateStr2obj, dtwz, error, filterElement, flattenArray, floatLength, formatDate, func, getMaxMin, ignoreSubStr, isArr, isCollection, name, range, storage, stringifyCollection, timezoneOffset, toString, unicode, utf8_to_base64, __proc;
+  LIB_CONFIG = {
+    name: "Ronin",
+    version: "0.3.1"
   };
-  storage = {
-    types: {}
-  };
-
-  /*
-   * Fill the map object-types, and add methods to detect object-type.
-   * 
-   * @private
-   * @method   objectTypes
-   * @return   {Object}
-   */
-  objectTypes = function() {
-    var type, types, _fn, _i, _len;
-    types = "Boolean Number String Function Array Date RegExp Object".split(" ");
-    _fn = function(type) {
-      var handler, lc;
-      storage.types["[object " + type + "]"] = lc = type.toLowerCase();
-      if (type === "Number") {
-        handler = function(target) {
-          if (isNaN(target)) {
-            return false;
-          } else {
-            return this.type(target) === lc;
-          }
-        };
-      } else {
-        handler = function(target) {
-          return this.type(target) === lc;
-        };
+  __proc = (function(window) {
+    var attach, batch, defineProp, hasOwnProp, objectTypes, settings, storage, toString;
+    toString = {}.toString;
+    settings = {
+      validator: function() {
+        return true;
       }
-      return storage.methods["is" + type] = handler;
     };
-    for (_i = 0, _len = types.length; _i < _len; _i++) {
-      type = types[_i];
-      _fn(type);
-    }
-    return storage.types;
-  };
+    storage = {
+      types: {}
+    };
 
-  /*
-   * 判断某个对象是否有自己的指定属性
-   *
-   * !!! 不能用 object.hasOwnProperty(prop) 这种方式，低版本 IE 不支持。
-   *
-   * @private
-   * @method   hasOwnProp
-   * @param    obj {Object}    Target object
-   * @param    prop {String}   Property to be tested
-   * @return   {Boolean}
-   */
-  hasOwnProp = function(obj, prop) {
-    if (obj == null) {
-      return false;
-    } else {
-      return Object.prototype.hasOwnProperty.call(obj, prop);
-    }
-  };
-
-  /*
-   * 为指定 object 或 function 定义属性
-   *
-   * @private
-   * @method   defineProp
-   * @param    target {Object}
-   * @return   {Boolean}
-   */
-  defineProp = function(target) {
-    var error, prop, value;
-    prop = "__" + (LIB_CONFIG.name.toLowerCase()) + "__";
-    value = true;
-    try {
-      Object.defineProperty(target, prop, {
-        __proto__: null,
-        value: value
-      });
-    } catch (_error) {
-      error = _error;
-      target[prop] = value;
-    }
-    return true;
-  };
-
-  /*
-   * 批量添加 method
-   *
-   * @private
-   * @method  batch
-   * @param   handlers {Object}   data of a method
-   * @param   data {Object}       data of a module
-   * @param   host {Object}       the host of methods to be added
-   * @return
-   */
-  batch = function(handlers, data, host) {
-    var methods;
-    methods = storage.methods;
-    if (methods.isArray(data) || (methods.isPlainObject(data) && !methods.isArray(data.handlers))) {
-      methods.each(data, function(d) {
-        return batch(d != null ? d.handlers : void 0, d, host);
-      });
-    } else if (methods.isPlainObject(data) && methods.isArray(data.handlers)) {
-      methods.each(handlers, function(info) {
-        return attach(info, data, host);
-      });
-    }
-    return host;
-  };
-
-  /*
-   * 构造 method
-   *
-   * @private
-   * @method  attach
-   * @param   set {Object}        data of a method
-   * @param   data {Object}       data of a module
-   * @param   host {Object}       the host of methods to be added
-   * @return
-   */
-  attach = function(set, data, host) {
-    var handler, method, methods, name, validator, validators, value, _i, _len;
-    name = set.name;
-    methods = storage.methods;
-    if (set.expose !== false && !methods.isFunction(host[name])) {
-      handler = set.handler;
-      value = hasOwnProp(set, "value") ? set.value : data.value;
-      validators = [
-        set.validator, data.validator, settings.validator, function() {
-          return true;
-        }
-      ];
-      for (_i = 0, _len = validators.length; _i < _len; _i++) {
-        validator = validators[_i];
-        if (methods.isFunction(validator)) {
-          break;
-        }
-      }
-      method = function() {
-        if (methods.isFunction(handler) && validator.apply(host, arguments) === true) {
-          return handler.apply(host, arguments);
+    /*
+     * Fill the map object-types, and add methods to detect object-type.
+     * 
+     * @private
+     * @method   objectTypes
+     * @return   {Object}
+     */
+    objectTypes = function() {
+      var type, types, _fn, _i, _len;
+      types = "Boolean Number String Function Array Date RegExp Object".split(" ");
+      _fn = function(type) {
+        var handler, lc;
+        storage.types["[object " + type + "]"] = lc = type.toLowerCase();
+        if (type === "Number") {
+          handler = function(target) {
+            if (isNaN(target)) {
+              return false;
+            } else {
+              return this.type(target) === lc;
+            }
+          };
         } else {
-          return value;
+          handler = function(target) {
+            return this.type(target) === lc;
+          };
         }
+        return storage.methods["is" + type] = handler;
       };
-      host[name] = method;
-    }
-    return host;
-  };
-  storage.methods = {
-
-    /*
-     * 扩展指定对象
-     * 
-     * @method  mixin
-     * @param   unspecified {Mixed}
-     * @return  {Object}
-     */
-    mixin: function() {
-      var args, clone, copy, copyIsArray, deep, i, length, name, opts, src, target;
-      args = arguments;
-      length = args.length;
-      target = args[0] || {};
-      i = 1;
-      deep = false;
-      if (this.type(target) === "boolean") {
-        deep = target;
-        target = args[1] || {};
-        i = 2;
+      for (_i = 0, _len = types.length; _i < _len; _i++) {
+        type = types[_i];
+        _fn(type);
       }
-      if (typeof target !== "object" && !this.isFunction(target)) {
-        target = {};
-      }
-      if (length === 1) {
-        target = this;
-        i--;
-      }
-      while (i < length) {
-        opts = args[i];
-        if (opts != null) {
-          for (name in opts) {
-            copy = opts[name];
-            src = target[name];
-            if (copy === target) {
-              continue;
-            }
-            if (deep && copy && (this.isPlainObject(copy) || (copyIsArray = this.isArray(copy)))) {
-              if (copyIsArray) {
-                copyIsArray = false;
-                clone = src && this.isArray(src) ? src : [];
-              } else {
-                clone = src && this.isPlainObject(src) ? src : {};
-              }
-              target[name] = this.mixin(deep, clone, copy);
-            } else if (copy !== void 0) {
-              target[name] = copy;
-            }
-          }
-        }
-        i++;
-      }
-      return target;
-    },
-
-    /*
-     * 遍历
-     * 
-     * @method  each
-     * @param   object {Object/Array/Array-Like/Function/String}
-     * @param   callback {Function}
-     * @return  {Mixed}
-     */
-    each: function(object, callback) {
-      var ele, index, name, value;
-      if (this.isArray(object) || this.isArrayLike(object) || this.isString(object)) {
-        index = 0;
-        while (index < object.length) {
-          ele = this.isString(object) ? object.charAt(index) : object[index];
-          if (callback.apply(ele, [ele, index++, object]) === false) {
-            break;
-          }
-        }
-      } else if (this.isObject(object) || this.isFunction(object)) {
-        for (name in object) {
-          value = object[name];
-          if (callback.apply(value, [value, name, object]) === false) {
-            break;
-          }
-        }
-      }
-      return object;
-    },
-
-    /*
-     * 获取对象类型
-     * 
-     * @method  type
-     * @param   object {Mixed}
-     * @return  {String}
-     */
-    type: function(object) {
-      var result;
-      if (arguments.length === 0) {
-        result = null;
-      } else {
-        result = object == null ? String(object) : storage.types[toString.call(object)] || "object";
-      }
-      return result;
-    },
-
-    /*
-     * 切割 Array-Like Object 片段
-     *
-     * @method   slice
-     * @param    target {Array-Like}
-     * @param    begin {Integer}
-     * @param    end {Integer}
-     * @return
-     */
-    slice: function(target, begin, end) {
-      var args, result;
-      if (target == null) {
-        result = [];
-      } else {
-        end = Number(end);
-        args = [Number(begin) || 0];
-        if (arguments.length > 2 && !isNaN(end)) {
-          args.push(end);
-        }
-        result = [].slice.apply(target, args);
-      }
-      return result;
-    },
+      return storage.types;
+    };
 
     /*
      * 判断某个对象是否有自己的指定属性
      *
-     * @method   hasProp
-     * @param    prop {String}   Property to be tested
+     * !!! 不能用 object.hasOwnProperty(prop) 这种方式，低版本 IE 不支持。
+     *
+     * @private
+     * @method   hasOwnProp
      * @param    obj {Object}    Target object
+     * @param    prop {String}   Property to be tested
      * @return   {Boolean}
      */
-    hasProp: function(prop, obj) {
-      return hasOwnProp.apply(this, [(arguments.length < 2 ? this : obj), prop]);
-    },
-
-    /*
-     * 判断是否为 window 对象
-     * 
-     * @method  isWindow
-     * @param   object {Mixed}
-     * @return  {Boolean}
-     */
-    isWindow: function(object) {
-      return object && this.isObject(object) && "setInterval" in object;
-    },
-
-    /*
-     * 判断是否为 DOM 对象
-     * 
-     * @method  isElement
-     * @param   object {Mixed}
-     * @return  {Boolean}
-     */
-    isElement: function(object) {
-      return object && this.isObject(object) && object.nodeType === 1;
-    },
-
-    /*
-     * 判断是否为数字类型（字符串）
-     * 
-     * @method  isNumeric
-     * @param   object {Mixed}
-     * @return  {Boolean}
-     */
-    isNumeric: function(object) {
-      return !this.isArray(object) && !isNaN(parseFloat(object)) && isFinite(object);
-    },
-
-    /*
-     * Determine whether a number is an integer.
-     *
-     * @method  isInteger
-     * @param   object {Mixed}
-     * @return  {Boolean}
-     */
-    isInteger: function(object) {
-      return this.isNumeric(object) && /^-?[1-9]\d*$/.test(object);
-    },
-
-    /*
-     * 判断对象是否为纯粹的对象（由 {} 或 new Object 创建）
-     * 
-     * @method  isPlainObject
-     * @param   object {Mixed}
-     * @return  {Boolean}
-     */
-    isPlainObject: function(object) {
-      var error, key;
-      if (!object || !this.isObject(object) || object.nodeType || this.isWindow(object)) {
+    hasOwnProp = function(obj, prop) {
+      if (obj == null) {
         return false;
+      } else {
+        return Object.prototype.hasOwnProperty.call(obj, prop);
       }
+    };
+
+    /*
+     * 为指定 object 或 function 定义属性
+     *
+     * @private
+     * @method   defineProp
+     * @param    target {Object}
+     * @return   {Boolean}
+     */
+    defineProp = function(target) {
+      var error, prop, value;
+      prop = "__" + (LIB_CONFIG.name.toLowerCase()) + "__";
+      value = true;
       try {
-        if (object.constructor && !this.hasProp("constructor", object) && !this.hasProp("isPrototypeOf", object.constructor.prototype)) {
-          return false;
-        }
+        Object.defineProperty(target, prop, {
+          __proto__: null,
+          value: value
+        });
       } catch (_error) {
         error = _error;
-        return false;
+        target[prop] = value;
       }
-      for (key in object) {
-        key;
-      }
-      return key === void 0 || this.hasProp(key, object);
-    },
+      return true;
+    };
 
     /*
-     * Determin whether a variable is considered to be empty.
+     * 批量添加 method
      *
-     * A variable is considered empty if its value is or like:
-     *  - null
-     *  - undefined
-     *  - ""
-     *  - []
-     *  - {}
-     *
-     * @method  isEmpty
-     * @param   object {Mixed}
-     * @return  {Boolean}
-     *
-     * refer: http://www.php.net/manual/en/function.empty.php
+     * @private
+     * @method  batch
+     * @param   handlers {Object}   data of a method
+     * @param   data {Object}       data of a module
+     * @param   host {Object}       the host of methods to be added
+     * @return
      */
-    isEmpty: function(object) {
-      var name, result;
-      result = false;
-      if ((object == null) || object === "") {
-        result = true;
-      } else if ((this.isArray(object) || this.isArrayLike(object)) && object.length === 0) {
-        result = true;
-      } else if (this.isObject(object)) {
-        result = true;
-        for (name in object) {
-          result = false;
-          break;
+    batch = function(handlers, data, host) {
+      var methods;
+      methods = storage.methods;
+      if (methods.isArray(data) || (methods.isPlainObject(data) && !methods.isArray(data.handlers))) {
+        methods.each(data, function(d) {
+          return batch(d != null ? d.handlers : void 0, d, host);
+        });
+      } else if (methods.isPlainObject(data) && methods.isArray(data.handlers)) {
+        methods.each(handlers, function(info) {
+          return attach(info, data, host);
+        });
+      }
+      return host;
+    };
+
+    /*
+     * 构造 method
+     *
+     * @private
+     * @method  attach
+     * @param   set {Object}        data of a method
+     * @param   data {Object}       data of a module
+     * @param   host {Object}       the host of methods to be added
+     * @return
+     */
+    attach = function(set, data, host) {
+      var handler, method, methods, name, validator, validators, value, _i, _len;
+      name = set.name;
+      methods = storage.methods;
+      if (set.expose !== false && !methods.isFunction(host[name])) {
+        handler = set.handler;
+        value = hasOwnProp(set, "value") ? set.value : data.value;
+        validators = [
+          set.validator, data.validator, settings.validator, function() {
+            return true;
+          }
+        ];
+        for (_i = 0, _len = validators.length; _i < _len; _i++) {
+          validator = validators[_i];
+          if (methods.isFunction(validator)) {
+            break;
+          }
         }
+        method = function() {
+          if (methods.isFunction(handler) && validator.apply(host, arguments) === true) {
+            return handler.apply(host, arguments);
+          } else {
+            return value;
+          }
+        };
+        host[name] = method;
       }
-      return result;
-    },
+      return host;
+    };
+    storage.methods = {
 
-    /*
-     * 是否为类数组对象
-     *
-     * 类数组对象（Array-Like Object）是指具备以下特征的对象：
-     * -
-     * 1. 不是数组（Array）
-     * 2. 有自动增长的 length 属性
-     * 3. 以从 0 开始的数字做属性名
-     *
-     * @method  isArrayLike
-     * @param   object {Mixed}
-     * @return  {Boolean}
-     */
-    isArrayLike: function(object) {
-      var length, result;
-      result = false;
-      if (this.isObject(object) && !this.isWindow(object)) {
-        length = object.length;
-        if (object.nodeType === 1 && length || !this.isArray(object) && !this.isFunction(object) && (length === 0 || this.isNumber(length) && length > 0 && (length - 1) in object)) {
+      /*
+       * 扩展指定对象
+       * 
+       * @method  mixin
+       * @param   unspecified {Mixed}
+       * @return  {Object}
+       */
+      mixin: function() {
+        var args, clone, copy, copyIsArray, deep, i, length, name, opts, src, target;
+        args = arguments;
+        length = args.length;
+        target = args[0] || {};
+        i = 1;
+        deep = false;
+        if (this.type(target) === "boolean") {
+          deep = target;
+          target = args[1] || {};
+          i = 2;
+        }
+        if (typeof target !== "object" && !this.isFunction(target)) {
+          target = {};
+        }
+        if (length === 1) {
+          target = this;
+          i--;
+        }
+        while (i < length) {
+          opts = args[i];
+          if (opts != null) {
+            for (name in opts) {
+              copy = opts[name];
+              src = target[name];
+              if (copy === target) {
+                continue;
+              }
+              if (deep && copy && (this.isPlainObject(copy) || (copyIsArray = this.isArray(copy)))) {
+                if (copyIsArray) {
+                  copyIsArray = false;
+                  clone = src && this.isArray(src) ? src : [];
+                } else {
+                  clone = src && this.isPlainObject(src) ? src : {};
+                }
+                target[name] = this.mixin(deep, clone, copy);
+              } else if (copy !== void 0) {
+                target[name] = copy;
+              }
+            }
+          }
+          i++;
+        }
+        return target;
+      },
+
+      /*
+       * 遍历
+       * 
+       * @method  each
+       * @param   object {Object/Array/Array-Like/Function/String}
+       * @param   callback {Function}
+       * @return  {Mixed}
+       */
+      each: function(object, callback) {
+        var ele, index, name, value;
+        if (this.isArray(object) || this.isArrayLike(object) || this.isString(object)) {
+          index = 0;
+          while (index < object.length) {
+            ele = this.isString(object) ? object.charAt(index) : object[index];
+            if (callback.apply(ele, [ele, index++, object]) === false) {
+              break;
+            }
+          }
+        } else if (this.isObject(object) || this.isFunction(object)) {
+          for (name in object) {
+            value = object[name];
+            if (callback.apply(value, [value, name, object]) === false) {
+              break;
+            }
+          }
+        }
+        return object;
+      },
+
+      /*
+       * 获取对象类型
+       * 
+       * @method  type
+       * @param   object {Mixed}
+       * @return  {String}
+       */
+      type: function(object) {
+        var result;
+        if (arguments.length === 0) {
+          result = null;
+        } else {
+          result = object == null ? String(object) : storage.types[toString.call(object)] || "object";
+        }
+        return result;
+      },
+
+      /*
+       * 切割 Array-Like Object 片段
+       *
+       * @method   slice
+       * @param    target {Array-Like}
+       * @param    begin {Integer}
+       * @param    end {Integer}
+       * @return
+       */
+      slice: function(target, begin, end) {
+        var args, result;
+        if (target == null) {
+          result = [];
+        } else {
+          end = Number(end);
+          args = [Number(begin) || 0];
+          if (arguments.length > 2 && !isNaN(end)) {
+            args.push(end);
+          }
+          result = [].slice.apply(target, args);
+        }
+        return result;
+      },
+
+      /*
+       * 判断某个对象是否有自己的指定属性
+       *
+       * @method   hasProp
+       * @param    prop {String}   Property to be tested
+       * @param    obj {Object}    Target object
+       * @return   {Boolean}
+       */
+      hasProp: function(prop, obj) {
+        return hasOwnProp.apply(this, [(arguments.length < 2 ? this : obj), prop]);
+      },
+
+      /*
+       * 判断是否为 window 对象
+       * 
+       * @method  isWindow
+       * @param   object {Mixed}
+       * @return  {Boolean}
+       */
+      isWindow: function(object) {
+        return object && this.isObject(object) && "setInterval" in object;
+      },
+
+      /*
+       * 判断是否为 DOM 对象
+       * 
+       * @method  isElement
+       * @param   object {Mixed}
+       * @return  {Boolean}
+       */
+      isElement: function(object) {
+        return object && this.isObject(object) && object.nodeType === 1;
+      },
+
+      /*
+       * 判断是否为数字类型（字符串）
+       * 
+       * @method  isNumeric
+       * @param   object {Mixed}
+       * @return  {Boolean}
+       */
+      isNumeric: function(object) {
+        return !this.isArray(object) && !isNaN(parseFloat(object)) && isFinite(object);
+      },
+
+      /*
+       * Determine whether a number is an integer.
+       *
+       * @method  isInteger
+       * @param   object {Mixed}
+       * @return  {Boolean}
+       */
+      isInteger: function(object) {
+        return this.isNumeric(object) && /^-?[1-9]\d*$/.test(object);
+      },
+
+      /*
+       * 判断对象是否为纯粹的对象（由 {} 或 new Object 创建）
+       * 
+       * @method  isPlainObject
+       * @param   object {Mixed}
+       * @return  {Boolean}
+       */
+      isPlainObject: function(object) {
+        var error, key;
+        if (!object || !this.isObject(object) || object.nodeType || this.isWindow(object)) {
+          return false;
+        }
+        try {
+          if (object.constructor && !this.hasProp("constructor", object) && !this.hasProp("isPrototypeOf", object.constructor.prototype)) {
+            return false;
+          }
+        } catch (_error) {
+          error = _error;
+          return false;
+        }
+        for (key in object) {
+          key;
+        }
+        return key === void 0 || this.hasProp(key, object);
+      },
+
+      /*
+       * Determin whether a variable is considered to be empty.
+       *
+       * A variable is considered empty if its value is or like:
+       *  - null
+       *  - undefined
+       *  - ""
+       *  - []
+       *  - {}
+       *
+       * @method  isEmpty
+       * @param   object {Mixed}
+       * @return  {Boolean}
+       *
+       * refer: http://www.php.net/manual/en/function.empty.php
+       */
+      isEmpty: function(object) {
+        var name, result;
+        result = false;
+        if ((object == null) || object === "") {
           result = true;
+        } else if ((this.isArray(object) || this.isArrayLike(object)) && object.length === 0) {
+          result = true;
+        } else if (this.isObject(object)) {
+          result = true;
+          for (name in object) {
+            result = false;
+            break;
+          }
         }
-      }
-      return result;
-    }
-  };
-  objectTypes();
-  __proc = function(data, host) {
-    return batch(data != null ? data.handlers : void 0, data, host != null ? host : {});
-  };
-  storage.methods.each(storage.methods, function(handler, name) {
-    return __proc[name] = handler;
-  });
-  return __proc;
-})(window);
+        return result;
+      },
 
-__util = (function(window, __proc) {
-  var DateTimeFormats, DateTimeNames, ISOstr2date, NAMESPACE_EXP, UTCstr2date, compareObjects, dateStr2obj, dtwz, error, filterElement, flattenArray, floatLength, formatDate, func, getMaxMin, ignoreSubStr, isArr, isCollection, name, range, storage, stringifyCollection, timezoneOffset, toString, unicode, utf8_to_base64;
+      /*
+       * 是否为类数组对象
+       *
+       * 类数组对象（Array-Like Object）是指具备以下特征的对象：
+       * -
+       * 1. 不是数组（Array）
+       * 2. 有自动增长的 length 属性
+       * 3. 以从 0 开始的数字做属性名
+       *
+       * @method  isArrayLike
+       * @param   object {Mixed}
+       * @return  {Boolean}
+       */
+      isArrayLike: function(object) {
+        var length, result;
+        result = false;
+        if (this.isObject(object) && !this.isWindow(object)) {
+          length = object.length;
+          if (object.nodeType === 1 && length || !this.isArray(object) && !this.isFunction(object) && (length === 0 || this.isNumber(length) && length > 0 && (length - 1) in object)) {
+            result = true;
+          }
+        }
+        return result;
+      }
+    };
+    objectTypes();
+    __proc = function(data, host) {
+      return batch(data != null ? data.handlers : void 0, data, host != null ? host : {});
+    };
+    storage.methods.each(storage.methods, function(handler, name) {
+      return __proc[name] = handler;
+    });
+    return __proc;
+  })(window);
   toString = {}.toString;
   NAMESPACE_EXP = /^[0-9A-Z_.]+[^_.]?$/i;
   storage = {
@@ -1909,22 +1891,18 @@ __util = (function(window, __proc) {
   try {
     Object.defineProperty(__util, "__meta__", {
       __proto__: null,
-      value: {
-        name: "__util",
-        version: ""
-      }
+      writable: true,
+      value: LIB_CONFIG
     });
   } catch (_error) {
     error = _error;
     __util.mixin({
-      __meta__: {
-        name: "__util",
-        version: ""
-      }
+      __meta__: LIB_CONFIG
     });
   }
+  window[LIB_CONFIG.name] = __util;
   return __util;
-})(window, __proc);
+})();
 
 Storage = (function(__util) {
   var getData, hasProp, isNamespaceStr, isPlainObj, storage, str2obj;
@@ -3208,10 +3186,9 @@ __proj = (function(window, __util) {
   return __proj;
 })(window, __util);
 
-__proj.mask(LIB_CONFIG.name);
+__proj.mask("Tatami");
 
-__proj.mixin(__proj.__meta__, LIB_CONFIG);
-
-window[LIB_CONFIG.name] = __proj;
-
-}));
+__proj.mixin(__proj.__meta__, {
+  name: "Tatami",
+  version: "0.2.3"
+});

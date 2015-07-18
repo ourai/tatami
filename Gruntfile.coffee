@@ -16,105 +16,75 @@ module.exports = ( grunt ) ->
     repo: info
     pkg: pkg
     meta:
-      src: "src"
-      coffee: "<%= meta.src %>/coffee"
-      proc: "<%= meta.coffee %>/preprocessor"
-      util: "<%= meta.coffee %>/utils"
-      proj: "<%= meta.coffee %>/project"
-      classes: "<%= meta.coffee %>/classes"
-      dest: "dest"
-      dest_style: "<%= meta.dest %>/stylesheets"
-      dest_script: "<%= meta.dest %>"
-      dest_image: "<%= meta.dest %>/images"
-      vendors: "vendors"
-      ronin: "<%= meta.vendors %>/ronin/dest"
-      matcha: "<%= meta.vendors %>/matcha/dest"
-      jquery: "<%= meta.vendors %>/jquery"
-      tests: "test"
+      proj: "src/project"
+      classes: "src/classes"
+
+      temp: ".<%= pkg.name %>-cache"
+
+      ronin: "vendors/ronin"
+      jquery: "vendors/jquery"
     concat:
-      coffee_miso:
-        src: [
-            "<%= meta.proc %>/intro.coffee"
-            "<%= meta.proc %>/variables.coffee"
-            "<%= meta.proc %>/functions.coffee"
-            "<%= meta.proc %>/methods.coffee"
-            "<%= meta.proc %>/outro.coffee"
+      ronin:
+        options:
+          process: ( src, filepath ) ->
+            return src.replace /^/gm, "\x20\x20"
+        files: "<%= meta.temp %>/__ronin.coffee": [
+            "<%= meta.ronin %>/ronin.coffee"
           ]
-        dest: "<%= meta.coffee %>/miso.coffee"
-      coffee_ronin:
-        src: [
-            "<%= meta.util %>/intro.coffee"
-            "<%= meta.util %>/variables.coffee"
-            "<%= meta.util %>/functions.coffee"
-            "<%= meta.util %>/builtin.coffee"
-            "<%= meta.util %>/global.coffee"
-            "<%= meta.util %>/object.coffee"
-            "<%= meta.util %>/array.coffee"
-            "<%= meta.util %>/string.coffee"
-            "<%= meta.util %>/date.coffee"
-            "<%= meta.util %>/outro.coffee"
-          ]
-        dest: "<%= meta.coffee %>/ronin.coffee"
-      coffee_tatami:
-        src: [
-            "<%= meta.proj %>/intro.coffee"
-            "<%= meta.proj %>/variables.coffee"
-            "<%= meta.proj %>/functions.coffee"
-            "<%= meta.proj %>/dialog.coffee"
-            "<%= meta.proj %>/handler.coffee"
-            "<%= meta.proj %>/execution.coffee"
-            "<%= meta.proj %>/configuration.coffee"
-            "<%= meta.proj %>/storage.coffee"
-            "<%= meta.proj %>/request.coffee"
-            # "<%= meta.proj %>/html.coffee"
-            "<%= meta.proj %>/url.coffee"
-            "<%= meta.proj %>/outro.coffee"
-          ]
-        dest: "<%= meta.coffee %>/tatami.coffee"
-      coffee_constructors:
-        src: [
-            "<%= meta.classes %>/Storage.coffee"
-            "<%= meta.classes %>/Environment.coffee"
-          ]
-        dest: "<%= meta.coffee %>/constructors.coffee"
       coffee:
-        src: [
-            "<%= meta.coffee %>/intro.coffee"
-            "<%= meta.coffee %>/miso.coffee"
-            "<%= meta.coffee %>/ronin.coffee"
-            "<%= meta.coffee %>/constructors.coffee"
-            "<%= meta.coffee %>/tatami.coffee"
-            "<%= meta.coffee %>/outro.coffee"
-          ]
-        dest: "<%= meta.dest_script %>/<%= pkg.name %>.coffee"
-      js:
         options:
           process: ( src, filepath ) ->
             return src.replace /@(NAME|VERSION)/g, ( text, key ) ->
               return info[key.toLowerCase()]
-        src: [
-            # "<%= meta.ronin %>/ronin.js"
-            # "<%= meta.matcha %>/javascripts/matcha.js"
-            "<%= meta.src %>/intro.js"
-            "<%= meta.src %>/<%= pkg.name %>.js"
-            "<%= meta.src %>/outro.js"
-          ],
-        dest: "<%= meta.dest_script %>/<%= pkg.name %>.js"
-      css:
         files:
-          "<%= meta.dest_style %>/<%= pkg.name %>.css": "<%= meta.matcha %>/stylesheets/matcha.css"
-          "<%= meta.dest_style %>/<%= pkg.name %>.min.css": "<%= meta.matcha %>/stylesheets/matcha.min.css"
+          "<%= meta.temp %>/ronin.coffee": [
+              "build/ronin_intro.coffee"
+              "<%= meta.temp %>/__ronin.coffee"
+              "build/ronin_outro.coffee"
+            ]
+          "<%= meta.temp %>/constructors.coffee": [
+              "<%= meta.classes %>/Storage.coffee"
+              "<%= meta.classes %>/Environment.coffee"
+            ]
+          "<%= meta.temp %>/<%= pkg.name %>.coffee": [
+              "src/project/intro.coffee"
+              "src/project/variables.coffee"
+              "src/project/functions.coffee"
+              "src/project/dialog.coffee"
+              "src/project/handler.coffee"
+              "src/project/execution.coffee"
+              "src/project/configuration.coffee"
+              "src/project/storage.coffee"
+              "src/project/request.coffee"
+              # "src/project/html.coffee"
+              "src/project/url.coffee"
+              "src/project/outro.coffee"
+            ]
+          "<%= pkg.name %>.coffee": [
+              "src/intro.coffee"
+              "<%= meta.temp %>/ronin.coffee"
+              "<%= meta.temp %>/constructors.coffee"
+              "<%= meta.temp %>/<%= pkg.name %>.coffee"
+              "src/outro.coffee"
+            ]
+      js:
+        src: [
+            "build/intro.js"
+            "<%= meta.temp %>/<%= pkg.name %>.js"
+            "build/outro.js"
+          ],
+        dest: "<%= meta.temp %>/<%= pkg.name %>.full.js"
       vendors:
         files:
-          "<%= meta.tests %>/ronin.js": "<%= meta.ronin %>/ronin.js"
-          "<%= meta.tests %>/jquery.js": "<%= meta.jquery %>/jquery.js"
+          "test/ronin.js": "<%= meta.ronin %>/ronin.js"
+          "test/jquery.js": "<%= meta.jquery %>/jquery.js"
     coffee:
       options:
         bare: true
         separator: "\x20"
       build:
-        src: "<%= meta.dest_script %>/<%= pkg.name %>.coffee"
-        dest: "<%= meta.src %>/<%= pkg.name %>.js"
+        src: "<%= pkg.name %>.coffee"
+        dest: "<%= meta.temp %>/<%= pkg.name %>.js"
     uglify:
       options:
         banner: "/*!\n" +
@@ -125,42 +95,36 @@ module.exports = ( grunt ) ->
                 " *\n" +
                 " * Date: <%= grunt.template.today('yyyy-mm-dd') %>\n" +
                 " */\n"
-        sourceMap: true
+        sourceMap: false
       build:
-        src: "<%= meta.dest_script %>/<%= pkg.name %>.js"
-        dest: "<%= meta.dest_script %>/<%= pkg.name %>.min.js"
+        src: "<%= meta.temp %>/<%= pkg.name %>.full.js"
+        dest: "<%= pkg.name %>.min.js"
     copy:
-      build:
-        expand: true
-        cwd: "<%= meta.dest %>"
-        src: ["**.js", "**.css", "**/*.scss"]
-        dest: "dest"
       test:
         expand: true
-        cwd: "<%= meta.dest_script %>"
+        cwd: "<%= meta.temp %>"
         src: ["**.js"]
-        dest: "<%= meta.tests %>"
-      matcha:
-        expand: true
-        cwd: "<%= meta.matcha %>"
-        src: ["**/*.scss", "**/*.gif", "**/*.jpg", "**/*.png"]
-        dest: "<%= meta.dest %>"
-    clean:
-      compiled:
-        src: ["<%= meta.dest_script %>/*.coffee"]
+        dest: "test"
     jasmine:
       test:
-        src: "<%= meta.tests %>/<%= pkg.name %>.js"
+        src: "test/<%= pkg.name %>.js"
         options:
-          specs: "<%= meta.tests %>/*Spec.js"
+          specs: "test/*Spec.js"
           vendor: [
-              "<%= meta.tests %>/ronin.js"
-              "<%= meta.tests %>/jquery.js"
+              "test/ronin.js"
+              "test/jquery.js"
             ]
 
   grunt.loadNpmTasks task for task in npmTasks
 
-  grunt.registerTask "concat_coffee", ["concat:coffee_miso", "concat:coffee_ronin", "concat:coffee_tatami", "concat:coffee_constructors", "concat:coffee"]
-  grunt.registerTask "script", ["concat_coffee", "coffee", "concat:js", "uglify"]
-  grunt.registerTask "style", ["concat:css", "copy:matcha"]
-  grunt.registerTask "default", ["script", "clean", "copy:test"]
+  grunt.registerTask "script", [
+      "concat:ronin"
+      "concat:coffee"
+      "coffee"
+      "concat:js"
+      "uglify"
+    ]
+  grunt.registerTask "default", [
+      "script"
+      "copy:test"
+    ]

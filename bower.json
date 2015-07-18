@@ -1,9 +1,22 @@
 {
   "name": "tatami",
-  "version": "0.2.2",
-  "main": ["dest/tatami.min.js"],
+  "version": "0.2.3",
+  "main": [
+    "tatami.coffee",
+    "tatami.min.js"
+  ],
   "license": "MIT",
-  "ignore": ["**/*", "!dest/**/*"],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "vendors",
+    "build",
+    "src",
+    "test",
+    "*.json",
+    "*.md",
+    "Gruntfile.coffee"
+  ],
   "dependencies": {
     "ronin": "https://github.com/ourai/ronin.git#0.3.1"
   },

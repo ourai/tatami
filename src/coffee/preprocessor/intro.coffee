@@ -1,2 +1,0 @@
-__proc = do ( window ) ->
-  
